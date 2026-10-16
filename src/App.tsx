@@ -2,6 +2,10 @@ import { HyoketsumeDice } from './enemy/HyoketsumeDice';
 import { SlimeBurst } from './enemy/SlimeBurst';
 import { whenIntroAudioRunning } from './introAudio';
 import { findThunderSet, thunderColumns } from './thunder';
+import { findYou456Set, you456Lines, you456PracticeCells, type You456Strike } from './you456';
+import { useYou456Gesture } from './useYou456Gesture';
+import './you456.css';
+const YOU456_CANCELLED = Symbol('456You! interrupted');
 import { moveThunderTrace, startThunderTrace, type ThunderTrace, type ThunderTracePoint } from './thunderTrace';
 import './thunderTrace.css';
 import { createHidoimeCrushSound } from './hidoimeCrushAudio';
@@ -2415,6 +2419,11 @@ const BOMB_CALLS: Record<
     // 2026-10-05 ユーザー指定：スト6っ！ ずどん → イッキツーカン！（改行）スト6でーっす！
     fever: { ja: 'イッキツーカン！\nスト6でーっす！', en: 'Straight through!\nStraight Six!' },
   },
+  you456: {
+    banner: '',
+    saika: { ja: '456You!', en: '456You!' },
+    fever: { ja: '456You!', en: '456You!' },
+  },
 };
 
 // スコアは下7桁を 0000000 で常に表示し、その上の位だけを SCORE の右に黄色で出す。
@@ -2454,7 +2463,7 @@ const SOUND_ORDER: SoundMode[] = ['all', 'se', 'none'];
 const SOUND_ICONS: Record<SoundMode, string> = { all: '🎶', se: '🎵', none: '🔇' };
 const pickFrom = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
 
-type ClearKind = 'seven' | 'nico' | 'thunder' | BombKind;
+type ClearKind = 'seven' | 'nico' | 'thunder' | 'you456' | BombKind;
 
 // 得点計算。企画書の倍率を素直に掛け合わせる。
 // 上限や計算順序はバランス調整時に決めるとされているため、現状は単純な積。
@@ -5767,13 +5776,14 @@ for (const mission of ALL_MISSIONS) { // 表もウラも、面ごとの台本（
 }
 // This module instance belongs to an isolated, gallery-only practice iframe.
 const enemyPractice = getEnemyPractice();
+const you456Practice = !!enemyPractice && new URLSearchParams(location.search).get('skill') === 'you456';
 const hyoketsuPractice = enemyPractice?.enemy === 'hyoketsume';
 const sanzPractice = enemyPractice?.enemy === 'sanzapparaname';
 if (enemyPractice && enemyPractice.stage === 8) {
   STORY_STAGES[8] = {
-    name: { ja: enemyPractice.name, en: enemyPractice.enemy },
+    name: { ja: you456Practice ? '456You!' : enemyPractice.name, en: you456Practice ? '456You!' : enemyPractice.enemy },
     goal: { type: 'defeat' },
-    enemies: hyoketsuPractice ? [{x:1,y:ROWS-3,value:KOITSUME},{x:5,y:ROWS-3,value:DAME},{x:3,y:ROWS-3,value:-7}] : [{ x: 3, y: ROWS - 2, value: enemyPractice.enemy === 'dame' ? DAME : KOITSUME }],
+    enemies: you456Practice ? [{x:2,y:9,value:KOITSUME},{x:6,y:11,value:DAME}] : hyoketsuPractice ? [{x:1,y:ROWS-3,value:KOITSUME},{x:5,y:ROWS-3,value:DAME},{x:3,y:ROWS-3,value:-7}] : [{ x: 3, y: ROWS - 2, value: enemyPractice.enemy === 'dame' ? DAME : KOITSUME }],
   };
 }
 const STORY_POWER_COUNT = 7;
@@ -8510,8 +8520,9 @@ export default function App() {
 
   const lockPiece = useCallback(
     // thunderCols を渡すと、ブロックは置かずに、その列をイチニノサンダーで消すところから始める
-    async (piece: Piece, thunderCols?: number[]) => {
+    async (piece: Piece, thunderCols?: number[], youStrike?: You456Strike) => {
     const activeScriptRun = storyRunRef.current;
+      const traceStrike = !!thunderCols || !!youStrike;
       if (isResolving.current) {
         return;
       }
@@ -8525,13 +8536,14 @@ export default function App() {
       const wait = async (ms: number) => {
         const target = performance.now() + ms;
         await delay(ms);
+        if (youStrike && activeScriptRun !== storyRunRef.current) throw YOU456_CANCELLED;
         late = Math.max(0, performance.now() - target);
       };
       const onTime = () => sfxOnTime(late);
 
       // 着地の瞬間にもう鳴らしていれば、ここでは鳴らさない。
       // 一気に落とした場合は着地の検知を通らないので、ここが受け持つ。
-      if (soundModeRef.current !== 'none' && !thunderCols) {
+      if (soundModeRef.current !== 'none' && !traceStrike) {
         if (earlyClearPiece.current === piece.id) {
           // セヴン目音は着地で先に鳴らしてある。ただしそのあと横へずらして
           // 揃わなくなっていたら、代わりに設置音で締める。
@@ -8547,12 +8559,13 @@ export default function App() {
         }
       }
 
-      let workingBoard = thunderCols ? board : placePiece(board, piece);
+      let workingBoard = traceStrike ? board : placePiece(board, piece);
       const activeHyoketsu = new Set(workingBoard.flat().filter(c=>c?.hyoketsu==='active').map(c=>c!.id));
       let thunderPending: number[] | null = thunderCols ?? null;
+      let youPending = youStrike ?? null;
       // 発光の起点。いま置いたブロックが占めるマス
       const triggerKeys = new Set(
-        thunderCols ? [] : piece.matrix.flatMap((row, my) =>
+        traceStrike ? [] : piece.matrix.flatMap((row, my) =>
           row.flatMap((value, mx) =>
             value === null ? [] : [`${piece.x + mx},${piece.y + my}`],
           ),
@@ -8608,13 +8621,16 @@ export default function App() {
         // イチニノサンダー：最初の1回だけ、指定の列をまるごと消す（続く連鎖はふつうに数える）
         const thunderNow = thunderPending;
         thunderPending = null;
+        const youNow = youPending;
+        youPending = null;
+        const tracedNow = thunderNow || youNow;
         // ニコニコボムは11メンで習得する。それより前のメンでは発動しない
-        const nico = thunderNow || (inStory && !nicoOpenIn(storyRef.current, mapPowers())) ? null : findNicoBomb(workingBoard);
+        const nico = tracedNow || (inStory && !nicoOpenIn(storyRef.current, mapPowers())) ? null : findNicoBomb(workingBoard);
         if (nico) {
           firedKinds.add('nico');
         }
         // ストーリーでは、習得したメンからだけ使える（storyAllows）
-        const bombs = nico || thunderNow
+        const bombs = nico || tracedNow
           ? []
           : findAllBombs(workingBoard, triggerKeys).filter(
               (hit) => !inStory || storyAllows(storyRef.current ?? 0, hit.kind, mapPowers()),
@@ -8638,11 +8654,11 @@ export default function App() {
           detarame: Position[];
         } | null = null;
 
-        if (thunderNow) {
-          kind = 'thunder';
-          firedKinds.add('thunder');
-          const struck: Position[] = [];
-          thunderNow.forEach((x) => {
+        if (thunderNow || youNow) {
+          kind = youNow ? 'you456' : 'thunder';
+          if (thunderNow) firedKinds.add('thunder');
+          const struck: Position[] = youNow ? youNow.cells.filter(p => workingBoard[p.y]?.[p.x]) : [];
+          thunderNow?.forEach((x) => {
             for (let y = 0; y < ROWS; y += 1) if (workingBoard[y][x]) struck.push({ x, y });
           });
           anchiEyeHit = anchiEyeHit || anchiEyeIn(struck, workingBoard);
@@ -8654,17 +8670,17 @@ export default function App() {
           });
           // 2026-10-14：なぞった1・2・3のサイも消す（イナヅマが敵だけの列・空の列に落ちても、同じ並びが残って
           // 何度も撃てる抜け道をふさぐ）。上にあったサイはこのあとの settle で自然に落ちる
-          const used = thunderUsedRef.current ?? [];
-          thunderUsedRef.current = null;
+          const used = youNow?.used ?? thunderUsedRef.current ?? [];
+          if (!youNow) thunderUsedRef.current = null;
           used.forEach((point, index) => {
-            if (workingBoard[point.y]?.[point.x]?.value === index + 1 && !cells.some((c) => c.x === point.x && c.y === point.y)) cells.push(point);
+            if (workingBoard[point.y]?.[point.x]?.value === index + (youNow ? 4 : 1) && !cells.some((c) => c.x === point.x && c.y === point.y)) cells.push(point);
           });
           enemyHits = findEnemyHits(
             workingBoard,
             cells,
             struck.filter((point) => isEnemy(workingBoard[point.y][point.x]?.value ?? 0)),
           );
-          bombScores = [{ level: 3 * thunderNow.length / 2, multiplier: 1 }];
+          bombScores = [{ level: youNow ? 3 * youNow.columns.length : 3 * thunderNow!.length / 2, multiplier: 1 }];
         } else if (nico) {
           kind = 'nico';
           // 2026-10-14：サンザッパラナメにもニコニコボムが効く（目に当たれば倒れる）
@@ -9003,7 +9019,7 @@ export default function App() {
 
         // 消える直前のタメ。ボムは通常の3倍かけて溜める。
         // イチニノサンダーはカウントダウンで溜め終わっているので、すぐ消す
-        if (kind !== 'thunder') await wait(isBomb ? BOMB_PRE_CLEAR_WAIT_MS : PRE_CLEAR_WAIT_MS);
+        if (kind !== 'thunder' && kind !== 'you456') await wait(isBomb ? BOMB_PRE_CLEAR_WAIT_MS : PRE_CLEAR_WAIT_MS);
 
         // ボムはさらに、消える範囲を光らせて見せる時間を置く
         if (glow) {
@@ -9015,7 +9031,7 @@ export default function App() {
         // 出る直前の溜め。対象のマスを本来の色と反対色で入れ替えて点滅させる。
         // フィーバーで巻き添えになったマスだけは、3色＋反対色の6色を回して
         // 別扱いだと分かるようにする。
-        if (isBomb && kind !== 'thunder') {
+        if (isBomb && kind !== 'thunder' && kind !== 'you456') {
           const charge = new Map<string, string>();
           clear.forEach((key) => {
             const [cx, cy] = key.split(',').map(Number);
@@ -9065,7 +9081,7 @@ export default function App() {
           }
         }
         // アンチクショウメ：爆発と同時に、当たった身体を白く光らせる（目に当たっていれば目を細める）
-        if (isBomb && kind !== 'thunder' && anchiTouch.length > 0 && anchiRef.current && !anchiRef.current.dying) {
+        if (isBomb && kind !== 'thunder' && kind !== 'you456' && anchiTouch.length > 0 && anchiRef.current && !anchiRef.current.dying) {
           flashAnchi(anchiTouch, workingBoard);
         }
 
@@ -9360,7 +9376,7 @@ export default function App() {
         workingBoard = await settle(workingBoard, true);
       }
 
-      if (hyoketsuPractice && !thunderCols) {
+      if (hyoketsuPractice && !traceStrike) {
         const blast = new Set<string>();
         const expiredHyoketsu = new Set<string>();
         workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>{
@@ -9381,7 +9397,7 @@ export default function App() {
       }
       // アンチクショウメ：目にひっさつメが当たっていたら倒れる。当たらなければ1手ぶん成長する
       if (anchiRef.current && !anchiRef.current.dying) {
-        if (!anchiEyeHit && !thunderCols) {
+        if (!anchiEyeHit && !traceStrike) {
           const beforeGrow = workingBoard;
           workingBoard = await growAnchi(workingBoard);
           if (storyRunRef.current !== activeScriptRun) return;
@@ -9758,7 +9774,7 @@ export default function App() {
         }
       }
 
-      if (thunderCols) {
+      if (traceStrike) {
         // イチニノサンダーは落ちてくる途中のブロックをそのまま残し、続きから操作に戻す
         lastFallAt.current = performance.now();
         setStatus('playing');
@@ -9787,6 +9803,39 @@ export default function App() {
     () => new Set((thunderSet ?? []).map((point) => `${point.x},${point.y}`)),
     [thunderSet],
   );
+  // No campaign lesson/unlock has been assigned yet. Available in score mode
+  // and all isolated enemy practices, including its own catalogue practice.
+  const you456Open = story === null || !!enemyPractice;
+  const you456Set = useMemo(() => you456Open && status === 'playing' ? findYou456Set(board) : null, [board, status, you456Open]);
+  const you456SetRef = useRef(you456Set); you456SetRef.current = you456Set;
+  const you456Keys = useMemo(() => new Set((you456Set ?? []).map(p => `${p.x},${p.y}`)), [you456Set]);
+  const [you456Beam, setYou456Beam] = useState<You456Strike | null>(null);
+  const [you456Call, setYou456Call] = useState(false);
+  const you456Busy = useRef<number | null>(null);
+  const fireYou456 = async () => {
+    const set = you456SetRef.current;
+    if (!set || you456Busy.current !== null || thunderBusy.current || isResolving.current || statusNow.current !== 'playing') return;
+    const run = storyRunRef.current;
+    you456Busy.current = run;
+    const strike: You456Strike = { ...you456Lines(COLS, ROWS, set[0], feverActiveRef.current), used: set.map(p => ({ ...p })) as typeof set };
+    setStatus('clearing');
+    setYou456Call(true);
+    try {
+      await delay(180);
+      if (run !== storyRunRef.current) return;
+      setYou456Beam(strike);
+      if (soundModeRef.current !== 'none') playThunderStrikeSound();
+      await delay(180);
+      if (run !== storyRunRef.current) return;
+      runTimeout(() => { setYou456Beam(null); setYou456Call(false); }, 650);
+      await lockPieceRef.current(currentRef.current, undefined, strike);
+    } catch (error) {
+      if (error !== YOU456_CANCELLED) throw error;
+    } finally {
+      if (run === storyRunRef.current) you456Busy.current = null;
+    }
+  };
+  const fireYou456Ref = useRef(fireYou456); fireYou456Ref.current = fireYou456;
   // 1.5秒の遊べる時間ごとに450msかけて上辺・側辺をたどる。描画と命中判定は同じ位置。
   const anchiAlive = !!anchiView && !anchiView.dying;
   useEffect(() => {
@@ -10346,6 +10395,9 @@ export default function App() {
     setThunderCall(null);
     setThunderBolt(null);
     thunderBusy.current = false;
+    setYou456Beam(null);
+    setYou456Call(false);
+    you456Busy.current = null;
     anchiEyeMotion.current = null;
     updatePaints([]);
     anchiDefeated.current = 0;
@@ -10766,6 +10818,11 @@ export default function App() {
         initialBoard[ROWS-3][5]={id:'hyoketsu-dame',value:DAME,group:-4402};
         initialBoard[ROWS-3][3]={id:'hyoketsu-ice',value:-7,hyoketsu:'frozen',group:-4403};
       }
+      if (you456Practice) {
+        initialBoard.forEach(row => row.fill(null));
+        you456PracticeCells().forEach(([x, y, value], i) => { initialBoard[y][x] = { id: `you456-practice-${i}`, value, group: -4600-i }; });
+        if (new URLSearchParams(location.search).get('fever') === '1') setFever(100);
+      }
       // Practice after the lesson: four 1s form a visible starting point, not an automatic bomb.
       if (stageNo === 24 || stageNo === 25) {
         for (let x = 0; x < COLS; x++) initialBoard[ROWS - 1][x] = { id: `wall-seed-${x}`, value: x >= 1 && x <= 4 ? 1 : 3, group: -1700-x };
@@ -10837,7 +10894,7 @@ export default function App() {
         return;
       }
       setBoard(initialBoard);
-      setSaika({ text: requestedStage === 20
+      setSaika({ text: you456Practice ? '光る4→5→6をなぞろう！' : requestedStage === 20
         ? (langRef.current === 'ja' ? 'さぁ ゲームのはじまり！' : 'Let the game begin!')
         : pickFrom(storyIdlePool[langRef.current]), mood: 'hello' });
       showStageIntro(stageNo);
@@ -12643,6 +12700,11 @@ export default function App() {
     return Number.isFinite(size) && size > 0 ? size + CELL_GAP : board.clientWidth / COLS;
   }, []);
 
+  const you456Gesture = useYou456Gesture({
+    set: you456Set, board, run: storyRunRef.current, status, boardRef,
+    canStart: () => !thunderTrace.current && !touchState.current,
+    fire: () => { void fireYou456Ref.current(); },
+  });
   // イチニノサンダー：1→2→3の順を、1本の指で離さずになぞる。
   // 途中で離した・中断された操作を、回転やフリックへ流用しない。
   const thunderTrace = useRef<ThunderTrace | null>(null);
@@ -13038,11 +13100,11 @@ export default function App() {
       <section
         className={`board-panel ${feverActive ? 'is-fever' : ''}`}
         aria-label={text.boardLabel}
-        onPointerCancel={onPointerCancel}
-        onLostPointerCapture={onPointerCancel}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
+        onPointerCancel={event => { you456Gesture.cancel(event); onPointerCancel(event); }}
+        onLostPointerCapture={event => { you456Gesture.cancel(event); onPointerCancel(event); }}
+        onPointerDown={event => { if (!you456Gesture.down(event)) onPointerDown(event); }}
+        onPointerMove={event => { if (!you456Gesture.move(event)) onPointerMove(event); }}
+        onPointerUp={event => { if (!you456Gesture.up(event)) onPointerUp(event); }}
         ref={boardRef}
       >
         <div className={`board-grid ${sanzMode ? 'has-sanz' : ''}`}>
@@ -13054,7 +13116,7 @@ export default function App() {
               <div
                 className={`board-cell ${grayCells.has(`${x},${y}`) ? 'is-gray' : ''} ${
                   monoCells.has(`${x},${y}`) ? 'is-mono' : ''
-                } ${sanzMode && cell?.id.startsWith('sanz-eject-') ? 'sanz-ejected' : ''} ${demoBlink.has(`${x},${y}`) ? 'is-demo-blink' : ''} ${thunderKeys.has(`${x},${y}`) ? 'is-thunder' : ''}`}
+                } ${sanzMode && cell?.id.startsWith('sanz-eject-') ? 'sanz-ejected' : ''} ${demoBlink.has(`${x},${y}`) ? 'is-demo-blink' : ''} ${thunderKeys.has(`${x},${y}`) ? 'is-thunder' : ''} ${you456Keys.has(`${x},${y}`) ? 'is-you456' : ''}`}
                 data-cell={`${x},${y}`}
                 key={`${x}-${y}`}
                 style={
@@ -13241,6 +13303,30 @@ export default function App() {
               <PaintSample cell={cellPx} paused={status === 'paused'} shape={paint.shape} />
             </div>
           ))}
+          {status === 'playing' && you456Gesture.trail.length > 0 ? (
+            <svg aria-hidden className="thunder-pointer-trail you456-pointer-trail" viewBox={`0 0 ${COLS} ${ROWS}`}>
+              <polyline className="thunder-trail-edge" points={you456Gesture.trail.map(p => `${p.x},${p.y}`).join(' ')} />
+              <polyline className="thunder-trail-white" points={you456Gesture.trail.map(p => `${p.x},${p.y}`).join(' ')} />
+            </svg>
+          ) : null}
+          {you456Beam ? (
+            <svg aria-hidden className="you456-lines" data-columns={you456Beam.columns.join(',')} data-rows={you456Beam.rows.join(',')} viewBox={`0 0 ${COLS} ${ROWS}`}>
+              {you456Beam.columns.flatMap(x => [0, ROWS].map(y => (
+                <g key={`column-${x}-${y}`}>
+                  <line x1={x + .5} y1={you456Beam.used[0].y + .5} x2={x + .5} y2={y} pathLength="1" />
+                  <line className="you456-core" x1={x + .5} y1={you456Beam.used[0].y + .5} x2={x + .5} y2={y} pathLength="1" />
+                </g>
+              )))}
+              {you456Beam.rows.flatMap(y => [0, COLS].map(x => (
+                <g key={`row-${y}-${x}`}>
+                  <line x1={you456Beam.used[0].x + .5} y1={y + .5} x2={x} y2={y + .5} pathLength="1" />
+                  <line className="you456-core" x1={you456Beam.used[0].x + .5} y1={y + .5} x2={x} y2={y + .5} pathLength="1" />
+                </g>
+              )))}
+              <circle cx={you456Beam.used[0].x + .5} cy={you456Beam.used[0].y + .5} r=".18" />
+            </svg>
+          ) : null}
+          {you456Call ? <div aria-hidden className="you456-call">456You!</div> : null}
           {/* 指の白い軌跡。サイや敵の上に置き、離す・中断するたびに消す。 */}
           {status === 'playing' && thunderTrail.length > 0 ? (
             <svg aria-hidden className="thunder-pointer-trail" viewBox={`0 0 ${COLS} ${ROWS}`}>

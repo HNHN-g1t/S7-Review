@@ -122,14 +122,14 @@ function harness(enemy = 'koitsume', options = {}) {
       const app = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'App');
       const ret = app.body.statements.filter(ts.isReturnStatement).at(-1);
       source = source.slice(0, ret.getStart(ast)) + `return {
-        startStage, setWallProgress, backToTitle, playAgain, togglePause, resume, hardDrop, setBoard, setCurrent, fireThunder,
+        startStage, setWallProgress, backToTitle, playAgain, togglePause, resume, hardDrop, setBoard, setCurrent, fireThunder, fireYou456,
         updateAnchi, updatePaints, growAnchi, landSanzShot, throwAnchiPaint, anchiEyeIn, setStatus, setSoundMode, soundModeRef, updateDetarameById, resetGame, storyRunRef,
         setFever, setScore, setRainbowStock, rainbowStockRef, totalScoreRef,
         emptyBoard, makeSinglePiece, hidoimeHp, hidoimeDefeated, berabouHp,
         berabouDefeated, detaramesRef, detarameDefeated, rainbowAnswer, resetProgress, changeLang,
         read:()=>({story,status,board,score,current,stageIntro,saika,fever,feverActive,feverIgniting,
           soundMode,powers:mapPowers(),missionNow,missionGoal,demo:demoLock.current,
-          thunderOpen,thunderSet,thunderCall,thunderBolt,anchi:anchiRef.current,anchiDefeated:anchiDefeated.current,anchiPaints,absorbCells,
+          thunderOpen,thunderSet,thunderCall,thunderBolt,you456Set,you456Beam,you456Call,you456Busy:you456Busy.current,anchi:anchiRef.current,anchiDefeated:anchiDefeated.current,anchiPaints,absorbCells,
           sanzElapsed,sanzShots,campaignGeneratedEnemies:campaignGeneratedEnemies.current,anchiHit,anchiHitTone,anchiFlash,detarames:detaramesRef.current,detarameHit,
           hidoimeDefeated:hidoimeDefeated.current,berabouHp:berabouHp.current,
           detarame:detaramesRef.current[0]??null,rainbowAsk,rainbowAward,rainbowStock,
@@ -143,7 +143,7 @@ function harness(enemy = 'koitsume', options = {}) {
       if (name === 'react') return hook;
       if (name === 'react/jsx-runtime') return { jsx: () => null, jsxs: () => null };
       if (name === './haptics') return { haptics: new Proxy({}, { get: () => () => {} }) };
-      if (/characterNames|wall1|objectives|hidoimeFx|Detarame|enemyPracticeConfig|hidoimeCrushAudio|thunder|anchiEye/.test(name)) {
+      if (/characterNames|wall1|objectives|hidoimeFx|Detarame|enemyPracticeConfig|hidoimeCrushAudio|thunder|anchiEye|you456|useYou456Gesture/.test(name)) {
         const base = path.posix.normalize(path.posix.join(path.posix.dirname(file), name));
         const resolved = ['.ts', '.tsx'].map(ext => base + ext).find(candidate => fs.existsSync(path.join(root, candidate)));
         if (resolved) return load(resolved);

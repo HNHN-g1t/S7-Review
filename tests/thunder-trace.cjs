@@ -123,7 +123,7 @@ for (const releaseAt of [points[0], points[2]]) {
 }
 
 // Cancellation and lost capture share a non-committing handler, including duplicate cleanup.
-assert(app.includes('onPointerCancel={onPointerCancel}') && app.includes('onLostPointerCapture={onPointerCancel}'));
+assert(app.includes('onPointerCancel={event => { you456Gesture.cancel(event); onPointerCancel(event); }}') && app.includes('onLostPointerCapture={event => { you456Gesture.cancel(event); onPointerCancel(event); }}'));
 for (const progressed of [false, true]) {
   g = game(); g.send('onPointerDown'); if (progressed) g.send('onPointerMove', points[1]);
   g.send('onPointerCancel', points[1]); g.send('onPointerCancel', points[1]);

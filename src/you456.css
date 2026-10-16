@@ -1,0 +1,32 @@
+.board-cell.is-you456 .die {
+  animation: you456-ready 1.15s ease-in-out infinite alternate;
+  outline: 2px solid #b5ffec;
+  outline-offset: -2px;
+}
+@keyframes you456-ready {
+  from { box-shadow: inset 0 0 3px #fff9, 0 0 4px #60f5d5; }
+  to { box-shadow: inset 0 0 9px #fff, 0 0 13px #60f5d5; }
+}
+.you456-lines {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: 43;
+  pointer-events: none; overflow: visible;
+}
+.you456-lines line { stroke: #a3ffe9; stroke-width: .34; }
+.you456-lines .you456-core { stroke: #fff; stroke-width: .10; }
+.you456-lines line { animation: you456-pierce 650ms ease-out both; }
+.you456-lines circle { fill: #fff; stroke: #65f4d7; stroke-width: .08; }
+@keyframes you456-pierce {
+  0% { opacity: 0; stroke-dasharray: .01 1; }
+  16% { opacity: 1; stroke-dasharray: 1 0; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.you456-call {
+  position: absolute; left: 50%; top: 38%; transform: translateX(-50%);
+  z-index: 44; color: #fff; font-size: clamp(24px, 4vw, 38px); font-weight: 950;
+  white-space: nowrap; text-shadow: 2px 2px #164f48, -1px -1px #164f48;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-cell.is-you456 .die, .you456-lines line { animation: none; }
+}
