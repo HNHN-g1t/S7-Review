@@ -1,5 +1,10 @@
 # S7-Reviewへの引き継ぎ（2026-10-16）
 
+## ニコニコメの静止図修正
+- ユーザー確認でスマイル記号の誤りを修正。本体Dieは黒系に白い2/5が交互点滅。skillsGalleryの模式図も黒地・白い点の2状態へ。ゲーム本体の描画は変更なし。
+- 検証：build:gallery、check-skill-catalogue。S7-Reviewのみ更新し、ゲーム本体の別リポジトリには書き戻さない。
+
+
 ユーザー指定のS7-Reviewへ確認サイトを一式コピー。コピー元はSOURCE_SNAPSHOT.json。元ゲームのgit履歴は持ち込まず、新規リポジトリの初回スナップショットとして保存。起動・ビルド方法はREADME先頭。画像・音源・仕様書・検証コードを含む。日本語ファイル名はNodeのUTF-8で追跡ファイルを複製して保持。公開・デプロイは実施しない。
 
 コピー先でnpm ci、build:gallery、check-skill-catalogue、check-hyoketsume、check-enemy-practice成功。ゲーム本体の作業フォルダとoriginは変更しない。
