@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>デタラメ｜エネミー試作</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#11141b;color:#edf0f4;font-family:system-ui,sans-serif}main{max-width:940px;margin:auto;padding:28px 18px}small{color:#98a8b9;letter-spacing:.17em}h1{font-size:32px;margin:8px 0}p{color:#a9b4c4;font-size:13px;line-height:1.8}.layout{display:grid;grid-template-columns:minmax(280px,440px) minmax(230px,1fr);gap:26px;margin-top:24px;align-items:start}.frame{padding:9px;background:#262d37;border:1px solid #4a5665;border-radius:18px;box-shadow:0 15px 40px #0005}.board{position:relative;width:100%;aspect-ratio:9/11;overflow:hidden;border-radius:10px;background-color:#1b212a;background-image:linear-gradient(#7e96b20d 1px,transparent 1px),linear-gradient(90deg,#7e96b20d 1px,transparent 1px);background-size:11.1111% 9.0909%}.cell{position:absolute;left:calc(var(--x)*100%/9);top:calc(var(--y)*100%/11);width:calc(100%/9);height:calc(100%/11);transition:top .6s cubic-bezier(.5,0,.85,.55)}.die{padding:2px;z-index:2}.die-face{position:relative;width:100%;height:100%;border-radius:24%;background:radial-gradient(circle at 28% 20%,#ffffff55,transparent 55%),var(--color);box-shadow:inset 0 -3px 0 #0003,0 3px 4px #0004}.pip{position:absolute;width:13%;height:13%;border-radius:50%;background:#fff;transform:translate(-50%,-50%)}.changed .die-face{animation:change .55s ease-out}@keyframes change{0%,40%{box-shadow:inset 0 0 0 2px #ecffd8,0 0 14px #d4ffa4;transform:scale(.9)}70%{transform:scale(1.1)}100%{transform:scale(1)}}.taken{animation:taken .42s ease-in both}@keyframes taken{to{transform:scale(.08) rotate(45deg);opacity:0}}
+.segment{z-index:4;padding:1px;border:0;background:transparent;cursor:pointer;color:inherit}.shell{position:relative;width:100%;height:100%;border-radius:19%;background:linear-gradient(140deg,#60656e,#363b43 36%,#22272f 75%,#171d25);box-shadow:inset 1px 1px 0 #abb1bb66,inset -1px -3px 0 #0b101a,0 3px 6px #0006;overflow:hidden}.shell:after{content:'';position:absolute;inset:8%;border:1px solid #9dacc220;border-radius:14%;pointer-events:none}.segment:hover .shell{outline:1px solid #d4eda0;outline-offset:-2px}.segment:focus-visible{outline:2px solid #d4eda0;outline-offset:1px}.spark{position:absolute;left:var(--sx);top:var(--sy);width:var(--ss);height:var(--ss);background:var(--sc);clip-path:polygon(50% 0,62% 37%,100% 50%,62% 63%,50% 100%,38% 63%,0 50%,38% 37%);animation:twinkle var(--sd) ease-in-out var(--so) infinite;opacity:.4}@keyframes twinkle{0%,100%{transform:scale(.3);opacity:.12}45%{transform:scale(1.15);opacity:1}65%{transform:scale(.55);opacity:.35}}
+.eye{position:absolute;left:15%;top:33%;width:70%;height:43%;border-radius:5% 5% 55% 55% / 5% 5% 100% 100%;overflow:hidden;background:radial-gradient(ellipse at 40% 10%,#f7ffda,#c8e393 58%,#7d9d4c);box-shadow:0 -1px 0 #eaffc1,0 2px 2px #0008;transform-origin:center}.iris{position:absolute;top:-12%;left:var(--look);width:38%;height:100%;border-radius:50%;background:radial-gradient(ellipse,#baff53,#7cac37 65%,#294222);transform:translateX(-50%)}.iris:before{content:'';position:absolute;left:39%;top:4%;width:23%;height:84%;border-radius:50%;background:#141c1c}.iris:after{content:'';position:absolute;left:19%;top:13%;width:15%;height:17%;border-radius:50%;background:#fff}.spent .eye,.spent .spark{display:none}.spent .shell{background:linear-gradient(140deg,#525963,#303741 50%,#222933)}.hit .eye{animation:eye-hit .3s ease-in both}@keyframes eye-hit{35%{filter:brightness(3);transform:scale(1.15)}100%{transform:scale(0)}}.born{animation:birth .42s cubic-bezier(.2,.7,.3,1.2)}@keyframes birth{from{transform:translateY(90%) scale(.6)}to{transform:translateY(0) scale(1)}}.dying{pointer-events:none;animation:sink .62s var(--delay) ease-in both}@keyframes sink{20%{transform:translateY(-6%) scale(1.06,.95)}to{transform:translateY(130%) scale(.65,.05);opacity:0}}
+.beam{position:absolute;z-index:6;height:3px;top:calc((var(--row) + .55)*100%/11);left:var(--left);width:var(--width);background:repeating-linear-gradient(90deg,#efffc9 0 7px,transparent 7px 12px);box-shadow:0 0 5px #b6f373;transform-origin:var(--origin);animation:beam .5s ease-out both;pointer-events:none}@keyframes beam{0%{transform:scaleX(0)}22%,70%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}.firing .eye{filter:brightness(1.5)}button.control{border:1px solid #52616c;border-radius:10px;padding:12px 15px;color:#eaf3df;background:#2a343d;cursor:pointer;font:inherit;font-size:13px}button.control.primary{background:#cee799;color:#202819;border-color:#cee799;font-weight:700}button:disabled{opacity:.45;cursor:default}.buttons{display:flex;gap:8px;flex-wrap:wrap}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}.metric{padding:12px;border:1px solid #35404c;border-radius:12px;background:#1c232d}.metric span{display:block;color:#99a8b9;font-size:11px}.metric strong{display:block;font-size:23px;margin-top:4px}.status{min-height:70px;color:#e2edcb;padding:13px;border-left:2px solid #afcd77;background:#1c2526;margin:18px 0;font-size:13px;line-height:1.7}.hint{font-size:12px;color:#a1aebb}.log{font-size:12px;line-height:1.7;color:#8d9dad;min-height:100px;white-space:pre-line}.tag{font-size:11px;color:#78899d;letter-spacing:.1em;margin-top:20px}.motion{display:block;font-size:12px;color:#a9b4c4;margin-top:14px}@media(max-width:660px){.layout{grid-template-columns:1fr;gap:18px}.frame{max-width:430px;width:100%;margin:auto}main{padding:20px 16px}.metrics{margin-bottom:12px}}
+body.no-motion *,body.no-motion *:before,body.no-motion *:after{animation-duration:.001ms!important;animation-delay:0ms!important;transition-duration:.001ms!important}body.no-motion .spark{opacity:.7}body.no-motion .beam{animation:none!important;opacity:1}
+.segment{padding:0;transition:top .62s cubic-bezier(.32,.05,.28,1)}
+.segment .shell{position:absolute;left:0;top:-15%;height:130%;border-radius:22%;background:linear-gradient(90deg,#303640,#535b66 28%,#353d48 68%,#212934);box-shadow:inset 1px 0 0 #a5b4c344,inset -2px 0 0 #111923;animation:worm-sway 2.1s ease-in-out infinite;animation-delay:var(--sway-phase)}
+.segment .shell:after{display:none}
+.segment.top-cap .shell{top:0;height:115%;border-radius:42% 42% 20% 20%}
+.segment.bottom-cap .shell{height:115%;border-radius:20% 20% 40% 40%}
+.segment .eye{top:36%;height:34%}
+.segment.top-cap .eye{top:29%;height:38%}
+.segment.bottom-cap .eye{top:40%;height:38%}
+.iris{background:none}.iris:before{left:27%;width:46%;background:#101719}.iris:after{left:32%;width:13%}
+@keyframes worm-sway{0%,100%{transform:translateX(-8%)}50%{transform:translateX(8%)}}
+.born{transform-origin:center bottom;animation:worm-birth .62s cubic-bezier(.25,.7,.3,1) both}
+@keyframes worm-birth{from{transform:scaleY(.03)}to{transform:scaleY(1)}}
+.worm-body{position:absolute;left:44.4444%;width:11.1111%;z-index:3;overflow:visible;pointer-events:none;transition:top .62s ease,height .62s ease}
+.segment .shell,.segment.spent .shell{background:none;box-shadow:none;overflow:visible}
+.segment:hover .shell{outline:none}
+.segment .eye{width:56%;left:var(--eye-left);height:27.2%;top:39.4%;background:#b9eaff;box-shadow:0 2px 2px #060a16}
+.segment.top-cap .eye{height:30.4%;top:32.8%}
+.segment.bottom-cap .eye{height:30.4%;top:43.8%}
+.iris:before{left:15.5%;width:69%;background:#ffe84a}
+.iris:after{display:none}
+.worm-body{filter:drop-shadow(0 0 2px #42cfffaa) drop-shadow(0 0 5px #35bff35c)}
+.segment .shell{animation:none;transform:none}
+.segment .eye{background:#289edb;box-shadow:0 1px 2px #020b15;animation:blink var(--blink-time,4s) var(--blink-offset,0s) linear infinite;transition:border-radius .08s,margin-top .08s}
+@keyframes blink{0%,42%,46%,100%{clip-path:inset(0)}43.4%,44.4%{clip-path:inset(48% 0 48% 0)}}
+.segment.hit .eye{animation:eye-hit .3s ease-in both}
+.segment.firing .eye{animation:none;clip-path:inset(0);filter:none;margin-top:-3%;border-radius:50% 50% 55% 55% / 38% 38% 80% 80%;transform:scaleY(1.25)}
+.segment.firing .iris:before{background:#fffef4;animation:pupil-flare .19s ease-in-out infinite alternate;box-shadow:0 0 3px #fff7ae}
+@keyframes pupil-flare{0%{transform:scale(.75,1.18)}50%{transform:scale(1.3,.78)}100%{transform:scale(.95,1.12)}}
+.beam{height:4px;background:repeating-linear-gradient(90deg,#fffef3 0 7px,transparent 7px 12px);box-shadow:0 0 3px #fff9c9,0 0 8px #ffe53e;isolation:isolate}
+.beam:before{content:'';position:absolute;inset:-7px -1px;z-index:-1;background:linear-gradient(transparent,#ffe23b55 22%,#fff361dd 43%,#fffbdc 50%,#fff361dd 57%,#ffe23b55 78%,transparent);filter:blur(2px);mask-image:repeating-linear-gradient(90deg,#000 0 8px,transparent 8px 12px)}
+.segment .shell,.segment.top-cap .shell,.segment.bottom-cap .shell{top:0;height:100%}
+.segment .eye,.segment.top-cap .eye,.segment.bottom-cap .eye{top:48%;height:35%;transition:none}
+.segment.firing .eye{top:32%;height:auto;aspect-ratio:1;border-radius:50%;margin-top:0;transform:none}
+.segment.firing .iris{top:0;height:100%}
+.segment.firing .iris:before{top:8%;height:84%}
+.beam{background:#fffef5;height:2px;margin-top:-1px}
+.beam:after{content:'';position:absolute;inset:-1px 0;background:repeating-linear-gradient(90deg,#fff 0 7px,transparent 7px 12px)}
+.beam{height:14px;margin-top:-7px;background:linear-gradient(to bottom,transparent,#ffdf3555 18%,#ffe959b0 37%,#fffde7 47%,#fff 50%,#fffde7 53%,#ffe959b0 63%,#ffdf3555 82%,transparent);box-shadow:none;animation:laser-grow .2s ease-out both}
+.beam:before{inset:0;background:linear-gradient(transparent,#ffdf3570,transparent);filter:blur(3px);mask-image:none}
+.beam:after{inset:calc(50% - 1px) 0 auto;height:2px;background:#fff}
+.beam.retract{transform-origin:var(--hit-origin);animation:laser-retract .19s ease-in both}
+@keyframes laser-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes laser-retract{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.rewrite-wave{position:absolute;inset:-8%;border:2px solid #fff6ad;border-radius:40%;box-shadow:0 0 8px #ffe65d,inset 0 0 8px #ffed8570;animation:rewrite-wave .68s ease-out both;pointer-events:none;z-index:8}
+.rewrite-wave.second{animation-delay:.13s;border-color:#caffb0}
+@keyframes rewrite-wave{0%{transform:scale(.45) rotate(-15deg);opacity:0}20%{opacity:1}60%{transform:scale(1.05) rotate(10deg);opacity:.9}100%{transform:scale(1.5) rotate(25deg);opacity:0}}
+.enemy-mini{background:linear-gradient(140deg,#727782,#343944)!important;box-shadow:inset 0 0 0 1px #a8b0bf,0 3px 4px #0005}
+.mini-eyes:before,.mini-eyes:after{content:'';position:absolute;top:41%;width:23%;height:13%;background:#f1f3dd;border-radius:3px}
+.mini-eyes:before{left:19%;transform:rotate(25deg)}.mini-eyes:after{right:19%;transform:rotate(-25deg)}
+.mini-cross:before,.mini-cross:after{content:'';position:absolute;top:44%;left:20%;width:60%;height:13%;border-radius:2px;background:#f4eee3;transform:rotate(45deg)}.mini-cross:after{transform:rotate(-45deg)}
+.board{--eye-color:#289edb;--pupil-color:#ffe84a;--rim:#62d7ff;--rim-glow:#35bff3;--laser:255,225,53;--pupil-halo:255,232,74}
+.board.swapped{--eye-color:#ffe84a;--pupil-color:#289edb;--rim:#ffe84a;--rim-glow:#edcc35;--laser:40,158,219;--pupil-halo:40,158,219}
+.worm-body{filter:drop-shadow(0 0 2px var(--rim)) drop-shadow(0 0 5px var(--rim-glow))}
+.worm-body>path{stroke:var(--rim)}
+.segment .eye{background:var(--eye-color)}
+.iris:before{background:var(--pupil-color);box-shadow:0 0 2px 1px rgba(var(--pupil-halo),.65),0 0 5px 2px rgba(var(--pupil-halo),.35);filter:blur(.2px)}
+.segment.firing .iris:before{background:#fffef4;box-shadow:0 0 3px #fff,0 0 7px rgba(var(--laser),.85)}
+.beam{background:linear-gradient(to bottom,transparent,rgba(var(--laser),.3) 18%,rgba(var(--laser),.7) 37%,#fffde7 47%,#fff 50%,#fffde7 53%,rgba(var(--laser),.7) 63%,rgba(var(--laser),.3) 82%,transparent)}
+.beam:before{background:linear-gradient(transparent,rgba(var(--laser),.55),transparent)}
+.rewrite-wave{border-color:var(--pupil-color);box-shadow:0 0 8px rgba(var(--laser),.8),inset 0 0 8px rgba(var(--laser),.4)}
+.palette{display:flex;gap:7px;margin:0 0 14px;flex-wrap:wrap}.palette button[aria-pressed="true"]{border-color:#e5f4ff;background:#3b4b5d}
+.die.absorbing{z-index:5;pointer-events:none;animation:absorb-die .72s cubic-bezier(.45,0,.65,1) both}
+.absorbing .die-face{display:none}
+.absorb-ring{position:absolute;inset:var(--inset);border:1.5px solid #fff;border-radius:27%;box-shadow:0 0 4px #fff9,inset 0 0 4px #dcf4ff88;animation:ring-turn var(--tempo) var(--ease) both;pointer-events:none}
+@keyframes ring-turn{from{transform:rotate(var(--start)) scale(1)}to{transform:rotate(var(--end)) scale(.65)}}
+@keyframes absorb-die{0%{transform:translate(0,0) scale(1);opacity:.75}18%{transform:translate(0,0) scale(1.04);opacity:1}80%{opacity:1}100%{transform:translate(var(--absorb-x),var(--absorb-y)) scale(.015);opacity:0}}
+.segment.absorb-focus .eye{box-shadow:0 0 8px #fff,0 0 14px var(--rim);animation:none;clip-path:inset(0)}
+.beam{animation-duration:.1s}
+.beam-tip{position:absolute;top:50%;width:15px;height:15px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(var(--laser),.9),rgba(var(--laser),.45) 35%,transparent 72%);filter:blur(2px);pointer-events:none}
+.beam-tip.start{left:0}.beam-tip.end{left:100%}
+</style>
+</head>
+<body><main>
+<small>ENEMY DESIGN / 03</small><h1>デタラメ</h1>
+<p>目を狂わせ、上へ上へと場所を奪う。きらめくダークグレーの縦積みエネミー。</p>
+<div class="layout"><div class="frame"><div class="board" id="board" aria-label="デタラメの確認用盤面"></div></div>
+<aside><div class="metrics"><div class="metric"><span>ターン</span><strong id="turn">0</strong></div><div class="metric"><span>残っている目 / 段数</span><strong id="eyes">3 / 3</strong></div></div>
+<div class="palette" aria-label="デタラメの配色"><button class="control" id="original" aria-pressed="true">青い目 × 黄色の瞳</button><button class="control" id="swapped" aria-pressed="false">黄色い目 × 青の瞳</button></div>
+<div class="buttons"><button class="control primary" id="next">1ターン進める</button><button class="control" id="reset">リセット</button></div>
+<p class="hint">目のある段をクリックすると、その段への「セヴン目の命中」を確認できます。</p>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<label class="motion"><input id="motion" type="checkbox"> アニメーションを再生</label>
+<p>各目は毎ターン50％で、向く側の最寄りの通常サイ1個へ発射。<br>コイツメ・ダーメは対象外。対象なしなら撃ちません。<br>命中：コイツメ80％／ダーメ20％に変化。<br>3ターンごと：身体が上がり、下に新しい目。<br>全ての目を消す：下向きに消滅し、上のサイが落下。</p>
+<div class="log" id="log"></div>
+<p class="hint">確認用の仮盤面です。段クリックはダメージ演出用で、隣接判定やターン消費は行いません。</p>
+</aside></div><div class="tag">LOCAL DESIGN PREVIEW · ゲーム本体未統合 / 未マージ</div>
+</main><script>
+(()=>{
+const board=document.querySelector('#board'), next=document.querySelector('#next');
+for(const id of ['original','swapped'])document.getElementById(id).onclick=()=>{board.classList.toggle('swapped',id==='swapped');for(const other of ['original','swapped'])document.getElementById(other).setAttribute('aria-pressed',String(id===other));};
+const motion=document.querySelector('#motion');motion.checked=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+const syncMotion=()=>{document.body.classList.toggle('no-motion',!motion.checked);const svg=board.querySelector('.worm-body');if(svg){if(motion.checked)svg.unpauseAnimations();else svg.pauseAnimations();}};motion.onchange=syncMotion;syncMotion();
+let segments=[],dice=[],turn=0,busy=false,epoch=0,history=[];
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,motion.checked?ms:40));
+const pips={1:[[50,50]],2:[[28,28],[72,72]],3:[[28,28],[50,50],[72,72]],4:[[28,28],[72,28],[28,72],[72,72]],5:[[28,28],[72,28],[50,50],[28,72],[72,72]],6:[[28,26],[72,26],[28,50],[72,50],[28,74],[72,74]]};
+const colors=['#d65b95','#9258c2','#53a569','#53a569','#9258c2','#d65b95'];
+function note(message){document.querySelector('#status').textContent=message;history.unshift(message);document.querySelector('#log').textContent=history.slice(1,4).join('\n');}
+function stats(){document.querySelector('#turn').textContent=turn;document.querySelector('#eyes').textContent=`${segments.filter(s=>s.alive).length} / ${segments.length}`;next.disabled=busy||!segments.some(s=>s.alive);}
+function face(d){if(d.kind){d.el.innerHTML=`<div class="die-face enemy-mini"><i class="${d.kind==='koitsume'?'mini-eyes':'mini-cross'}"></i></div>`;d.el.setAttribute('aria-label',d.kind==='koitsume'?'コイツメ':'ダーメ');return;}d.el.innerHTML=`<div class="die-face" style="--color:${colors[d.value-1]}">${pips[d.value].map(([x,y])=>`<i class="pip" style="left:${x}%;top:${y}%"></i>`).join('')}</div>`;d.el.setAttribute('aria-label',`${d.value}のサイ`);}
+function addDie(x,y,value){const el=document.createElement('div');el.className='cell die';el.style.cssText=`--x:${x};--y:${y}`;const d={x,y,value,el};face(d);board.append(el);dice.push(d);}
+function drawBody(){
+ const ordered=[...segments].sort((a,b)=>a.y-b.y),h=ordered.length*100;
+ let svg=board.querySelector('.worm-body');if(!svg){svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('worm-body');svg.setAttribute('aria-hidden','true');board.append(svg);}
+ svg.style.top=`${ordered[0].y*100/11}%`;svg.style.height=`${ordered.length*100/11}%`;svg.setAttribute('viewBox',`0 0 100 ${h}`);svg.setAttribute('preserveAspectRatio','none');
+ const outline=phase=>{
+  const centers=ordered.map((s,i)=>({x:50+phase*s.dir*8,y:i*100+50}));
+  const left=centers.map(p=>({x:p.x-48,y:p.y})),right=centers.map(p=>({x:p.x+48,y:p.y}));
+  let d=`M${centers[0].x} 1 Q${right[0].x} 1 ${right[0].x} 50`;
+  for(let i=1;i<right.length;i++){const a=right[i-1],b=right[i];d+=` C${a.x} ${a.y+50} ${b.x} ${b.y-50} ${b.x} ${b.y}`;}
+  d+=` Q${right.at(-1).x} ${h-1} ${centers.at(-1).x} ${h-1} Q${left.at(-1).x} ${h-1} ${left.at(-1).x} ${h-50}`;
+  for(let i=left.length-2;i>=0;i--){const a=left[i+1],b=left[i];d+=` C${a.x} ${a.y-50} ${b.x} ${b.y+50} ${b.x} ${b.y}`;}
+  return d+` Q${left[0].x} 1 ${centers[0].x} 1Z`;
+ };
+ const a=outline(1),b=outline(-1);
+ svg.innerHTML=`<path d="${a}" fill="#191e29" stroke="#62d7ff" stroke-width="1.8"><animate attributeName="d" values="${a};${b};${a}" dur="2.1s" begin="-${(performance.now()/1000)%2.1}s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.5;1" keySplines=".42 0 .58 1;.42 0 .58 1"/></path>`;
+ if(!motion.checked)svg.pauseAnimations();
+}
+function refreshCaps(){const top=Math.min(...segments.map(s=>s.y)),bottom=Math.max(...segments.map(s=>s.y));segments.forEach((s,i)=>{s.el.classList.toggle('top-cap',s.y===top);s.el.classList.toggle('bottom-cap',s.y===bottom);s.el.style.setProperty('--eye-left',s.dir<0?'14%':'30%');if(!s.phaseSet){s.el.style.setProperty('--blink-time',`${2.9+(i*1.17)%2.7}s`);s.el.style.setProperty('--blink-offset',`${-i*.83}s`);s.phaseSet=true;}if(s.alive)s.el.setAttribute('aria-label',`${bottom-s.y+1}段目・${s.dir<0?'左':'右'}向きの目：セヴン目を当てる`);});drawBody();}
+function addSegment(y,born=false){const index=segments.length,dir=born?-segments.reduce((a,b)=>a.y>b.y?a:b).dir:index%2===0?-1:1;const el=document.createElement('button');el.className=`cell segment${born?' born':''}`;el.style.cssText=`--x:4;--y:${y};--look:${dir<0?35:65}%;--sway-phase:${dir<0?0:-1.05}s`;const stars=Array.from({length:9},(_,i)=>`<i class="spark" style="--sx:${8+(i*31+index*13)%80}%;--sy:${8+(i*43)%80}%;--ss:${3+i%3}px;--sc:${['#d6eeff','#fff2b9','#cfbfff'][i%3]};--sd:${.48+i*.075}s;--so:${-i*.41-index*.3}s"></i>`).join('');el.innerHTML=`<div class="shell">${stars}<div class="eye"><i class="iris"></i></div></div>`;const s={y,dir,alive:true,el};el.onclick=()=>hit(s);board.append(el);segments.push(s);refreshCaps();}
+async function hit(s){if(busy||!s.alive)return;const token=epoch;busy=true;stats();s.el.classList.add('hit');await sleep(310);if(token!==epoch)return;s.alive=false;s.el.classList.remove('hit');s.el.classList.add('spent');s.el.disabled=true;s.el.setAttribute('aria-label','目を失った段：何もしない無地ブロック');note('命中した段の目だけが消えました。無地の段はその場に残り、ビームを出しません。');if(segments.every(part=>!part.alive)){await die(token);return;}busy=false;stats();}
+async function die(token){note('全ての目が消えました。下方向へ崩れて消滅します。');const body=board.querySelector('.worm-body');body.style.setProperty('--delay','0s');body.classList.add('dying');segments.forEach((s,i)=>{s.el.style.setProperty('--delay',`${i*.08}s`);s.el.classList.add('dying');});await sleep(650+segments.length*80);if(token!==epoch)return;body.remove();segments.forEach(s=>s.el.remove());segments=[];const above=dice.filter(d=>d.x===4).sort((a,b)=>b.y-a.y);above.forEach((d,i)=>{d.y=10-i;d.el.style.setProperty('--y',d.y);});await sleep(650);if(token!==epoch)return;busy=false;note('デタラメが消えた分、上にあったサイが自然落下しました。リセットで再確認できます。');stats();}
+async function advance(){if(busy||!segments.some(s=>s.alive))return;busy=true;const token=epoch;turn++;stats();let grew=false;
+if(turn%3===0){
+ const y=Math.min(...segments.map(s=>s.y))-1;
+ if(y>=0){
+  const taken=dice.find(d=>d.x===4&&d.y===y),bottom=Math.max(...segments.map(s=>s.y));
+  segments.forEach(s=>{s.y--;s.el.style.setProperty('--y',s.y);});addSegment(bottom,true);grew=true;
+  note(taken?'身体が上へ伸び、サイにかぶさります。':'身体全体が1段上へ伸び、最下段に新しい目が生まれました。');stats();
+  await sleep(660);if(token!==epoch)return;segments.forEach(s=>s.el.classList.remove('born'));
+  if(taken){
+   const top=segments.reduce((a,b)=>a.y<b.y?a:b),rect=top.el.getBoundingClientRect(),source=taken.el.getBoundingClientRect();
+   const x=rect.left+rect.width*(top.dir<0?.42:.58),eyeY=rect.top+rect.height*.655;
+   taken.el.style.setProperty('--absorb-x',`${x-source.left-source.width/2}px`);taken.el.style.setProperty('--absorb-y',`${eyeY-source.top-source.height/2}px`);
+   for(let i=0;i<3;i++){const ring=document.createElement('i');ring.className='absorb-ring';ring.style.cssText=`--inset:${2+i*10}%;--start:${i*12}deg;--end:${[250,350,430][i]}deg;--tempo:${[.72,.62,.54][i]}s;--ease:${['ease-in','linear','ease-out'][i]}`;taken.el.append(ring);}
+   taken.el.classList.add('absorbing');top.el.classList.add('absorb-focus');
+   note('包み込まれたサイが白いオーラになり、目の位置へ縮小吸収されます。');
+   await sleep(760);if(token!==epoch)return;taken.el.remove();dice=dice.filter(d=>d!==taken);top.el.classList.remove('absorb-focus');
+  }
+ }else note('盤面の上端に到達。今回のプレビューでは増殖を止めています。');
+}
+const targets=new Set();const beams=[];segments.filter(s=>s.alive).forEach(s=>{
+const target=dice.filter(d=>!d.kind&&d.y===s.y&&(s.dir<0?d.x<4:d.x>4)).sort((a,b)=>Math.abs(a.x-4)-Math.abs(b.x-4))[0];
+if(!target||Math.random()>=.5)return;
+s.el.classList.add('firing');
+const pupil=s.el.querySelector('.iris').getBoundingClientRect(),bounds=board.getBoundingClientRect();
+const px=(pupil.left+pupil.width/2-bounds.left)/bounds.width*100,py=(pupil.top+pupil.height/2-bounds.top)/bounds.height*100;
+const targetRect=target.el.getBoundingClientRect();const end=((s.dir<0?targetRect.right-2:targetRect.left+2)-bounds.left)/bounds.width*100;
+const b=document.createElement('i');b.className='beam';b.style.cssText=`top:${py}%;--left:${Math.min(px,end)}%;--width:${Math.abs(end-px)}%;--origin:${s.dir<0?'right':'left'};--hit-origin:${s.dir<0?'left':'right'}`;b.innerHTML='<i class="beam-tip start"></i><i class="beam-tip end"></i>';board.append(b);beams.push(b);
+targets.add(target);
+});await sleep(105);if(token!==epoch)return;
+function waves(d){for(let i=0;i<2;i++){const ring=document.createElement('i');ring.className=`rewrite-wave${i?' second':''}`;d.el.append(ring);}}
+targets.forEach(waves);beams.forEach(b=>b.classList.add('retract'));segments.forEach(s=>s.el.classList.remove('firing'));
+await sleep(280);if(token!==epoch)return;
+let koitsume=0,dame=0;
+targets.forEach(d=>{const rings=[...d.el.querySelectorAll('.rewrite-wave')];d.kind=Math.random()<.8?'koitsume':'dame';if(d.kind==='koitsume')koitsume++;else dame++;face(d);rings.forEach(r=>d.el.append(r));d.el.classList.add('changed');});
+await sleep(540);if(token!==epoch)return;beams.forEach(b=>b.remove());dice.forEach(d=>{d.el.classList.remove('changed');d.el.querySelectorAll('.rewrite-wave').forEach(r=>r.remove());});busy=false;note(`${turn}ターン目：${grew?'1段増殖 → ':''}最寄りの${targets.size}個に命中。コイツメ${koitsume}個・ダーメ${dame}個へ変化。次の増殖まで${3-turn%3}ターン。`);stats();}
+function reset(){epoch++;board.replaceChildren();segments=[];dice=[];history=[];turn=0;busy=false;[[4,4,3],[4,7,6],[1,8,2],[2,8,5],[6,9,4],[8,9,1],[0,10,3],[2,10,6],[6,7,2],[7,6,5],[1,6,4],[2,5,1],[7,10,5]].forEach(args=>addDie(...args));[10,9,8].forEach(y=>addSegment(y));note('3段から開始。上のサイは増殖で消失します。ターンを進めるか、目のある段をクリックしてください。');stats();}
+next.onclick=advance;document.querySelector('#reset').onclick=reset;reset();
+})();
+</script></body></html>

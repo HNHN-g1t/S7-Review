@@ -1,0 +1,31 @@
+{
+  "name": "sainome-seven",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "build:gallery": "tsc -b && vite build --mode gallery --outDir dist-gallery",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test:story": "node scripts/check-wall1-progress.mjs && node scripts/check-campaign-progress.mjs && node scripts/check-campaign-map.cjs && node scripts/check-campaign-engine.cjs && node scripts/check-single-objective-engine.cjs && node scripts/check-mission-copy.mjs && node scripts/check-mission-banner.cjs && node scripts/check-sage-dialogue.cjs && node scripts/check-dice-dialogue.cjs && node scripts/check-wall7-engine.cjs && node scripts/check-wall8-engine.cjs && node scripts/check-wall-terrain.mjs",
+    "test:audio": "node tests/enemy-damage-audio.cjs && node tests/intro-audio.mjs && node tests/hidoime-crush-audio.cjs && node scripts/check-hidoime-crush.cjs",
+    "test:anchi": "node tests/anchi-eye.cjs && node tests/thunder-trace.cjs && node tests/anchi-thunder-audio.cjs && node scripts/check-anchi-effects.cjs && node scripts/check-enemy-practice.cjs && node scripts/check-sound-channels.cjs && node scripts/check-hyoketsume.cjs",
+    "test:sanz": "node scripts/check-sanzapparaname.mjs"
+  },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.2.0",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.8.3",
+    "vite": "^7.3.1"
+  }
+}

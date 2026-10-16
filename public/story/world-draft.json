@@ -1,0 +1,3630 @@
+{
+  "schemaVersion": 1,
+  "status": "layout-and-tuning-draft",
+  "premise": "サイリアン達に占領されたサイノメ城を取り戻す。草原から城門を突破し、城内の最終ボスへ進む。",
+  "enemyCatalog": {
+    "koitsume": "コイツメ",
+    "dame": "ダーメ",
+    "hidoime": "ヒドイメ",
+    "beraboume": "ベラボウメ",
+    "finalBossPlaceholder": "最終ボス（未定）"
+  },
+  "areas": [
+    {
+      "id": "area-01",
+      "name": "サイノメ草原",
+      "order": 1,
+      "status": "prototype",
+      "bossStageId": "stage-08",
+      "flags": [
+        {
+          "id": "area-01:east",
+          "label": "東の旗"
+        },
+        {
+          "id": "area-01:west",
+          "label": "西の旗"
+        }
+      ],
+      "stageIds": [
+        "stage-01",
+        "stage-02",
+        "stage-03",
+        "stage-04",
+        "stage-05",
+        "stage-06",
+        "stage-07",
+        "stage-08"
+      ],
+      "edges": [
+        [
+          "start",
+          "stage-01"
+        ],
+        [
+          "stage-01",
+          "stage-02"
+        ],
+        [
+          "stage-01",
+          "stage-03"
+        ],
+        [
+          "stage-02",
+          "stage-04"
+        ],
+        [
+          "stage-03",
+          "stage-05"
+        ],
+        [
+          "stage-05",
+          "stage-06"
+        ],
+        [
+          "stage-04",
+          "stage-08"
+        ],
+        [
+          "stage-05",
+          "stage-08"
+        ],
+        [
+          "stage-01",
+          "stage-07"
+        ],
+        [
+          "stage-07",
+          "stage-08"
+        ]
+      ]
+    },
+    {
+      "id": "area-02",
+      "name": "城下への街道",
+      "order": 2,
+      "status": "layout-draft",
+      "bossStageId": "stage-16",
+      "flags": [
+        {
+          "id": "area-02:east",
+          "label": "東の旗"
+        },
+        {
+          "id": "area-02:west",
+          "label": "西の旗"
+        }
+      ],
+      "stageIds": [
+        "stage-09",
+        "stage-10",
+        "stage-11",
+        "stage-12",
+        "stage-13",
+        "stage-14",
+        "stage-15",
+        "stage-16"
+      ],
+      "edges": [
+        [
+          "start",
+          "stage-09"
+        ],
+        [
+          "stage-09",
+          "stage-10"
+        ],
+        [
+          "stage-09",
+          "stage-11"
+        ],
+        [
+          "stage-10",
+          "stage-12"
+        ],
+        [
+          "stage-11",
+          "stage-13"
+        ],
+        [
+          "stage-13",
+          "stage-14"
+        ],
+        [
+          "stage-12",
+          "stage-16"
+        ],
+        [
+          "stage-13",
+          "stage-16"
+        ],
+        [
+          "stage-09",
+          "stage-15"
+        ],
+        [
+          "stage-15",
+          "stage-16"
+        ]
+      ]
+    },
+    {
+      "id": "area-03",
+      "name": "城下町",
+      "order": 3,
+      "status": "layout-draft",
+      "bossStageId": "stage-24",
+      "flags": [
+        {
+          "id": "area-03:east",
+          "label": "東の旗"
+        },
+        {
+          "id": "area-03:west",
+          "label": "西の旗"
+        }
+      ],
+      "stageIds": [
+        "stage-17",
+        "stage-18",
+        "stage-19",
+        "stage-20",
+        "stage-21",
+        "stage-22",
+        "stage-23",
+        "stage-24"
+      ],
+      "edges": [
+        [
+          "start",
+          "stage-17"
+        ],
+        [
+          "stage-17",
+          "stage-18"
+        ],
+        [
+          "stage-17",
+          "stage-19"
+        ],
+        [
+          "stage-18",
+          "stage-20"
+        ],
+        [
+          "stage-19",
+          "stage-21"
+        ],
+        [
+          "stage-21",
+          "stage-22"
+        ],
+        [
+          "stage-20",
+          "stage-24"
+        ],
+        [
+          "stage-21",
+          "stage-24"
+        ],
+        [
+          "stage-17",
+          "stage-23"
+        ],
+        [
+          "stage-23",
+          "stage-24"
+        ]
+      ]
+    },
+    {
+      "id": "area-04",
+      "name": "外壁と城門",
+      "order": 4,
+      "status": "layout-draft",
+      "bossStageId": "stage-32",
+      "flags": [
+        {
+          "id": "area-04:east",
+          "label": "東の旗"
+        },
+        {
+          "id": "area-04:west",
+          "label": "西の旗"
+        }
+      ],
+      "stageIds": [
+        "stage-25",
+        "stage-26",
+        "stage-27",
+        "stage-28",
+        "stage-29",
+        "stage-30",
+        "stage-31",
+        "stage-32"
+      ],
+      "edges": [
+        [
+          "start",
+          "stage-25"
+        ],
+        [
+          "stage-25",
+          "stage-26"
+        ],
+        [
+          "stage-25",
+          "stage-27"
+        ],
+        [
+          "stage-26",
+          "stage-28"
+        ],
+        [
+          "stage-27",
+          "stage-29"
+        ],
+        [
+          "stage-29",
+          "stage-30"
+        ],
+        [
+          "stage-28",
+          "stage-32"
+        ],
+        [
+          "stage-29",
+          "stage-32"
+        ],
+        [
+          "stage-25",
+          "stage-31"
+        ],
+        [
+          "stage-31",
+          "stage-32"
+        ]
+      ]
+    },
+    {
+      "id": "area-05",
+      "name": "城内・前庭",
+      "order": 5,
+      "status": "layout-draft",
+      "bossStageId": "stage-40",
+      "flags": [
+        {
+          "id": "area-05:east",
+          "label": "東の旗"
+        },
+        {
+          "id": "area-05:west",
+          "label": "西の旗"
+        }
+      ],
+      "stageIds": [
+        "stage-33",
+        "stage-34",
+        "stage-35",
+        "stage-36",
+        "stage-37",
+        "stage-38",
+        "stage-39",
+        "stage-40"
+      ],
+      "edges": [
+        [
+          "start",
+          "stage-33"
+        ],
+        [
+          "stage-33",
+          "stage-34"
+        ],
+        [
+          "stage-33",
+          "stage-35"
+        ],
+        [
+          "stage-34",
+          "stage-36"
+        ],
+        [
+          "stage-35",
+          "stage-37"
+        ],
+        [
+          "stage-37",
+          "stage-38"
+        ],
+        [
+          "stage-36",
+          "stage-40"
+        ],
+        [
+          "stage-37",
+          "stage-40"
+        ],
+        [
+          "stage-33",
+          "stage-39"
+        ],
+        [
+          "stage-39",
+          "stage-40"
+        ]
+      ]
+    },
+    {
+      "id": "area-06",
+      "name": "城内・回廊",
+      "order": 6,
+      "status": "layout-draft",
+      "bossStageId": "stage-48",
+      "flags": [
+        {
+          "id": "area-06:east",
+          "label": "東の旗"
+        },
+        {
+          "id": "area-06:west",
+          "label": "西の旗"
+        }
+      ],
+      "stageIds": [
+        "stage-41",
+        "stage-42",
+        "stage-43",
+        "stage-44",
+        "stage-45",
+        "stage-46",
+        "stage-47",
+        "stage-48"
+      ],
+      "edges": [
+        [
+          "start",
+          "stage-41"
+        ],
+        [
+          "stage-41",
+          "stage-42"
+        ],
+        [
+          "stage-41",
+          "stage-43"
+        ],
+        [
+          "stage-42",
+          "stage-44"
+        ],
+        [
+          "stage-43",
+          "stage-45"
+        ],
+        [
+          "stage-45",
+          "stage-46"
+        ],
+        [
+          "stage-44",
+          "stage-48"
+        ],
+        [
+          "stage-45",
+          "stage-48"
+        ],
+        [
+          "stage-41",
+          "stage-47"
+        ],
+        [
+          "stage-47",
+          "stage-48"
+        ]
+      ]
+    },
+    {
+      "id": "area-07",
+      "name": "城内・上層",
+      "order": 7,
+      "status": "layout-draft",
+      "bossStageId": "stage-56",
+      "flags": [
+        {
+          "id": "area-07:east",
+          "label": "東の旗"
+        },
+        {
+          "id": "area-07:west",
+          "label": "西の旗"
+        }
+      ],
+      "stageIds": [
+        "stage-49",
+        "stage-50",
+        "stage-51",
+        "stage-52",
+        "stage-53",
+        "stage-54",
+        "stage-55",
+        "stage-56"
+      ],
+      "edges": [
+        [
+          "start",
+          "stage-49"
+        ],
+        [
+          "stage-49",
+          "stage-50"
+        ],
+        [
+          "stage-49",
+          "stage-51"
+        ],
+        [
+          "stage-50",
+          "stage-52"
+        ],
+        [
+          "stage-51",
+          "stage-53"
+        ],
+        [
+          "stage-53",
+          "stage-54"
+        ],
+        [
+          "stage-52",
+          "stage-56"
+        ],
+        [
+          "stage-53",
+          "stage-56"
+        ],
+        [
+          "stage-49",
+          "stage-55"
+        ],
+        [
+          "stage-55",
+          "stage-56"
+        ]
+      ]
+    },
+    {
+      "id": "area-08",
+      "name": "王座への道",
+      "order": 8,
+      "status": "layout-draft",
+      "bossStageId": "stage-64",
+      "flags": [
+        {
+          "id": "area-08:east",
+          "label": "東の旗"
+        },
+        {
+          "id": "area-08:west",
+          "label": "西の旗"
+        }
+      ],
+      "stageIds": [
+        "stage-57",
+        "stage-58",
+        "stage-59",
+        "stage-60",
+        "stage-61",
+        "stage-62",
+        "stage-63",
+        "stage-64"
+      ],
+      "edges": [
+        [
+          "start",
+          "stage-57"
+        ],
+        [
+          "stage-57",
+          "stage-58"
+        ],
+        [
+          "stage-57",
+          "stage-59"
+        ],
+        [
+          "stage-58",
+          "stage-60"
+        ],
+        [
+          "stage-59",
+          "stage-61"
+        ],
+        [
+          "stage-61",
+          "stage-62"
+        ],
+        [
+          "stage-60",
+          "stage-64"
+        ],
+        [
+          "stage-61",
+          "stage-64"
+        ],
+        [
+          "stage-57",
+          "stage-63"
+        ],
+        [
+          "stage-63",
+          "stage-64"
+        ]
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "stage-01",
+      "number": 1,
+      "areaId": "area-01",
+      "title": "草原の入口",
+      "label": "出発",
+      "role": "entry",
+      "mapPosition": {
+        "x": 50,
+        "y": 84
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "makeSeven",
+            "target": 3
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-02",
+      "number": 2,
+      "areaId": "area-01",
+      "title": "セブンの広場",
+      "label": "スコア",
+      "role": "mission",
+      "mapPosition": {
+        "x": 20,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-01"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 2000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-03",
+      "number": 3,
+      "areaId": "area-01",
+      "title": "チェインの丘",
+      "label": "チェイン",
+      "role": "mission",
+      "mapPosition": {
+        "x": 80,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-01"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "chain",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-04",
+      "number": 4,
+      "areaId": "area-01",
+      "title": "東の見張り台",
+      "label": "東の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 20,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-02"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-01:east"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "koitsume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-05",
+      "number": 5,
+      "areaId": "area-01",
+      "title": "西の守り",
+      "label": "西の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 80,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-03"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-01:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "surviveTurns",
+            "target": 12
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-06",
+      "number": 6,
+      "areaId": "area-01",
+      "title": "寄り道の小径",
+      "label": "寄り道",
+      "role": "optional",
+      "mapPosition": {
+        "x": 84,
+        "y": 19
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-05"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 2000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-07",
+      "number": 7,
+      "areaId": "area-01",
+      "title": "危険な突破口",
+      "label": "近道・難",
+      "role": "shortcut",
+      "mapPosition": {
+        "x": 50,
+        "y": 56
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-01"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-01:east",
+          "area-01:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "hard",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 6000
+          },
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": 18,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-08",
+      "number": 8,
+      "areaId": "area-01",
+      "title": "草原の守り手",
+      "label": "ボス",
+      "role": "boss",
+      "mapPosition": {
+        "x": 50,
+        "y": 10
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": [
+          "area-01:east",
+          "area-01:west"
+        ]
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "boss",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-09",
+      "number": 9,
+      "areaId": "area-02",
+      "title": "城下への街道・出発",
+      "label": "出発",
+      "role": "entry",
+      "mapPosition": {
+        "x": 50,
+        "y": 84
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-08"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "makeSeven",
+            "target": 3
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-10",
+      "number": 10,
+      "areaId": "area-02",
+      "title": "城下への街道・スコア",
+      "label": "スコア",
+      "role": "mission",
+      "mapPosition": {
+        "x": 20,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-09"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 4000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-11",
+      "number": 11,
+      "areaId": "area-02",
+      "title": "城下への街道・チェイン",
+      "label": "チェイン",
+      "role": "mission",
+      "mapPosition": {
+        "x": 80,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-09"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "chain",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-12",
+      "number": 12,
+      "areaId": "area-02",
+      "title": "城下への街道・東の旗",
+      "label": "東の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 20,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-10"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-02:east"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "koitsume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-13",
+      "number": 13,
+      "areaId": "area-02",
+      "title": "城下への街道・西の旗",
+      "label": "西の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 80,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-11"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-02:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "surviveTurns",
+            "target": 12
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-14",
+      "number": 14,
+      "areaId": "area-02",
+      "title": "城下への街道・寄り道",
+      "label": "寄り道",
+      "role": "optional",
+      "mapPosition": {
+        "x": 84,
+        "y": 19
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-13"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 4000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-15",
+      "number": 15,
+      "areaId": "area-02",
+      "title": "城下への街道・近道・難",
+      "label": "近道・難",
+      "role": "shortcut",
+      "mapPosition": {
+        "x": 50,
+        "y": 56
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-09"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-02:east",
+          "area-02:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "hard",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 12000
+          },
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": 18,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-16",
+      "number": 16,
+      "areaId": "area-02",
+      "title": "城下への街道・ボス",
+      "label": "ボス",
+      "role": "boss",
+      "mapPosition": {
+        "x": 50,
+        "y": 10
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": [
+          "area-02:east",
+          "area-02:west"
+        ]
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "boss",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-17",
+      "number": 17,
+      "areaId": "area-03",
+      "title": "城下町・出発",
+      "label": "出発",
+      "role": "entry",
+      "mapPosition": {
+        "x": 50,
+        "y": 84
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-16"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "makeSeven",
+            "target": 3
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-18",
+      "number": 18,
+      "areaId": "area-03",
+      "title": "城下町・スコア",
+      "label": "スコア",
+      "role": "mission",
+      "mapPosition": {
+        "x": 20,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-17"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 6000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-19",
+      "number": 19,
+      "areaId": "area-03",
+      "title": "城下町・チェイン",
+      "label": "チェイン",
+      "role": "mission",
+      "mapPosition": {
+        "x": 80,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-17"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "chain",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-20",
+      "number": 20,
+      "areaId": "area-03",
+      "title": "城下町・東の旗",
+      "label": "東の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 20,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-18"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-03:east"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "koitsume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-21",
+      "number": 21,
+      "areaId": "area-03",
+      "title": "城下町・西の旗",
+      "label": "西の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 80,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-19"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-03:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "surviveTurns",
+            "target": 12
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-22",
+      "number": 22,
+      "areaId": "area-03",
+      "title": "城下町・寄り道",
+      "label": "寄り道",
+      "role": "optional",
+      "mapPosition": {
+        "x": 84,
+        "y": 19
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-21"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 6000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-23",
+      "number": 23,
+      "areaId": "area-03",
+      "title": "城下町・近道・難",
+      "label": "近道・難",
+      "role": "shortcut",
+      "mapPosition": {
+        "x": 50,
+        "y": 56
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-17"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-03:east",
+          "area-03:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "hard",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 18000
+          },
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": 18,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-24",
+      "number": 24,
+      "areaId": "area-03",
+      "title": "城下町・ボス",
+      "label": "ボス",
+      "role": "boss",
+      "mapPosition": {
+        "x": 50,
+        "y": 10
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": [
+          "area-03:east",
+          "area-03:west"
+        ]
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "boss",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-25",
+      "number": 25,
+      "areaId": "area-04",
+      "title": "外壁と城門・出発",
+      "label": "出発",
+      "role": "entry",
+      "mapPosition": {
+        "x": 50,
+        "y": 84
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-24"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "makeSeven",
+            "target": 3
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-26",
+      "number": 26,
+      "areaId": "area-04",
+      "title": "外壁と城門・スコア",
+      "label": "スコア",
+      "role": "mission",
+      "mapPosition": {
+        "x": 20,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-25"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 8000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-27",
+      "number": 27,
+      "areaId": "area-04",
+      "title": "外壁と城門・チェイン",
+      "label": "チェイン",
+      "role": "mission",
+      "mapPosition": {
+        "x": 80,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-25"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "chain",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-28",
+      "number": 28,
+      "areaId": "area-04",
+      "title": "外壁と城門・東の旗",
+      "label": "東の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 20,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-26"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-04:east"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "koitsume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-29",
+      "number": 29,
+      "areaId": "area-04",
+      "title": "外壁と城門・西の旗",
+      "label": "西の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 80,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-27"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-04:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "surviveTurns",
+            "target": 12
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-30",
+      "number": 30,
+      "areaId": "area-04",
+      "title": "外壁と城門・寄り道",
+      "label": "寄り道",
+      "role": "optional",
+      "mapPosition": {
+        "x": 84,
+        "y": 19
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-29"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 8000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-31",
+      "number": 31,
+      "areaId": "area-04",
+      "title": "外壁と城門・近道・難",
+      "label": "近道・難",
+      "role": "shortcut",
+      "mapPosition": {
+        "x": 50,
+        "y": 56
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-25"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-04:east",
+          "area-04:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "hard",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 24000
+          },
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": 18,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-32",
+      "number": 32,
+      "areaId": "area-04",
+      "title": "外壁と城門・ボス",
+      "label": "ボス",
+      "role": "boss",
+      "mapPosition": {
+        "x": 50,
+        "y": 10
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": [
+          "area-04:east",
+          "area-04:west"
+        ]
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "boss",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "beraboume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "beraboume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-33",
+      "number": 33,
+      "areaId": "area-05",
+      "title": "城内・前庭・出発",
+      "label": "出発",
+      "role": "entry",
+      "mapPosition": {
+        "x": 50,
+        "y": 84
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-32"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "makeSeven",
+            "target": 3
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-34",
+      "number": 34,
+      "areaId": "area-05",
+      "title": "城内・前庭・スコア",
+      "label": "スコア",
+      "role": "mission",
+      "mapPosition": {
+        "x": 20,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-33"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 10000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-35",
+      "number": 35,
+      "areaId": "area-05",
+      "title": "城内・前庭・チェイン",
+      "label": "チェイン",
+      "role": "mission",
+      "mapPosition": {
+        "x": 80,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-33"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "chain",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-36",
+      "number": 36,
+      "areaId": "area-05",
+      "title": "城内・前庭・東の旗",
+      "label": "東の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 20,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-34"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-05:east"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "koitsume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-37",
+      "number": 37,
+      "areaId": "area-05",
+      "title": "城内・前庭・西の旗",
+      "label": "西の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 80,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-35"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-05:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "surviveTurns",
+            "target": 12
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-38",
+      "number": 38,
+      "areaId": "area-05",
+      "title": "城内・前庭・寄り道",
+      "label": "寄り道",
+      "role": "optional",
+      "mapPosition": {
+        "x": 84,
+        "y": 19
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-37"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 10000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-39",
+      "number": 39,
+      "areaId": "area-05",
+      "title": "城内・前庭・近道・難",
+      "label": "近道・難",
+      "role": "shortcut",
+      "mapPosition": {
+        "x": 50,
+        "y": 56
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-33"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-05:east",
+          "area-05:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "hard",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 30000
+          },
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": 18,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-40",
+      "number": 40,
+      "areaId": "area-05",
+      "title": "城内・前庭・ボス",
+      "label": "ボス",
+      "role": "boss",
+      "mapPosition": {
+        "x": 50,
+        "y": 10
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": [
+          "area-05:east",
+          "area-05:west"
+        ]
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "boss",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "beraboume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "beraboume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-41",
+      "number": 41,
+      "areaId": "area-06",
+      "title": "城内・回廊・出発",
+      "label": "出発",
+      "role": "entry",
+      "mapPosition": {
+        "x": 50,
+        "y": 84
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-40"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "makeSeven",
+            "target": 3
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-42",
+      "number": 42,
+      "areaId": "area-06",
+      "title": "城内・回廊・スコア",
+      "label": "スコア",
+      "role": "mission",
+      "mapPosition": {
+        "x": 20,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-41"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 12000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-43",
+      "number": 43,
+      "areaId": "area-06",
+      "title": "城内・回廊・チェイン",
+      "label": "チェイン",
+      "role": "mission",
+      "mapPosition": {
+        "x": 80,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-41"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "chain",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-44",
+      "number": 44,
+      "areaId": "area-06",
+      "title": "城内・回廊・東の旗",
+      "label": "東の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 20,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-42"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-06:east"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "koitsume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-45",
+      "number": 45,
+      "areaId": "area-06",
+      "title": "城内・回廊・西の旗",
+      "label": "西の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 80,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-43"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-06:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "surviveTurns",
+            "target": 12
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-46",
+      "number": 46,
+      "areaId": "area-06",
+      "title": "城内・回廊・寄り道",
+      "label": "寄り道",
+      "role": "optional",
+      "mapPosition": {
+        "x": 84,
+        "y": 19
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-45"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 12000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-47",
+      "number": 47,
+      "areaId": "area-06",
+      "title": "城内・回廊・近道・難",
+      "label": "近道・難",
+      "role": "shortcut",
+      "mapPosition": {
+        "x": 50,
+        "y": 56
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-41"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-06:east",
+          "area-06:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "hard",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 36000
+          },
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": 18,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-48",
+      "number": 48,
+      "areaId": "area-06",
+      "title": "城内・回廊・ボス",
+      "label": "ボス",
+      "role": "boss",
+      "mapPosition": {
+        "x": 50,
+        "y": 10
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": [
+          "area-06:east",
+          "area-06:west"
+        ]
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "boss",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "beraboume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "beraboume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-49",
+      "number": 49,
+      "areaId": "area-07",
+      "title": "城内・上層・出発",
+      "label": "出発",
+      "role": "entry",
+      "mapPosition": {
+        "x": 50,
+        "y": 84
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-48"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "makeSeven",
+            "target": 3
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-50",
+      "number": 50,
+      "areaId": "area-07",
+      "title": "城内・上層・スコア",
+      "label": "スコア",
+      "role": "mission",
+      "mapPosition": {
+        "x": 20,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-49"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 14000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-51",
+      "number": 51,
+      "areaId": "area-07",
+      "title": "城内・上層・チェイン",
+      "label": "チェイン",
+      "role": "mission",
+      "mapPosition": {
+        "x": 80,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-49"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "chain",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-52",
+      "number": 52,
+      "areaId": "area-07",
+      "title": "城内・上層・東の旗",
+      "label": "東の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 20,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-50"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-07:east"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "koitsume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-53",
+      "number": 53,
+      "areaId": "area-07",
+      "title": "城内・上層・西の旗",
+      "label": "西の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 80,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-51"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-07:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "surviveTurns",
+            "target": 12
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-54",
+      "number": 54,
+      "areaId": "area-07",
+      "title": "城内・上層・寄り道",
+      "label": "寄り道",
+      "role": "optional",
+      "mapPosition": {
+        "x": 84,
+        "y": 19
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-53"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 14000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-55",
+      "number": 55,
+      "areaId": "area-07",
+      "title": "城内・上層・近道・難",
+      "label": "近道・難",
+      "role": "shortcut",
+      "mapPosition": {
+        "x": 50,
+        "y": 56
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-49"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-07:east",
+          "area-07:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "hard",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 42000
+          },
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": 18,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-56",
+      "number": 56,
+      "areaId": "area-07",
+      "title": "城内・上層・ボス",
+      "label": "ボス",
+      "role": "boss",
+      "mapPosition": {
+        "x": 50,
+        "y": 10
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": [
+          "area-07:east",
+          "area-07:west"
+        ]
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "boss",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "beraboume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "beraboume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-57",
+      "number": 57,
+      "areaId": "area-08",
+      "title": "王座への道・出発",
+      "label": "出発",
+      "role": "entry",
+      "mapPosition": {
+        "x": 50,
+        "y": 84
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-56"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "makeSeven",
+            "target": 3
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-58",
+      "number": 58,
+      "areaId": "area-08",
+      "title": "王座への道・スコア",
+      "label": "スコア",
+      "role": "mission",
+      "mapPosition": {
+        "x": 20,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-57"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 16000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-59",
+      "number": 59,
+      "areaId": "area-08",
+      "title": "王座への道・チェイン",
+      "label": "チェイン",
+      "role": "mission",
+      "mapPosition": {
+        "x": 80,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-57"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "chain",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-60",
+      "number": 60,
+      "areaId": "area-08",
+      "title": "王座への道・東の旗",
+      "label": "東の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 20,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-58"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-08:east"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "koitsume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-61",
+      "number": 61,
+      "areaId": "area-08",
+      "title": "王座への道・西の旗",
+      "label": "西の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 80,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-59"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-08:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "surviveTurns",
+            "target": 12
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-62",
+      "number": 62,
+      "areaId": "area-08",
+      "title": "王座への道・寄り道",
+      "label": "寄り道",
+      "role": "optional",
+      "mapPosition": {
+        "x": 84,
+        "y": 19
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-61"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 16000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-63",
+      "number": 63,
+      "areaId": "area-08",
+      "title": "王座への道・近道・難",
+      "label": "近道・難",
+      "role": "shortcut",
+      "mapPosition": {
+        "x": 50,
+        "y": 56
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-57"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-08:east",
+          "area-08:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "hard",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 48000
+          },
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": 18,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-64",
+      "number": 64,
+      "areaId": "area-08",
+      "title": "王座への道・ボス",
+      "label": "ボス",
+      "role": "boss",
+      "mapPosition": {
+        "x": 50,
+        "y": 10
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": [
+          "area-08:east",
+          "area-08:west"
+        ]
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "boss",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "finalBossPlaceholder",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "finalBossPlaceholder",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    }
+  ]
+}

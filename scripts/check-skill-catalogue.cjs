@@ -1,0 +1,7 @@
+const fs=require('fs'),path=require('path'),vm=require('vm'),ts=require('typescript'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..'),cache={};
+function load(file){if(cache[file])return cache[file];const m={exports:{}};cache[file]=m.exports;const code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;vm.runInNewContext('(function(require,module,exports){'+code+'\n})')((id)=>load(path.posix.normalize(path.posix.join(path.posix.dirname(file),id+'.ts'))),m,m.exports);return m.exports;}
+const {SKILL_ENTRIES,skillPracticeUrl}=load('src/skillCatalogue.ts'),{CAMPAIGN_MISSIONS}=load('src/story/wall1.ts');
+assert.equal(new Set(SKILL_ENTRIES.map(s=>s.id)).size,SKILL_ENTRIES.length);
+for(const s of SKILL_ENTRIES){assert(s.condition&&s.effect&&s.caption);assert(s.diagram.length);assert(s.diagram.every(row=>row.length===7&&/^[1-6nhb*.]+$/.test(row)));const url=new URL(skillPracticeUrl(s),'http://localhost');if(s.ability){const mission=CAMPAIGN_MISSIONS.find(m=>m.stage===Number(url.searchParams.get('stage')));assert.equal(mission?.learns,s.ability,'matching real lesson for '+s.id);assert.equal(url.searchParams.get('review'),'story');}else{assert.equal(url.pathname,'/enemy-practice.html');assert.equal(url.searchParams.get('enemy'),'hyoketsume');}}
+console.log('PASS skill catalogue: '+SKILL_ENTRIES.length+' diagrams and real isolated lesson/practice links');

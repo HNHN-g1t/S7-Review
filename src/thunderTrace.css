@@ -1,0 +1,57 @@
+/* Pointer feedback is drawn above dice and enemies, with a crisp white core.
+   Layered strokes replace blur and keep the mobile rendering cost small. */
+.thunder-pointer-trail {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(var(--cell-size, 0px) * 7);
+  height: calc(var(--cell-size, 0px) * 14);
+  z-index: 42;
+  transform: translateX(-50%);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.thunder-pointer-trail polyline {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.thunder-pointer-trail .thunder-trail-edge {
+  stroke: rgba(101, 64, 8, 0.65);
+  stroke-width: 0.16;
+}
+
+.thunder-pointer-trail .thunder-trail-white {
+  stroke: #fff;
+  stroke-width: 0.085;
+}
+
+.thunder-pointer-trail circle {
+  fill: #fff;
+  stroke: rgba(101, 64, 8, 0.6);
+  stroke-width: 0.035;
+}
+
+/* Reserve the suffix's width so サン stays put when ダー！ joins the same line.
+   Keeping the parent key also prevents サン from replaying its entrance. */
+.thunder-call .thunder-call-suffix {
+  display: inline-block;
+  visibility: hidden;
+}
+
+.thunder-call .thunder-call-suffix.is-visible {
+  visibility: visible;
+  animation: thunder-suffix-join 340ms cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+@keyframes thunder-suffix-join {
+  0% { transform: scale(0.45); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thunder-call .thunder-call-suffix.is-visible { animation: none; }
+}

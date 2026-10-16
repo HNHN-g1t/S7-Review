@@ -1,0 +1,195 @@
+/* デタラメの見た目と動き。値は public/enemy-design/detarame.html（採用版）の最終的な描画から取っている */
+.detarame {
+  --eye-color: #289edb;
+  --pupil-color: #ffe84a;
+  --rim: #62d7ff;
+  --rim-glow: #35bff3;
+  --laser: 255, 225, 53;
+  --pupil-halo: 255, 232, 74;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.detarame.is-yellow {
+  --eye-color: #ffe84a;
+  --pupil-color: #289edb;
+  --rim: #ffe84a;
+  --rim-glow: #edcc35;
+  --laser: 40, 158, 219;
+  --pupil-halo: 40, 158, 219;
+}
+
+/* 身体。外周は色つきの線と、外側への柔らかな発光 */
+.detarame-body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 2px var(--rim)) drop-shadow(0 0 5px var(--rim-glow));
+}
+
+.detarame-body > path {
+  stroke: var(--rim);
+}
+
+.detarame-seg {
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+
+/* 星のまたたき（0.48〜1.08秒周期） */
+.detarame-spark {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  width: var(--ss);
+  height: var(--ss);
+  background: var(--sc);
+  clip-path: polygon(50% 0, 62% 37%, 100% 50%, 62% 63%, 50% 100%, 38% 63%, 0 50%, 38% 37%);
+  opacity: 0.4;
+  animation: detarame-twinkle var(--sd) ease-in-out var(--so) infinite;
+}
+
+@keyframes detarame-twinkle {
+  0%, 100% { transform: scale(0.3); opacity: 0.12; }
+  45% { transform: scale(1.15); opacity: 1; }
+  65% { transform: scale(0.55); opacity: 0.35; }
+}
+
+/* 下弦の半円の目。上辺は水平、下側は丸い。左右交互を向く */
+.detarame-eye {
+  position: absolute;
+  left: var(--eye-left);
+  top: 48%;
+  width: 56%;
+  height: 35%;
+  overflow: hidden;
+  border-radius: 5% 5% 55% 55% / 5% 5% 100% 100%;
+  background: var(--eye-color);
+  box-shadow: 0 1px 2px #020b15;
+  animation: detarame-blink var(--blink-time, 4s) var(--blink-offset, 0s) linear infinite;
+}
+
+@keyframes detarame-blink {
+  0%, 42%, 46%, 100% { clip-path: inset(0); }
+  43.4%, 44.4% { clip-path: inset(48% 0 48% 0); }
+}
+
+/* 瞳は長楕円、ハイライト無し、縁は柔らかく発光 */
+.detarame-iris {
+  position: absolute;
+  top: -12%;
+  left: var(--look);
+  width: 38%;
+  height: 100%;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.detarame-iris::before {
+  content: '';
+  position: absolute;
+  left: 15.5%;
+  top: 4%;
+  width: 69%;
+  height: 84%;
+  border-radius: 50%;
+  background: var(--pupil-color);
+  box-shadow:
+    0 0 2px 1px rgba(var(--pupil-halo), 0.65),
+    0 0 5px 2px rgba(var(--pupil-halo), 0.35);
+  filter: blur(0.2px);
+}
+
+/* ビームを撃つ：目が正円になり、瞳が白く光って縦横に拡縮する */
+.detarame-seg.is-firing .detarame-eye {
+  top: 32%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  clip-path: inset(0);
+  animation: none;
+}
+
+.detarame-seg.is-firing .detarame-iris {
+  top: 0;
+  height: 100%;
+}
+
+.detarame-seg.is-firing .detarame-iris::before {
+  top: 8%;
+  height: 84%;
+  background: #fffef4;
+  box-shadow: 0 0 3px #fff, 0 0 7px rgba(var(--laser), 0.85);
+  animation: detarame-pupil-flare 0.19s ease-in-out infinite alternate;
+}
+
+@keyframes detarame-pupil-flare {
+  0% { transform: scale(0.75, 1.18); }
+  50% { transform: scale(1.3, 0.78); }
+  100% { transform: scale(0.95, 1.12); }
+}
+
+/* セヴン目が当たった：目が光って縮み、消える（その段は無地の身体として残る） */
+.detarame-seg.is-hit .detarame-eye {
+  animation: detarame-eye-hit 0.3s ease-in both;
+}
+
+@keyframes detarame-eye-hit {
+  0%, 20% { filter: brightness(0) invert(1); transform: scale(1, 0.2); }
+  35%, 100% { filter: none; transform: scale(1, 0.2); }
+}
+
+.detarame-seg.is-spent .detarame-eye,
+.detarame-seg.is-spent .detarame-spark {
+  display: none;
+}
+
+/* 下に新しい段が生まれる */
+.detarame-seg.is-born {
+  transform-origin: center bottom;
+  animation: detarame-birth 0.62s cubic-bezier(0.25, 0.7, 0.3, 1) both;
+}
+
+@keyframes detarame-birth {
+  from { transform: scaleY(0.03); }
+  to { transform: scaleY(1); }
+}
+
+/* サイを吸い込んでいる、いちばん上の目 */
+.detarame-seg.is-absorb .detarame-eye {
+  clip-path: inset(0);
+  box-shadow: 0 0 8px #fff, 0 0 14px var(--rim);
+  animation: none;
+}
+
+/* ぜんぶの目が消えた：下方向へ崩れて消える */
+.detarame.is-dying .detarame-body,
+.detarame.is-dying .detarame-seg {
+  animation: detarame-sink 0.62s ease-in var(--delay, 0ms) both;
+}
+
+@keyframes detarame-sink {
+  20% { transform: translateY(-6%) scale(1.06, 0.95); }
+  to { transform: translateY(130%) scale(0.65, 0.05); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detarame-spark,
+  .detarame-eye,
+  .detarame-seg.is-firing .detarame-iris::before {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detarame-seg.is-hit .detarame-eye { transform: scale(1, 0.2); }
+}
+
+/* 被弾した段だけ白フラ。目・星ではなく、該当セルの身体まで知らせる。 */
+.detarame-seg.is-hit::after { content: ''; position: absolute; inset: 0; background: #fff; border-radius: 40%; pointer-events: none; animation: detarame-segment-flash 300ms steps(1, end) both; }
+@keyframes detarame-segment-flash { 0%, 20% { opacity: 1; } 21%, 100% { opacity: 0; } }

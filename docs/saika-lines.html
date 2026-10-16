@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>サイカのセリフと表情</title>
+<style>
+  :root{
+    --ink:#2b3444; --dim:#5d6a7f; --mute:#8d9aad;
+    --line:#d2dae6; --paper:#ffffff; --bg:#e9edf4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Inter","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
+    line-height:1.7;padding:26px 18px 60px}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:20px;letter-spacing:.04em;margin:0 0 4px}
+  .sub{color:var(--mute);font-size:12px;margin:0 0 22px}
+  h2{font-size:15px;letter-spacing:.04em;margin:28px 0 4px}
+  .when{color:var(--dim);font-size:12px;margin:0 0 12px}
+  .note{background:var(--paper);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;font-size:13px;color:var(--dim);margin-bottom:8px}
+  .note b{color:var(--ink)}
+  code{background:#eef2f7;padding:1px 5px;border-radius:4px;font-size:12px}
+
+  /* 実機と同じサイカ帯の見た目 */
+  .scene{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;
+    background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .face{width:72px;height:72px;display:grid;place-items:center;overflow:hidden}
+  .face img{width:100%;height:100%;object-fit:contain;border-radius:10px}
+  .face .miss{font-size:11px;color:var(--mute);text-align:center;line-height:1.3}
+  .lines{display:grid;gap:6px;min-width:0}
+  .line{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center;
+    padding:6px 8px;border-radius:8px;background:#f5f8fc}
+  .ja{font-size:17px;color:var(--ink)}
+  .en{font-size:13px;color:var(--dim)}
+  .tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
+    color:#fff;background:#7a5ae0;border-radius:999px;padding:2px 8px;vertical-align:2px;margin-left:8px}
+  .face-name{font-size:10px;color:var(--mute);text-align:center;margin-top:2px}
+  @media (max-width:620px){ .line{grid-template-columns:1fr} .en{padding-left:0} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>サイカのセリフと表情</h1>
+  <p class="sub">サイノメ・セヴン ／ 現在の実装をそのまま書き出したもの</p>
+
+  <div class="note">
+    このページは<b>確認用</b>です。書き換えたいときは、隣にある
+    <code>docs/saika-lines.tsv</code> を直接編集して渡してください。
+    タブ区切りなので、Excel やスプレッドシートにそのまま貼れます。
+  </div>
+
+  <div class="note">
+    <b>表情は「場面」から自動で決まります。</b>顔を個別に指定することはできません。
+    フィーバー中だけは上書きが入り、通常の顔は 10、ボム中の顔は 11 になります。
+    つまり<b>フィーバー中は焦り顔（02）が出ません</b>。
+  </div>
+
+  <div id="body"></div>
+
+</div>
+
+<script>
+  const IMG = '../public/images/';
+
+  // faceFor() と同じ決まり。fever が最優先で、次に「ボム中かどうか」
+  const SCENES = [
+    {
+      id: 'IDLE', title: '待機',
+      when: '手が空いているとき。7秒ごとに入れ替わる。ゲーム開始時とタイトル復帰時は先頭の1本が出る',
+      face: 'saika-01.png', faceName: '01 通常',
+      lines: [
+        ['ハロー わたしはサイカ', "Hello! I'm Saika"],
+        ['ふふ〜ん♪', 'La la la~♪'],
+        ['となりどうしで7だよ', 'Neighbours adding to 7!'],
+        ['おもしろい？', 'Having fun?'],
+        ['いい感じ いい感じ', 'Nice, nice'],
+        ['あせらなくて だいじょうぶ', 'No rush, take your time'],
+        ['つぎ なにが来るかな', "What's coming next?"],
+        ['ひまだな〜', "I'm getting bored~"],
+        ['2と5は ちょっとコワいの', '2 and 5 scare me a little'],
+        ['まだまだ いけるよ', 'You can keep going!'],
+      ],
+    },
+    {
+      id: 'CHAIN', title: '連鎖',
+      when: '2連鎖以上で消したとき。{n} に連鎖数が入る',
+      face: 'saika-01.png', faceName: '01 通常',
+      lines: [['2チェイン！', '2 CHAIN!'], ['5チェイン！', '5 CHAIN!']],
+      fixed: true,
+    },
+    {
+      id: 'WORRY', title: '焦り',
+      when: '危険領域（上から7段目より上）に届いた瞬間。2600ms表示。入りっぱなしでは繰り返さない',
+      face: 'saika-02.png', faceName: '02 焦り',
+      lines: [
+        ['ちょっと危ないかも……', 'This looks a bit risky...'],
+        ['うわっ 積みすぎ！', 'Whoa, too high!'],
+        ['ニコニコメ、呼ぶね！', "I'll call the Niko dice!"],
+        ['まだ大丈夫……だよね？', "We're still okay... right?"],
+      ],
+    },
+    {
+      id: 'BOMB', title: '技が決まった瞬間',
+      when: '技ごとに1本ずつ。画面中央の英字バナーは別に出る（ニコフラだけバナー無し）',
+      face: 'saika-03.png', faceName: '03 ボム',
+      lines: [
+        ['スパ1！', 'Super One!'],
+        ['スラ3！', 'Slash Three!'],
+        ['スク4！', 'Square Four!'],
+        ['スト6！', 'Straight Six!'],
+        ['ニコフラ！', 'Niko Flash!'],
+      ],
+      fixed: true,
+    },
+    {
+      id: 'PRAISE', title: 'ボムのあと',
+      when: '技が片づいたあと 1000ms。そのあと待機へ戻る',
+      face: 'saika-03.png', faceName: '03 ボム',
+      lines: [
+        ['決まったぁ〜', 'Nailed it~'],
+        ['やったね！', 'You did it!'],
+        ['ナイス〜♪', 'Nice one~♪'],
+      ],
+    },
+    {
+      id: 'FEVER', title: 'フィーバー中',
+      when: 'セリフは上の場面と同じものが出る。顔だけが差し替わる',
+      face: 'saika-10.png', faceName: '10 フィーバー',
+      extraFace: 'saika-11.png', extraFaceName: '11 フィーバー＋ボム',
+      lines: [],
+      noteText: 'フィーバー中は、待機・連鎖・焦りの顔がすべて 10 になり、技とほめ言葉の顔が 11 になります。焦り顔（02）はフィーバー中には出ません。',
+    },
+  ];
+
+  const esc = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+  document.getElementById('body').innerHTML = SCENES.map((s) => {
+    const faces = [[s.face, s.faceName]].concat(s.extraFace ? [[s.extraFace, s.extraFaceName]] : []);
+    const faceHtml = faces.map(([f, name]) =>
+      '<div><div class="face"><img src="' + IMG + f + '" alt="" ' +
+      'onerror="this.parentElement.innerHTML=\'<span class=&quot;miss&quot;>' + name + '<br>画像なし</span>\'" />' +
+      '</div><div class="face-name">' + name + '</div></div>').join('');
+
+    const linesHtml = s.lines.length
+      ? s.lines.map(([ja, en]) =>
+          '<div class="line"><span class="ja">' + esc(ja) + '</span><span class="en">' + esc(en) + '</span></div>').join('')
+      : '<div class="note" style="margin:0">' + s.noteText + '</div>';
+
+    return '<h2>' + s.title +
+      '<span class="tag">' + s.id + '</span>' +
+      (s.fixed ? '<span class="tag" style="background:#8d9aad">行数固定</span>' : '') +
+      '</h2><p class="when">' + s.when + '</p>' +
+      '<div class="scene"><div style="display:flex;gap:8px">' + faceHtml + '</div>' +
+      '<div class="lines">' + linesHtml + '</div></div>';
+  }).join('');
+</script>
+</body>
+</html>

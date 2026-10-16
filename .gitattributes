@@ -1,0 +1,10 @@
+# 複数の端末で編集するため、リポジトリ内の改行コードを LF に固定する
+* text=auto eol=lf
+
+# バイナリは変換しない
+*.mp3 binary
+*.png binary
+*.jpg binary
+# Windows のバッチは CRLF のまま保つ（LF だと goto やラベルが動かないことがある）
+*.cmd text eol=crlf
+*.bat text eol=crlf

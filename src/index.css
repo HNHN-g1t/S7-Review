@@ -1,0 +1,4800 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  配色方針：メ（サイコロ）だけを彩度の高い色にして、それ以外は彩度を持たせない。
+  盤面は青みがかったタイルを、明度をほんの少しだけ変えて市松状に敷く。
+  隙間（gap）は持たせず、タイルの明暗だけでマス目を見せる。
+
+  地の色は2枚ある。
+  - 通常時 … 暗い。メの彩度がいちばん立つ。こちらが既定。
+  - フィーバー中 … 明るい。画面が切り替わったことが一目で伝わる。
+
+  切り替えているのはこのトークンだけで、メ（.die / .pip）の色には一切
+  触っていない。サイノメの見え方はどちらの地でも同じ。
+*/
+:root {
+  /* 強調の文字色（7・技名・メンのタイトルなど）はピンノメのマゼンタをやや明るくした1色に統一（2026-10-06） */
+  --hl: #ff85bf;
+  /* --- 通常時（ダーク）---
+     旧ダーク（--bg #0d1014）は沈みすぎていたので、全体を一段持ち上げた。
+     メとの明度差は十分に残るところで止めている。 */
+  --bg: #161a21;
+  --panel: #1f242d;
+  --panel-raised: #252b35;
+  --line: #333a46;
+  --line-soft: #2a303b;
+  --board-bg: #181c23;
+  --cell: #222730;
+  --cell-alt: #292f39; /* 市松の明るいほう。暗い地では上げる側で差をつける */
+  --cell-line: #2e3440;
+  --text: #eef2f8;
+  --text-dim: #a4adbb;
+  --text-mute: #717c8e;
+  --accent: #4cc9f0;
+  --overlay-veil: rgba(22, 26, 33, 0.92); /* ゲームオーバー・一時停止の覆い */
+  --hover-tint: #2c3340; /* マウスを乗せたボタン */
+  --digit-off: #454d5b; /* 点いていない桁とFEVERの文字 */
+  /* 落下ガイドの色。暗い地では明るい灰を重ねて「持ち上げる」。
+     明るい地と同じ暗い色を重ねると、暗いマスの上ではほぼ見えなかった。 */
+  --guide: #c3cde0;
+
+  /* 地の色は切り替えのたびに補間する。
+     戻るとき（フィーバー終わり）は600msかけてゆっくり。
+     入るときの速さは下の :root.is-fever-theme 側が決める。
+     遷移は「行き先の状態」に書かれたものが使われるので、2か所に分けて書く。 */
+  transition-property: --bg, --panel, --panel-raised, --line, --line-soft, --board-bg,
+    --cell, --cell-alt, --cell-line, --text, --text-dim, --text-mute, --accent,
+    --overlay-veil, --hover-tint, --digit-off, --guide;
+  transition-duration: 600ms;
+  transition-timing-function: ease-in-out;
+
+  color: var(--text);
+  background: var(--bg);
+  font-family: "Inter", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  color-scheme: dark;
+}
+
+/*
+  フィーバー中だけ明るいほうへ入れ替える。
+  html に付けているのは、html 自身の background も一緒に変えるため。
+  body だけに付けると、画面をはみ出した部分に暗い地が残る。
+*/
+:root.is-fever-theme {
+  --bg: #e9edf4;
+  --panel: #ffffff;
+  --panel-raised: #eef1f7;
+  --line: #d2dae6;
+  --line-soft: #e3e9f1;
+  --board-bg: #9fabbd;
+  --cell: #b4bfcf;
+  --cell-alt: #a9b5c7;
+  --cell-line: #9fabbd;
+  --text: #2b3444;
+  --text-dim: #5d6a7f;
+  --text-mute: #8d9aad;
+  --accent: #7a5ae0;
+  --overlay-veil: rgba(246, 242, 251, 0.92);
+  --hover-tint: #ece4f8;
+  --digit-off: #ded6ee;
+  --guide: #2f3d52;
+
+  /* 入るときは速く。点火の粒が散っているあいだに明るさが追いつく */
+  transition-duration: 380ms;
+  transition-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  color-scheme: light;
+}
+
+/*
+  トークンを補間できるように型を登録しておく。
+  登録していないカスタムプロパティは「文字列」扱いなので、
+  transition を書いても途中の色が作られず、一瞬で切り替わる。
+  inherits: true なので、var() で参照している子孫もそのまま追従する。
+*/
+@property --bg { syntax: '<color>'; inherits: true; initial-value: #161a21; }
+@property --panel { syntax: '<color>'; inherits: true; initial-value: #1f242d; }
+@property --panel-raised { syntax: '<color>'; inherits: true; initial-value: #252b35; }
+@property --line { syntax: '<color>'; inherits: true; initial-value: #333a46; }
+@property --line-soft { syntax: '<color>'; inherits: true; initial-value: #2a303b; }
+@property --board-bg { syntax: '<color>'; inherits: true; initial-value: #181c23; }
+@property --cell { syntax: '<color>'; inherits: true; initial-value: #222730; }
+@property --cell-alt { syntax: '<color>'; inherits: true; initial-value: #292f39; }
+@property --cell-line { syntax: '<color>'; inherits: true; initial-value: #2e3440; }
+@property --text { syntax: '<color>'; inherits: true; initial-value: #eef2f8; }
+@property --text-dim { syntax: '<color>'; inherits: true; initial-value: #a4adbb; }
+@property --text-mute { syntax: '<color>'; inherits: true; initial-value: #717c8e; }
+@property --accent { syntax: '<color>'; inherits: true; initial-value: #4cc9f0; }
+@property --overlay-veil { syntax: '<color>'; inherits: true; initial-value: rgba(22, 26, 33, 0.92); }
+@property --hover-tint { syntax: '<color>'; inherits: true; initial-value: #2c3340; }
+@property --digit-off { syntax: '<color>'; inherits: true; initial-value: #454d5b; }
+@property --guide { syntax: '<color>'; inherits: true; initial-value: #c3cde0; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  :root.is-fever-theme {
+    transition-duration: 0ms;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--bg);
+  /* スワイプ中に画面が引っ張られたり、引っ張って更新が走るのを止める */
+  overscroll-behavior: none;
+
+  /* 長押しで「コピー / 調べる」のメニューや虫めがねが出るのを止める。
+     ゲーム中に文字を選ぶ用事はなく、出てくると操作が中断されてしまう。
+     -webkit-touch-callout が iOS のメニュー本体を、user-select が
+     文字選択そのものを抑える。どちらか一方では消えない。 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-shell {
+  position: relative;
+  display: grid;
+  /* 右側（NEXT・遊び方・ベストスコア）は出さないので、右の列は左と同じ幅にして盤面を真ん中に置く（2026-10-05） */
+  grid-template-columns: 112px minmax(330px, 380px) 112px;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 36px 48px;
+  background: var(--bg);
+}
+
+.left-hud,
+.right-hud {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.left-hud {
+  align-items: center;
+  justify-self: end;
+  padding-top: 84px;
+}
+
+.right-hud {
+  justify-self: start;
+}
+
+.panel {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 6px 16px rgba(45, 60, 90, 0.1);
+}
+
+/* 7桁に増やしたぶんは、文字を小さくせず左右の余白で吸収する。
+   数字は tabular-nums で等幅なので、わずかに字間を詰めても揃いは崩れない。 */
+.info-panel {
+  width: 112px;
+  min-height: 46px;
+  padding: 6px 8px;
+}
+
+.info-panel p,
+.next-panel p {
+  margin: 0;
+  color: var(--text-mute);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.digit-dim {
+  color: var(--digit-off);
+}
+
+/* 百万の位。SCORE の右に全角スペースを空けて黄色で出す。
+   0のときは場所だけ取って見えなくする（ゲージの位置を動かさないため） */
+.score-millions {
+  color: var(--hl);
+  font-variant-numeric: tabular-nums;
+}
+
+.score-millions[data-empty='true'] {
+  visibility: hidden;
+}
+
+.info-panel strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.board-panel {
+  position: relative;
+  width: min(82vw, 380px);
+  /* 盤面上の指の動きはすべてゲーム操作。スクロールにも選択にも使わせない
+     （文字選択と長押しメニューの抑止は body 側でページ全体にかけている） */
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--board-bg);
+  box-shadow: 0 0 0 1px rgba(159, 171, 189, 0.9), 0 10px 30px rgba(45, 60, 90, 0.14);
+}
+
+/* マスの一辺は JS が盤面の実寸から整数ピクセルに丸めて --cell-size に入れる。
+   1fr の等分割だと盤面幅が小数のとき列ごとに端数の丸め方が変わり、
+   落下中にマスの隙間が不揃いに見えてしまう。
+   --cell-size が入るまでの初回描画だけ 1fr と aspect-ratio で組む。 */
+.board-grid {
+  position: relative; /* 有効範囲の軌道（.range-trace）の基準 */
+  display: grid;
+  grid-template-columns: repeat(7, var(--cell-size, 1fr));
+  justify-content: center;
+  gap: 0;
+}
+
+.board-cell {
+  position: relative;
+  width: var(--cell-size, auto);
+  height: var(--cell-size, auto);
+  aspect-ratio: 1;
+  /* ボムで弾け飛ぶメがマス枠で切り取られないよう、あえて隠さない */
+  overflow: visible;
+  background: var(--cell);
+}
+
+/* マス目は枠線ではなく、明度差のごくわずかなタイルの市松で見せる。
+   列が7（奇数）なので、単純な偶数番目の指定だけで行ごとに位相がずれ、
+   そのまま市松になる。 */
+.board-cell:nth-child(even) {
+  background: var(--cell-alt);
+}
+
+.die {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 26%;
+  /* 左上のツヤと、底に向かう陰り。背景色はJS側が指定するので、
+     ここでは上に重ねるグラデーションだけを持たせる。
+     白い芯は置かない。メと同系色になって見分けがつかないうえ、
+     フチのない白い目を溶かしてしまう。質感はこの緩い階調だけで出す。 */
+  background-image:
+    radial-gradient(
+      circle at 30% 24%,
+      rgba(255, 255, 255, 0.42),
+      rgba(255, 255, 255, 0) 46%
+    ),
+    linear-gradient(rgba(255, 255, 255, 0) 55%, rgba(20, 8, 30, 0.22));
+  box-shadow:
+    inset 0 -3px 0 rgba(20, 8, 30, 0.22),
+    inset 0 0 0 1px rgba(20, 8, 30, 0.28),
+    0 1px 2px rgba(40, 30, 60, 0.3);
+}
+
+.die-compact {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background-image:
+    radial-gradient(
+      circle at 30% 24%,
+      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, 0) 46%
+    ),
+    linear-gradient(rgba(255, 255, 255, 0) 55%, rgba(20, 8, 30, 0.22));
+}
+
+.pip {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ffffff;
+  /* 目は丸だけで、フチ取りは持たせない。
+     2 と 5 の目は地と同じ色相の暗いパープル（JS が色を渡す）。 */
+  transform: translate(-50%, -50%);
+}
+
+.die-compact .pip {
+  width: 3px;
+  height: 3px;
+}
+
+.top-left {
+  left: 28%;
+  top: 28%;
+}
+
+.top-right {
+  left: 72%;
+  top: 28%;
+}
+
+.middle-left {
+  left: 28%;
+  top: 50%;
+}
+
+.middle-right {
+  left: 72%;
+  top: 50%;
+}
+
+.center {
+  left: 50%;
+  top: 50%;
+}
+
+.bottom-left {
+  left: 28%;
+  top: 72%;
+}
+
+.bottom-right {
+  left: 72%;
+  top: 72%;
+}
+
+.next-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 12px 18px;
+}
+
+.next-dice {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.help-panel {
+  padding: 16px 16px 14px;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-title strong,
+.best-panel strong {
+  color: var(--text);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.panel-title button,
+.touch-controls button,
+.game-overlay button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.panel-title button {
+  min-width: 76px;
+  min-height: 28px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.panel-title button:hover,
+.touch-controls button:hover,
+.game-overlay button:hover,
+.icon-button:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  background: var(--hover-tint);
+  color: var(--text);
+}
+
+.help-panel p {
+  margin: 12px 0 0;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.touch-controls {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.touch-controls button {
+  min-height: 32px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.best-panel {
+  padding: 18px 16px 14px;
+}
+
+.best-panel ol {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.best-panel li,
+.gameover-panel li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  color: var(--text-mute);
+  font-size: 11px;
+}
+
+.best-panel span,
+.gameover-panel li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.best-panel b,
+.gameover-panel b {
+  color: var(--text-dim);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty-best {
+  display: block !important;
+  padding: 2px 8px;
+  color: var(--text-mute);
+}
+
+/* ゲージは「FEVER」の5文字。20%ごとに1文字ずつ点灯し、
+   発動すると全文字が虹色に流れて光る。 */
+.fever-wrap {
+  display: flex;
+  gap: 0;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 130px;
+  padding: 0;
+}
+
+.fever-letter {
+  color: var(--digit-off);
+  /* 枠を外したぶん、5文字で横幅を使い切るところまで大きくする。
+     字間は詰め切りたいので負の値を入れている。 */
+  font-size: clamp(20px, 7.6vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  transition: color 200ms ease, text-shadow 200ms ease;
+}
+
+.fever-letter.is-lit {
+  color: var(--hl);
+  text-shadow: 0 0 10px rgba(255, 133, 191, 0.45);
+}
+
+/* 発動中は1文字ずつ順に色が回る。--i で文字ごとに位相をずらす */
+.fever-wrap.is-active .fever-letter {
+  animation: fever-rainbow 900ms linear infinite;
+  animation-delay: calc(var(--i) * -160ms);
+}
+
+@keyframes fever-rainbow {
+  0% {
+    color: #ff6b6b;
+    text-shadow: 0 0 12px #ff6b6b;
+  }
+  20% {
+    color: #ffd93d;
+    text-shadow: 0 0 12px #ffd93d;
+  }
+  40% {
+    color: #6bffb8;
+    text-shadow: 0 0 12px #6bffb8;
+  }
+  60% {
+    color: #6bd5ff;
+    text-shadow: 0 0 12px #6bd5ff;
+  }
+  80% {
+    color: #b98cff;
+    text-shadow: 0 0 12px #b98cff;
+  }
+  100% {
+    color: #ff6b6b;
+    text-shadow: 0 0 12px #ff6b6b;
+  }
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-raised);
+  color: var(--text-dim);
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(45, 60, 90, 0.14);
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.game-overlay {
+  position: absolute;
+  inset: 8px;
+  /* メに z-index を持たせているので、明示しないと盤面の下に潜ってしまう */
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  border-radius: 11px;
+  background: var(--overlay-veil);
+  text-align: center;
+  backdrop-filter: blur(3px);
+}
+
+.game-overlay h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+/* --- タイトル画面 --- */
+/* 絵を画面いっぱいに敷く。盤面の中ではなく画面そのものを覆うので、
+   .game-overlay ではなく fixed で置いている。 */
+/* 絵の読み込みが終わるまでの下地。起動時のサイコロの画面と同じ色にして、
+   万一絵が遅れても色が切り替わって見えないようにする（絵は振った瞬間から先読みしている）。 */
+.title-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.title-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* 画面いっぱいに敷く。縦長の画面では左右が切れるが、キャラクターも
+     ロゴも絵の中央にあるので、中央を残す形で切る。 */
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+
+/* 目には見せないが、読み上げと検索には残す見出し。
+   タイトル文字は絵の中に描かれているので、画面には出さない。 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 絵は画面いっぱいに敷いてある。目の1〜5の絵は 600x1300 でスマホの画面と同じ比率なので
+   ほぼ切れずに見える（6 の前からの絵は 9:16 なので、細長い画面では左右が切れる）。
+   ロゴの下端は、どの絵でも画面高さの 75% より上にある。ボタン群はその下（390x844 で上端 79%）。
+   画面下から数えているが、ホームバーぶんは足さない。足すとロゴ側へ
+   せり上がって重なってしまうため。 */
+.title-controls {
+  position: absolute;
+  bottom: 14px;
+  right: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 1.7vh, 14px);
+}
+
+/* スタートを画面中央に保ったまま、説明だけ右へ出す。
+   左右に同じ幅の枠を置くことで中央がずれない。 */
+.title-actions {
+  display: grid;
+  width: 100%;
+  padding: 0 24px;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+/* サイコロ状の角丸四角。盤面のメと同じ質感をそのまま使う。
+   ロゴ下に残る高さは端末によって変わる（844pxで156px、667pxで123px）。
+   固定サイズだと短い端末で画面外へ出るので、画面高さに追従させる。 */
+.title-start {
+  width: clamp(62px, 10vh, 90px);
+  height: clamp(62px, 10vh, 90px);
+  padding: 0;
+  border: 0;
+  border-radius: 26%;
+  /* 盤面の 1 と 6 のメと同じ色。COLORS のピンクを変えたらここも合わせる */
+  background-color: #fc6dac;
+  background-image:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 46%),
+    linear-gradient(rgba(255, 255, 255, 0) 55%, rgba(20, 8, 30, 0.22));
+  box-shadow:
+    inset 0 -3px 0 rgba(20, 8, 30, 0.22),
+    inset 0 0 0 1px rgba(20, 8, 30, 0.28),
+    0 4px 12px rgba(20, 10, 40, 0.45);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.title-sound {
+  /* 3列グリッドの左枠の末尾に置く。右の説明ボタンと鏡合わせにして、
+     スタートの左右が同じ空き方になるようにする。 */
+  justify-self: end;
+  margin-right: 14px;
+  width: clamp(40px, 6.1vh, 54px);
+  height: clamp(40px, 6.1vh, 54px);
+  padding: 0;
+  border: 0;
+  border-radius: 26%;
+  background-color: #5d6a7f;
+  background-image:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 46%),
+    linear-gradient(rgba(255, 255, 255, 0) 55%, rgba(20, 8, 30, 0.22));
+  box-shadow:
+    inset 0 -2px 0 rgba(20, 8, 30, 0.22),
+    inset 0 0 0 1px rgba(20, 8, 30, 0.28),
+    0 3px 8px rgba(20, 10, 40, 0.4);
+  color: #ffffff;
+  /* 絵文字なので、説明ボタンの文字より一回り大きくする */
+  font-size: clamp(17px, 2.6vh, 22px);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.title-sound:active {
+  transform: translateY(1px);
+}
+
+.title-help {
+  /* 3列グリッドの右枠の先頭に置く。そのままだとスタートに接するので離す */
+  justify-self: start;
+  margin-left: 14px;
+  width: clamp(40px, 6.1vh, 54px);
+  height: clamp(40px, 6.1vh, 54px);
+  padding: 0;
+  border: 0;
+  border-radius: 26%;
+  background-color: #5d6a7f;
+  background-image:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 46%),
+    linear-gradient(rgba(255, 255, 255, 0) 55%, rgba(20, 8, 30, 0.22));
+  box-shadow:
+    inset 0 -2px 0 rgba(20, 8, 30, 0.22),
+    inset 0 0 0 1px rgba(20, 8, 30, 0.28),
+    0 3px 8px rgba(20, 10, 40, 0.4);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.title-start:active,
+.title-help:active {
+  transform: translateY(1px);
+}
+
+/* --- 説明画面 --- */
+.help-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.help-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: max(12px, env(safe-area-inset-top)) 14px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.help-back {
+  width: 40px;
+  height: 32px;
+  border: 0;
+  border-radius: 9px;
+  background: #5d6a7f;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.help-heading {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.help-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px calc(40px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
+}
+
+.help-body h2 {
+  margin: 22px 0 8px;
+  color: var(--text);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+
+.help-body section:first-child h2 {
+  margin-top: 4px;
+}
+
+.help-body p {
+  margin: 0 0 10px;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.help-body ul {
+  /* Tailwind の初期化で list-style が none になっているので戻す */
+  margin: 0 0 10px;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.help-body li {
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* 合計7の組み合わせ。文で説明するより、実物のメを並べたほうが早い。 */
+.help-pairs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 4px 0 12px;
+}
+
+.help-pair {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.help-pair-sum {
+  color: var(--text);
+}
+
+.lang-switch {
+  display: flex;
+  gap: 8px;
+}
+
+/* グレー地に白文字の小さめ横長。タイトルでは絵の上に乗るので、
+   透け過ぎない濃さにしてある。 */
+.lang-switch button {
+  width: 104px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(58, 66, 84, 0.82);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+/* 選択中は地を濃くし、白い内枠で囲う。
+   どちらもグレー地・白文字のままなので、色を増やさずに区別できる。 */
+.lang-switch button.is-on {
+  background: rgba(24, 29, 42, 0.94);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+
+/* 説明画面のタブは絵の上ではないので、透過を外して素の灰色にする */
+.lang-switch.is-compact {
+  margin-left: auto;
+}
+
+.lang-switch.is-compact button {
+  width: 84px;
+  background: #8d9aad;
+  box-shadow: none;
+}
+
+.lang-switch.is-compact button.is-on {
+  background: #2b3444;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+/* 一時停止中とゲームオーバーでは、盤面のほうを見せたいのでタイトルを引っ込める */
+.game-overlay h1.is-quiet {
+  color: var(--text-mute);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+}
+
+.overlay-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.overlay-secondary {
+  min-width: 120px;
+  min-height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-mute);
+  background: transparent;
+}
+
+.game-overlay p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.game-overlay button {
+  min-width: 120px;
+  min-height: 38px;
+  padding: 0 18px;
+  font-weight: 800;
+}
+
+.gameover-panel {
+  display: grid;
+  gap: 6px;
+  width: min(82%, 250px);
+  padding: 18px 18px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 14px 34px rgba(45, 60, 90, 0.18);
+}
+
+.gameover-panel strong {
+  color: var(--text);
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.gameover-panel > span {
+  color: var(--text-mute);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.gameover-panel ol {
+  display: grid;
+  gap: 7px;
+  margin: 8px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--line-soft);
+  list-style: none;
+}
+
+/* ゲームオーバー確定時。画面全体を無彩色に落として止めて見せる */
+/* ゲームオーバー中は画面全体に色を残す。
+   以前はここで grayscale と brightness を掛けていたが、マスごとの
+   .is-gray にも同じフィルターが掛かるため二重になり、波が通ったマスだけが
+   さらに暗く沈んで、処理が引っかかったように見えていた。
+   灰にするのはマス側だけに任せる。全画面のフィルターは負荷も大きい。 */
+.game-shell.is-freezing {
+  /* 盤面の外は少しだけ落として、終わったことが分かる程度に留める */
+  opacity: 0.96;
+}
+
+/* ニコニコメ：2と5の顔を交互に点滅させる */
+.nico-face {
+  position: absolute;
+  inset: 0;
+}
+
+.nico-face-a {
+  animation: nico-blink 0.72s steps(1, end) infinite;
+}
+
+.nico-face-b {
+  animation: nico-blink 0.72s steps(1, end) infinite;
+  animation-delay: 0.36s;
+}
+
+@keyframes nico-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.die-nico {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 0 10px rgba(60, 30, 70, 0.35);
+}
+
+/* ボム成立時に飛び散る円。
+   1つ1つは単色だが、7色のパステルが混ざって集合が虹色に見える。
+   飛びながら点滅するよう、透明度を1つのアニメーション内で上下させている。 */
+.burst-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.burst-particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--size);
+  height: var(--size);
+  margin-left: calc(var(--size) / -2);
+  margin-top: calc(var(--size) / -2);
+  border-radius: 999px;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: burst-particle var(--dur) cubic-bezier(0.15, 0.75, 0.3, 1) var(--delay) forwards;
+}
+
+@keyframes burst-particle {
+  0% {
+    transform: translate(0, 0) scale(0.35);
+    opacity: 0;
+  }
+
+  8% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.12), calc(var(--dy) * 0.12)) scale(1.15);
+  }
+
+  22% {
+    opacity: 0.35;
+  }
+
+  36% {
+    opacity: 1;
+  }
+
+  52% {
+    opacity: 0.4;
+  }
+
+  68% {
+    opacity: 1;
+  }
+
+  84% {
+    opacity: 0.45;
+  }
+
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* ボム成立時。重心から四方へ弾け飛びながら消える */
+.die-burst {
+  z-index: 3;
+  animation: bomb-burst 900ms cubic-bezier(0.22, 0.7, 0.25, 1) forwards;
+}
+
+@keyframes bomb-burst {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    filter: brightness(1);
+    opacity: 1;
+  }
+
+  12% {
+    transform: translate(0, 0) scale(1.35) rotate(0deg);
+    filter: brightness(2.6) saturate(1.4);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(calc(var(--bx) * 260%), calc(var(--by) * 260%)) scale(0.15)
+      rotate(220deg);
+    filter: brightness(1.6);
+    opacity: 0;
+  }
+}
+
+/* 虹ボムが消す範囲。上の9段を、上から下へ流れる光の波で包む。
+   メの乗っていないマスも光らせないと、消える「範囲」が読めない。
+
+   以前はマスごとに白黒を乱数の位相で steps 点滅させていた。隣り合うマスが
+   ばらばらに反転するので市松模様のチラつきになり、見ていて気持ち悪かった。
+   いまは次の3点で落ち着かせている。
+   - 白黒の反転をやめ、白い光を「重ねる」だけにした。地の色もメの色も残る
+   - 段の番号（--mi）で遅らせるので、同じ段はそろって光り、波が下へ流れる
+   - steps ではなく ease-in-out で、明るさがなめらかに満ち引きする
+   光は ::after の opacity だけで動かすので、描き直しが起きない。 */
+.board-cell.is-mono::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4; /* メ（z-index 3 まで）の上から包む */
+  pointer-events: none;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(255, 255, 255, 0.62) 0%,
+    rgba(255, 255, 255, 0.34) 62%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+  opacity: 0.12;
+  will-change: opacity;
+  animation: rainbow-wave 900ms ease-in-out infinite;
+  animation-delay: calc(var(--mi) * 70ms);
+}
+
+@keyframes rainbow-wave {
+  0%,
+  100% {
+    opacity: 0.12;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* メは光の波に合わせて、ほんの少しだけ浮き上がる。
+   色は変えない。範囲の中にいることだけを動きで見せる。 */
+.die-mono {
+  animation: rainbow-lift 900ms ease-in-out infinite;
+  animation-delay: calc(var(--mi) * 70ms);
+}
+
+@keyframes rainbow-lift {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 波は止め、範囲が光っていることだけ残す */
+  .board-cell.is-mono::after {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .die-mono {
+    animation: none;
+  }
+}
+
+/* ミッションの仕切り直し。白く光らせず、近くへ軽くはじけて、すばやく消える。
+   .die-burst の shorthand を名前と長さだけ差し替える。飛ぶ距離はマスの0.9個ぶん */
+.die-burst-scatter {
+  animation-name: scatter-out;
+  animation-duration: 360ms;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes scatter-out {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(calc(var(--bx) * 90%), calc(var(--by) * 90%)) scale(0.72);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 動かさず、すっと消えるだけにする */
+  .die-burst-scatter {
+    animation: scatter-fade 260ms ease-out forwards;
+  }
+
+  @keyframes scatter-fade {
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+/* 虹ボムの発動。9段のメが、範囲の中心から外へ押し広げられてから散る。
+   .die-burst の shorthand をあとから名前と長さだけ差し替えている。
+   --bx / --by は中心からの向き×飛ぶ距離（0.55〜1）。遠いメほど遠くへ行くので、
+   陣形そのものがふくらんで見える。 */
+.die-burst-rainbow {
+  animation-name: rainbow-burst;
+  animation-duration: 820ms;
+  animation-timing-function: linear;
+}
+
+@keyframes rainbow-burst {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
+  }
+
+  /* 押し広げ。全員がそろって外へ半マスほど膨らむ。ここではまだ回さない */
+  22% {
+    transform: translate(calc(var(--bx) * 70%), calc(var(--by) * 70%)) scale(1.12) rotate(0deg);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.18, 0.7, 0.3, 1);
+  }
+
+  /* 散る。回りながら一気に外へ抜ける */
+  100% {
+    transform: translate(calc(var(--bx) * 640%), calc(var(--by) * 640%)) scale(0.2)
+      rotate(calc(var(--bx) * 420deg + 120deg));
+    opacity: 0;
+  }
+}
+
+/* 虹ボムが弾けた瞬間だけ、画面ぜんたいに虹の粒を散らす。
+   フィーバーの粒と同じ塗り方（グラデーションで縁をにじませる）にして、
+   blur を使わずに済ませている。違うのは、外向きに一度きり飛ぶところだけ。 */
+.rainbow-sparks {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.rainbow-sparks span {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  width: var(--size);
+  height: var(--size);
+  margin-left: calc(var(--size) / -2);
+  margin-top: calc(var(--size) / -2);
+  border-radius: 999px;
+  background: radial-gradient(
+    circle closest-side,
+    var(--color) 0%,
+    var(--color) 78%,
+    transparent 100%
+  );
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: rainbow-spark var(--dur) cubic-bezier(0.12, 0.7, 0.3, 1) var(--delay) forwards;
+}
+
+@keyframes rainbow-spark {
+  0% {
+    transform: translate(0, 0) scale(0.2);
+    opacity: 0;
+  }
+
+  14% {
+    transform: translate(calc(var(--dx) * 0.16), calc(var(--dy) * 0.16)) scale(1.1);
+    opacity: 1;
+  }
+
+  48% {
+    opacity: 0.75;
+  }
+
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.45);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 飛ばさずに、その場で光って消えるだけにする */
+  .rainbow-sparks span {
+    animation-name: rainbow-spark-still;
+  }
+
+  @keyframes rainbow-spark-still {
+    0% {
+      opacity: 0;
+    }
+
+    25% {
+      opacity: 0.9;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  /* 飛ばす動きは止めるが、消えたことは伝わらないと困るので
+     その場で白く飛ばして消すところだけ残す */
+  .die-burst-rainbow {
+    animation: rainbow-burst-still 320ms ease-out forwards;
+  }
+
+  @keyframes rainbow-burst-still {
+    0% {
+      filter: brightness(1);
+      opacity: 1;
+    }
+
+    100% {
+      filter: brightness(3);
+      opacity: 0;
+    }
+  }
+
+}
+
+/* フィーバー中は盤面の縁が発光する */
+.board-panel.is-fever {
+  border-color: var(--hl);
+  box-shadow:
+    0 0 0 1px rgba(255, 133, 191, 0.5),
+    0 0 26px rgba(255, 133, 191, 0.35),
+    0 10px 30px rgba(45, 60, 90, 0.14);
+}
+
+
+.die-flashing {
+  animation: clear-flash 50ms steps(1, end) infinite;
+}
+
+@keyframes clear-flash {
+  0%,
+  49% {
+    background-color: #ffffff !important;
+    box-shadow: inset 0 0 0 2px rgba(30, 20, 45, 0.75), 0 0 16px rgba(255, 255, 255, 0.85);
+  }
+
+  50%,
+  100% {
+    filter: brightness(1.45);
+  }
+}
+
+/* --- ニコニコボムの発動演出 --- */
+/* くっついたニコニコメを中心にスポットライトを開け、その外側だけを荒らす。
+   「外側だけ」を作るのに、透明な円に極端に大きい box-shadow を付けている。
+   影の部分が円の外側そのものになるので、マスクを組まずに穴あきの層が作れる。 */
+.nico-charge {
+  position: absolute;
+  inset: 8px;
+  z-index: 8;
+  border-radius: 11px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/*
+  狙いの外側を叩く幕。
+  以前は「白を difference で重ねて外側を反転」「9999px の影を白黒に切り替え」
+  「円の幅と高さを縮める」の3つで作っていて、どれも毎コマ描き直しが要り、
+  スマホでは処理落ちしていた。白い地が画面を覆うので、盤面も見えなくなっていた。
+
+  いまは紫・白・黒の3枚の幕を重ねる。どれも「狙いに穴の開いた半透明の幕」を
+  一度だけ塗っておき、あとは
+  - 穴を閉じる … 狙いを中心に大きく拡大したところから等倍へ縮める（transform）
+  - 3色を叩く … 3枚の不透明度を順番に切り替える（opacity）
+  だけで動かす。どちらも描き直しの要らない動かし方なので、盤面の上に重ねても軽い。
+  半透明なので、積み上がった盤面は透けて見えたまま。
+*/
+.nico-veil {
+  position: absolute;
+  inset: 0;
+  transform-origin: var(--cx) var(--cy);
+  background: radial-gradient(
+    circle at var(--cx) var(--cy),
+    transparent 0 46px,
+    var(--veil) 50px
+  );
+  opacity: 0;
+  will-change: transform, opacity;
+  animation:
+    nico-close var(--nico-charge-ms, 1200ms) cubic-bezier(0.5, 0, 0.75, 0.4) forwards,
+    var(--veil-flash) 360ms steps(1, end) infinite;
+}
+
+.nico-veil-purple {
+  --veil: rgba(128, 52, 214, 0.5);
+  --veil-flash: nico-flash-a;
+}
+
+.nico-veil-white {
+  --veil: rgba(255, 255, 255, 0.38);
+  --veil-flash: nico-flash-b;
+}
+
+.nico-veil-black {
+  --veil: rgba(8, 4, 16, 0.58);
+  --veil-flash: nico-flash-c;
+}
+
+/* 穴が狙いへ閉じる。最初は穴が盤面より大きいので、幕はどこにも掛かっていない */
+@keyframes nico-close {
+  0% {
+    transform: scale(18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 紫 → 白 → 黒。1色 120ms。速すぎると目に刺さるチラつきになる */
+@keyframes nico-flash-a {
+  0% {
+    opacity: 1;
+  }
+  33.33% {
+    opacity: 0;
+  }
+}
+
+@keyframes nico-flash-b {
+  0% {
+    opacity: 0;
+  }
+  33.33% {
+    opacity: 1;
+  }
+  66.66% {
+    opacity: 0;
+  }
+}
+
+@keyframes nico-flash-c {
+  0% {
+    opacity: 0;
+  }
+  66.66% {
+    opacity: 1;
+  }
+}
+
+/* 狙いの縁。大きいところから一気に締まって、最後は紫と白で光る。
+   大きさは固定して transform だけで動かすので、描き直しが起きない */
+.nico-charge-ring {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: 92px;
+  height: 92px;
+  margin: -46px 0 0 -46px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 0 5px rgba(150, 70, 235, 0.75),
+    0 0 22px 8px rgba(150, 70, 235, 0.45);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: nico-ring var(--nico-charge-ms, 1200ms) cubic-bezier(0.5, 0, 0.75, 0.4) forwards;
+}
+
+/* ひとりぼっちのニコニコメの爆破範囲。外から枠が締まって現れ、
+   紫と白の縁を点滅させる。点滅はだんだん速く（段ごとの長さを縮めて打つ） */
+
+@keyframes nico-ring {
+  0% {
+    opacity: 0;
+    transform: scale(6);
+  }
+  30% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 押し寄せる黒い粒。狙いの位置を原点に置き、外側の b が向き（止まった回転）を、
+   中の i が「遠く → 縁」の動きを受け持つ。動きは出発距離の違う4つの帯ごとに
+   値を決め打ちしてあるので、粒ごとの計算が要らない。
+   来る途中は進む向きに伸びた筋、着いたら丸い粒に戻る。
+   黒だけだと暗い盤面に溶けるので、紫の細い縁取りを付けてある。 */
+.nico-swarm {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: 0;
+  height: 0;
+}
+
+.nico-swarm b {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+
+.nico-swarm i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  border-radius: 999px;
+  background: #07040c;
+  box-shadow: 0 0 0 1px rgba(190, 140, 255, 0.6);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation-duration: 900ms; /* 遅延は最大0.3秒。溜め1.2秒のうちに全部が縁へ着く長さ */
+  animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.35);
+  animation-fill-mode: forwards;
+}
+
+.nico-swarm i.band-0 {
+  animation-name: nico-swarm-0;
+}
+.nico-swarm i.band-1 {
+  animation-name: nico-swarm-1;
+}
+.nico-swarm i.band-2 {
+  animation-name: nico-swarm-2;
+}
+.nico-swarm i.band-3 {
+  animation-name: nico-swarm-3;
+}
+
+/* 帯ごとの出発距離（vmax）と着く位置（px）。遠い帯ほど遅れて出る（b 側の遅延） */
+@keyframes nico-swarm-0 {
+  0% { opacity: 0; transform: translateX(46vmax) scale(2.6, 0.8); }
+  12% { opacity: 1; }
+  88% { opacity: 1; transform: translateX(52px) scale(2.2, 0.85); }
+  100% { opacity: 1; transform: translateX(46px) scale(1); }
+}
+@keyframes nico-swarm-1 {
+  0% { opacity: 0; transform: translateX(58vmax) scale(2.6, 0.8); }
+  12% { opacity: 1; }
+  88% { opacity: 1; transform: translateX(57px) scale(2.2, 0.85); }
+  100% { opacity: 1; transform: translateX(51px) scale(1); }
+}
+@keyframes nico-swarm-2 {
+  0% { opacity: 0; transform: translateX(74vmax) scale(2.6, 0.8); }
+  12% { opacity: 1; }
+  88% { opacity: 1; transform: translateX(55px) scale(2.2, 0.85); }
+  100% { opacity: 1; transform: translateX(49px) scale(1); }
+}
+@keyframes nico-swarm-3 {
+  0% { opacity: 0; transform: translateX(92vmax) scale(2.6, 0.8); }
+  12% { opacity: 1; }
+  88% { opacity: 1; transform: translateX(60px) scale(2.2, 0.85); }
+  100% { opacity: 1; transform: translateX(54px) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nico-veil {
+    animation: nico-close var(--nico-charge-ms, 1200ms) ease-in forwards;
+    opacity: 0.8;
+  }
+  .nico-veil-white,
+  .nico-veil-black {
+    display: none;
+  }
+  .nico-swarm {
+    display: none;
+  }
+}
+
+/* --- 案内役サイカ --- */
+/* 盤面とスコア段のあいだに、盤面のマス1つぶんの高さで挟む帯。 */
+.saika-bar {
+  display: grid;
+  grid-column: 2;
+  grid-row: 2;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  justify-self: center;
+  width: min(82vw, 380px);
+}
+
+/* ドット絵に差し替える前提の枠。32×32の素材を2倍で置くと想定して48px。
+   image-rendering: pixelated は、拡大したときに輪郭がぼやけないようにする指定。 */
+.saika-face {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  font-size: 40px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.saika-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.saika-bubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  margin: 0;
+  padding: 0;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* 技名と連鎖は強めに、褒め言葉はやわらかく */
+.saika-bubble[data-mood='bomb'] {
+  color: var(--hl);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.saika-bubble[data-mood='chain'] {
+  color: #1f7fb8;
+  font-weight: 800;
+}
+
+.saika-bubble[data-mood='praise'] {
+  color: var(--hl);
+  font-weight: 700;
+}
+
+/* --- ボム成立時に盤面中段へ出す英字バナー --- */
+.bomb-banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 44%;
+  z-index: 6;
+  text-align: center;
+  font-size: clamp(26px, 8vw, 44px);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.85);
+  animation: bomb-banner 900ms cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
+}
+
+/* 技ごとに色を変える。文字自体をグラデーションで塗るため、
+   背景をテキストの形で切り抜いている。 */
+.bomb-banner[data-kind='spa1'] {
+  background-image: linear-gradient(92deg, #ff5f8d, #ff9f1c, #ffd93d);
+}
+
+.bomb-banner[data-kind='sla3'] {
+  background-image: linear-gradient(92deg, #3fbf6a, #17b8c4, #4a86e8);
+}
+
+.bomb-banner[data-kind='squ4'] {
+  background-image: linear-gradient(92deg, #17b8c4, #3fbf6a, #d9b400);
+}
+
+.bomb-banner[data-kind='str6'] {
+  background-image: linear-gradient(92deg, #ff9f1c, #ff5f8d, #8b6be0);
+}
+
+.bomb-banner[data-kind='nico'] {
+  background-image: linear-gradient(92deg, #ff5f8d, #ffb703, #3fbf6a, #4a86e8, #8b6be0);
+}
+
+.bomb-banner {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 10px rgba(45, 60, 90, 0.35));
+}
+
+@keyframes bomb-banner {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+
+  32% {
+    transform: scale(1);
+  }
+
+  78% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+@media (max-width: 900px) {
+  .game-shell {
+    grid-template-columns: minmax(320px, 420px);
+    align-items: start;
+    /* 縦積みでは行間と余白がそのまま盤面を削るので、詰められるだけ詰める */
+    gap: 6px;
+    padding: 8px 18px;
+  }
+
+  .left-hud,
+  .right-hud {
+    width: min(100%, 420px);
+    justify-self: center;
+  }
+
+  .left-hud {
+    display: grid;
+    /* FEVERの5文字が横幅を使い切れるよう、余りをこの列に寄せる */
+    grid-template-columns: auto auto 1fr auto auto;
+    align-items: center;
+    order: 3;
+    padding-top: 0;
+  }
+
+  /* 縦積みでは 盤面 → サイカ → スコア段 → その他 の順に並べる */
+  .saika-bar {
+    grid-column: auto;
+    grid-row: auto;
+    order: 2;
+    width: min(100%, 420px);
+  }
+
+  /* 盤面は7列14段。横幅だけで決めると縦がはみ出す端末があるので、
+     画面の高さからも上限をかけて14段まるごと収まるようにする。
+     単位は svh。dvh はアドレスバーの伸縮でリアルタイムに値が変わるため、
+     スクロールのたびに盤面が再計算されて描画がガタつく。 */
+  /* 盤面の高さ上限。引く値は 上下の余白＋行間＋サイカ帯＋スコア段 の合計。
+     短い画面ほど、この固定分が画面に占める割合が大きくなって溢れやすいので、
+     全高で足りる値に合わせている。 */
+  .board-panel {
+    justify-self: center;
+    order: 1;
+    width: min(100%, 420px, calc((100svh - 118px) * 7 / 14));
+  }
+
+  /* スマホでは スコア段より下を出さない。
+     NEXT が画面下で見切れるうえ、遊び方・記録・タッチボタンは
+     盤面のスワイプ操作とタイトル画面の説明で足りている。
+     一時停止と音の切り替えは スコア段（.left-hud）に残る。 */
+  .right-hud {
+    display: none;
+  }
+
+  .info-panel {
+    width: 100%;
+  }
+
+  .fever-wrap {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 460px) {
+  .game-shell {
+    padding: 8px 12px;
+  }
+
+  .left-hud,
+  .right-hud {
+    width: 100%;
+  }
+
+  .left-hud {
+    gap: 8px;
+  }
+
+  .info-panel strong {
+    font-size: 16px;
+  }
+
+  .saika-face {
+    width: 63px;
+    height: 63px;
+    font-size: 35px;
+  }
+
+  .saika-bubble {
+    min-height: 63px;
+    font-size: 16px;
+  }
+
+  .pip {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+/* ゲーム中はページをスクロールさせない。
+   スクロールでアドレスバーが伸縮すると、そのぶん表示領域が変わって
+   盤面の位置が動いてしまうため、遊んでいる間は画面を固定する。
+   一時停止・ゲームオーバー中は解除され、下のパネルまで読める。 */
+/* 落下ガイド。操作中のブロックが落ちていく先の空セルを、
+   ぼんやりとしたグレーで照らす。
+   --gi は上からの並び順。これで位相をずらすと、明るいところが
+   ゆっくり下へ流れ続け、平面的に見えるのを避けられる。 */
+.cell-guide {
+  position: absolute;
+  inset: 1px;
+  z-index: 0;
+  border-radius: 22%;
+  background: var(--guide);
+  opacity: 0.18;
+  pointer-events: none;
+  animation: guide-idle 1900ms ease-in-out infinite;
+  animation-delay: calc(var(--gi) * -150ms);
+}
+
+@keyframes guide-idle {
+  0% {
+    opacity: 0.1;
+  }
+  35% {
+    opacity: 0.26;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell-guide {
+    animation: none;
+    opacity: 0.16;
+  }
+}
+
+/* ボムの範囲を見せる発光。
+   core は隣り合う辺をマスの外へはみ出させ、すきまを埋めてひとつながりに見せる。
+   extra ははみ出させず、マスの中だけを同じ色で光らせる。 */
+.cell-glow {
+  position: absolute;
+  top: calc(var(--gt) * -1);
+  right: calc(var(--gr) * -1);
+  bottom: calc(var(--gb) * -1);
+  left: calc(var(--gl) * -1);
+  z-index: 0;
+  border-radius: 8px;
+  background: var(--glow-color);
+  pointer-events: none;
+  animation: glow-pulse 300ms ease-out var(--glow-delay) both;
+}
+
+.cell-glow.is-extra {
+  /* 巻き込まれるだけのマスは、核より控えめに光らせて区別をつける */
+  border-radius: 7px;
+  opacity: 0.75;
+}
+
+/* 一気通貫やフィーバーで巻き添えになったマス。
+   技の色に白を重ねて、本体とは別に「巻き込まれた側」だと分かるようにする。 */
+.cell-glow.is-sweep {
+  opacity: 0.9;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.65)),
+    var(--glow-color);
+  box-shadow: 0 0 18px 6px rgba(255, 255, 255, 0.55);
+}
+
+@keyframes glow-pulse {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 0 var(--glow-color);
+  }
+  40% {
+    opacity: 1;
+    box-shadow: 0 0 26px 10px var(--glow-color);
+  }
+  100% {
+    opacity: 0.9;
+    box-shadow: 0 0 16px 6px var(--glow-color);
+  }
+}
+
+/* ニコニコボム。盤面の2と5が黒地に白メ／白地に黒メで激しく反転点滅する */
+.die-blast {
+  z-index: 2;
+  animation: nico-blast 90ms steps(1, end) infinite;
+}
+
+@keyframes nico-blast {
+  0% {
+    background: #000;
+    box-shadow: 0 0 0 2px #fff, 0 0 22px 8px rgba(255, 255, 255, 0.85);
+  }
+  50% {
+    background: #fff;
+    box-shadow: 0 0 0 2px #000, 0 0 26px 10px rgba(255, 255, 255, 0.95);
+  }
+}
+
+.die-blast .pip {
+  animation: nico-blast-pip 90ms steps(1, end) infinite;
+}
+
+@keyframes nico-blast-pip {
+  0% {
+    background: #fff;
+  }
+  50% {
+    background: #111;
+  }
+}
+
+/* 反転中はニコニコメの顔の交互点滅を止める。二重に点滅すると読めない */
+.die-blast .nico-face {
+  animation: none;
+  opacity: 1;
+}
+
+.die-blast .nico-face-b {
+  display: none;
+}
+
+body.is-locked {
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+}
+
+/* ===== デバッグパネル（リリース時に削除する） =====
+   ?debug=1 のときだけ出る。盤面の上に浮かせているので、
+   通常のレイアウトには一切影響しない。 */
+.debug-panel {
+  position: fixed;
+  left: 8px;
+  top: 8px;
+  z-index: 20;
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid #ff9300;
+  border-radius: 10px;
+  background: rgba(10, 13, 17, 0.92);
+  color: var(--text);
+  font-size: 11px;
+}
+
+.debug-panel strong {
+  color: #ff9300;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.debug-panel label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.debug-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 190px;
+}
+
+.debug-values button {
+  min-width: 40px;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.debug-values button.is-on {
+  border-color: #ff9300;
+  background: #2a2118;
+  color: #ffd48a;
+}
+
+.debug-panel p {
+  margin: 0;
+  color: var(--text-mute);
+  font-size: 10px;
+}
+/* ===== デバッグパネルここまで ===== */
+
+/* --- フィーバー中の背景 --- */
+/* 盤面の外側に7色の円を散らして、画面全体をにぎやかにする。
+   fixed で画面いっぱいに敷き、盤面やHUDより後ろに置く。
+   盤面の上に乗せるとメが見づらくなるので、あくまで背景に留める。 */
+.fever-sparks {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fever-sparks span {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  width: var(--size);
+  height: var(--size);
+  margin-left: calc(var(--size) / -2);
+  margin-top: calc(var(--size) / -2);
+  border-radius: 999px;
+  /* 縁のにじみは、中心から外へ薄くなるグラデーションで作る。
+     filter: blur() は要素ごとにぼかし直しが走り、数が増えるとそのまま
+     負荷になる。塗りで済ませれば一度描いたものを使い回せる。 */
+  background: radial-gradient(
+    circle closest-side,
+    var(--color) 0%,
+    var(--color) 78%,
+    transparent 100%
+  );
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: fever-spark var(--dur) ease-in-out var(--delay) infinite;
+}
+
+/* ふくらんで、瞬いて、しぼむ。間に短い明滅を挟むと「はじける」感じが出る */
+@keyframes fever-spark {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  18% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+  32% {
+    opacity: 0.45;
+  }
+  46% {
+    transform: scale(1.15);
+    opacity: 0.85;
+  }
+  64% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0.35);
+    opacity: 0;
+  }
+}
+
+/* 背景を敷いたぶん、中身は必ず前に出す。
+   指定しないと、粒が盤面やスコアの上に乗ってしまう。
+
+   .board-panel にはあえて z-index を付けない。付けると新しい重ね合わせ文脈が
+   でき、その中にいるタイトル画面（z-index 40）が外へ出られなくなって、
+   スコア段のほうが前に来てしまう。
+   位置指定だけの .board-panel は、DOM 上で粒より後ろにあるぶん自然に前へ出る。 */
+.game-shell > .left-hud,
+.game-shell > .right-hud,
+.game-shell > .saika-bar {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fever-sparks span {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+/* --- ゲームオーバー演出 --- */
+/* 下から順に灰へ沈めていく。全体に filter を掛けるのではなく
+   マス単位で掛けるので、染まっていく途中が見える。 */
+.board-cell.is-gray .die {
+  filter: grayscale(1) brightness(0.72);
+  transition: filter 220ms ease-out;
+}
+
+/* 文字は散らばった位置から所定の場所へ飛び込む。
+   出る順番と飛んでくる向きは JS 側が文字ごとに渡している。 */
+.scatter-text {
+  display: inline-flex;
+  gap: 0.02em;
+}
+
+.scatter-text > span {
+  display: inline-block;
+  opacity: 0;
+  animation: scatter-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.4) var(--delay) both;
+}
+
+@keyframes scatter-in {
+  0% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1.6);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scatter-text > span {
+    animation: none;
+    opacity: 1;
+  }
+  .board-cell.is-gray .die {
+    transition: none;
+  }
+}
+
+/* --- ボムが出る直前の点滅 --- */
+/* 本来の色と反対色を、素早く入れ替える。中間色を挟まないよう steps(1) で切り替える。
+   じわっと変えると「点滅」ではなく「色が動いている」ように見えてしまう。 */
+.die-charge {
+  animation: die-charge 110ms steps(1, end) infinite;
+}
+
+@keyframes die-charge {
+  0% {
+    background-color: var(--base);
+  }
+
+  50% {
+    background-color: var(--flip);
+    filter: brightness(1.25);
+  }
+}
+
+/* フィーバーで巻き添えになったマスは、3色とその反対色の6色を回す。
+   本体の点滅と区別がつくよう、こちらは色数で見せる。 */
+.die-charge-fever {
+  animation: die-charge-fever 300ms steps(1, end) infinite;
+}
+
+@keyframes die-charge-fever {
+  0% {
+    background-color: #fc6dac;
+  }
+
+  16.6% {
+    background-color: #6dfcbd;
+  }
+
+  33.3% {
+    background-color: #8b46d2;
+  }
+
+  50% {
+    background-color: #8dd246;
+  }
+
+  66.6% {
+    background-color: #43ae39;
+  }
+
+  83.3% {
+    background-color: #a439ae;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .die-charge,
+  .die-charge-fever {
+    animation-duration: 400ms;
+  }
+}
+
+/* ===== 虹ボム ===== */
+
+/* 所持数。タイトル画面にだけ置く。
+   文字は添えず、3つの枠がいくつ埋まっているかだけで示す。
+   絵の上に乗るので、空の枠も見えるようにフチと影を持たせている。 */
+.title-stock {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.title-stock span {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(20, 14, 34, 0.45);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.75),
+    0 1px 4px rgba(20, 10, 40, 0.5);
+}
+
+/* 埋まっている枠。虹色の玉を入れて、わずかに光らせる */
+.title-stock span.is-on {
+  background: conic-gradient(#ff6f91, #ffd93d, #5ecb7a, #3fc7d4, #5b8dee, #a06be0, #ff6f91);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.9),
+    0 0 12px rgba(160, 107, 224, 0.85);
+}
+
+/* 獲得ワイプ。盤面の中段に短く出して、すぐ引く */
+/* 獲得ワイプ。斜めに傾いた帯が、左下から右上へ画面を横切る。
+   入りと出は速く、読ませたい真ん中だけ粘る（緩急）。
+   動かすのは transform と opacity だけなので、字数が増えても重くならない。 */
+.rainbow-award {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 40%;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: rainbow-award var(--award-ms, 1000ms) linear both;
+}
+
+@keyframes rainbow-award {
+  /* 左下の画面外から飛び込む */
+  0% {
+    opacity: 0;
+    transform: translate(-115%, 46%) rotate(-13deg) scale(0.92);
+  }
+
+  /* 一気に中央へ。ここまでが「スピーディ」 */
+  22% {
+    opacity: 1;
+    transform: translate(2%, -2%) rotate(-13deg) scale(1.04);
+  }
+
+  /* 読ませるあいだはほとんど止まる。ここが「緩」 */
+  30% {
+    transform: translate(0, 0) rotate(-13deg) scale(1);
+  }
+
+  68% {
+    opacity: 1;
+    transform: translate(6%, -2%) rotate(-13deg) scale(1);
+  }
+
+  /* 右上の画面外へ抜ける */
+  100% {
+    opacity: 0;
+    transform: translate(120%, -48%) rotate(-13deg) scale(0.92);
+  }
+}
+
+.rainbow-award-icon {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: conic-gradient(#ff6f91, #ffd93d, #5ecb7a, #3fc7d4, #5b8dee, #a06be0, #ff6f91);
+  box-shadow: 0 0 22px rgba(160, 107, 224, 0.75);
+}
+
+.rainbow-award strong {
+  display: flex;
+  font-size: clamp(18px, 5.4vw, 26px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* 1字ずつ7色を送る。遅延を字の順にずらすだけで、
+   色そのものが文字列の上を流れていくように見える。 */
+.rainbow-award strong i {
+  font-style: normal;
+  text-shadow: 0 2px 10px rgba(20, 10, 40, 0.85);
+  animation: award-hue 700ms linear infinite;
+  animation-delay: calc(var(--ci) * -70ms);
+}
+
+@keyframes award-hue {
+  0% { color: #ff6f91; }
+  16.6% { color: #ffa552; }
+  33.3% { color: #ffd93d; }
+  50% { color: #5ecb7a; }
+  66.6% { color: #3fc7d4; }
+  83.3% { color: #5b8dee; }
+  100% { color: #ff6f91; }
+}
+
+/* 帯のまわりに散らす花火。フィーバーの粒の動きをそのまま速回しする */
+.rainbow-award-sparks {
+  position: absolute;
+  inset: -46px -10px;
+  pointer-events: none;
+}
+
+.rainbow-award-sparks i {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  margin-left: calc(var(--size) / -2);
+  margin-top: calc(var(--size) / -2);
+  border-radius: 999px;
+  background: radial-gradient(
+    circle closest-side,
+    var(--color) 0%,
+    var(--color) 78%,
+    transparent 100%
+  );
+  opacity: 0;
+  animation: fever-spark 400ms ease-in-out var(--delay) infinite;
+}
+
+/* ゲームオーバー直前の「使う？」。
+   盤面を覆って、ここだけに目が行くようにする。 */
+.rainbow-ask {
+  position: absolute;
+  inset: 8px;
+  z-index: 12;
+  display: grid;
+  gap: 14px;
+  place-content: center;
+  justify-items: center;
+  border-radius: 11px;
+  background: rgba(16, 12, 26, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.rainbow-ask p {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(20px, 6vw, 28px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.rainbow-ask-button {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  /* ゲージごと全体をふくらませる。1秒で行って戻る＝いまにも弾けそうな呼吸。
+     中身だけを動かすと的の大きさが変わらず、切迫感が出ない。 */
+  animation: rainbow-swell 1000ms ease-in-out infinite;
+}
+
+@keyframes rainbow-swell {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.14);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 絵の部分だけを分けてある。差し替えるときはここに背景画像を当てる。
+   メーターと同じ真円にして、玉に見せる。 */
+.rainbow-ask-skin {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(#ff6f91, #ffd93d, #5ecb7a, #3fc7d4, #5b8dee, #a06be0, #ff6f91);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.85),
+    0 0 30px rgba(160, 107, 224, 0.8);
+  /* 拡縮はボタン側が持つ。ここは明るさの明滅だけを重ねる */
+  animation: rainbow-pulse 500ms ease-in-out infinite alternate;
+}
+
+/* 光沢。左上から差す白のグラデーションを1枚かぶせるだけで、
+   平らな円がガラス玉に見える。要素は増やさず ::after で済ませる。 */
+.rainbow-ask-skin::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      58% 46% at 32% 24%,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(255, 255, 255, 0.45) 42%,
+      rgba(255, 255, 255, 0) 72%
+    ),
+    radial-gradient(
+      120% 100% at 50% 118%,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0) 46%
+    );
+}
+
+@keyframes rainbow-pulse {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.4); }
+}
+
+/* 周囲を巻くタイムゲージ。3秒かけて一周ぶんが減る。
+   サイコロ型ではなく真円で取り巻く。導火線に見せたいので、
+   角のある輪郭より、ぐるりと一周する円のほうが素直に読める。 */
+.rainbow-ask-gauge {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  /* 塗りはカラーサークルそのもの。減るぶんはマスクで切る。
+     白一色より、いま何色ぶん残っているかが形と色の両方で読める。 */
+  background: conic-gradient(#ff6f91, #ffd93d, #5ecb7a, #3fc7d4, #5b8dee, #a06be0, #ff6f91);
+  -webkit-mask:
+    conic-gradient(#000 var(--left, 100%), transparent 0),
+    radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+  -webkit-mask-composite: source-in;
+  mask:
+    conic-gradient(#000 var(--left, 100%), transparent 0),
+    radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+  mask-composite: intersect;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.55));
+  animation: rainbow-gauge var(--ask-ms, 3000ms) linear forwards;
+}
+
+@keyframes rainbow-gauge {
+  from { --left: 100%; }
+  to { --left: 0%; }
+}
+
+/* --left を動かすには型を教える必要がある。
+   対応していないブラウザでは、下の不透明度だけが動く。 */
+@property --left {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rainbow-ask-skin,
+  .rainbow-ask-button {
+    animation: none;
+  }
+}
+
+/* --- フィーバーの点火 --- */
+/* 画面の中心寄りから粒が外へ弾けて広がる。白い面は使わない。
+   地の色の暗→明は :root の補間が受け持つので、ここは粒だけ。
+   にじみは filter ではなく塗り（放射グラデーション）で作る。 */
+.fever-ignite {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fever-ignite-sparks {
+  position: absolute;
+  inset: 0;
+}
+
+.fever-ignite-sparks span {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  width: var(--size);
+  height: var(--size);
+  margin-left: calc(var(--size) / -2);
+  margin-top: calc(var(--size) / -2);
+  border-radius: 999px;
+  background: radial-gradient(
+    circle closest-side,
+    var(--color) 0%,
+    var(--color) 70%,
+    transparent 100%
+  );
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: fever-ignite-spark var(--dur) cubic-bezier(0.16, 0.84, 0.3, 1) var(--delay) forwards;
+}
+
+/* 中心寄りの出発点から勢いよく出て、行き先で減速し、少し外へ抜けて消える */
+@keyframes fever-ignite-spark {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--fx), var(--fy), 0) scale(0.4);
+  }
+  18% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dx), var(--dy), 0) scale(0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fever-ignite-sparks {
+    display: none;
+  }
+}
+
+/* --- 起動時のサイコロ --- */
+/* 画面ぜんたいがタップの受け口。真ん中に大きなメを1つだけ置く。
+   地は通常時と同じ暗い色で、そのままタイトルへつながる。 */
+.dice-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: clamp(22px, 4vh, 34px);
+  background:
+    radial-gradient(circle at 50% 44%, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 55%),
+    var(--bg);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.dice-intro-die {
+  width: min(38vw, 176px);
+  aspect-ratio: 1;
+  will-change: transform;
+}
+
+/* 目は盤面では 6〜8px の固定なので、大きなサイコロに載せると点のように小さくなる。
+   ここだけサイコロの大きさに対する割合で決め、盤面のメ（目がメの12%前後）に比率を合わせる。 */
+.dice-intro-die .pip {
+  width: 13%;
+  height: 13%;
+}
+
+/* 振る前は、ふわふわ浮いて「触れる」ことを伝える */
+.dice-intro.is-idle .dice-intro-die {
+  animation: intro-idle 1600ms ease-in-out infinite;
+}
+
+@keyframes intro-idle {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(4deg);
+  }
+}
+
+/* 振ったら、弧を描いて転がりながら何回転かする */
+.dice-intro.is-rolling .dice-intro-die {
+  animation: intro-roll 720ms cubic-bezier(0.25, 0.6, 0.35, 1) forwards;
+}
+
+@keyframes intro-roll {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  30% {
+    transform: translateY(-46px) rotate(-260deg) scale(1.08);
+  }
+  62% {
+    transform: translateY(0) rotate(-520deg) scale(0.96);
+  }
+  80% {
+    transform: translateY(-12px) rotate(-640deg) scale(1.02);
+  }
+  100% {
+    transform: translateY(0) rotate(-720deg) scale(1);
+  }
+}
+
+/* 止まった瞬間に、ぽんと一度だけ弾む */
+.dice-intro.is-landed .dice-intro-die {
+  animation: intro-land 360ms cubic-bezier(0.2, 0.9, 0.3, 1.25);
+}
+
+@keyframes intro-land {
+  0% {
+    transform: scale(1.18, 0.86);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 指のアイコン。メに向かってトン、トンと2回タップする動きを繰り返す */
+.dice-intro-hint {
+  display: block;
+  font-size: clamp(38px, 6.4vh, 52px);
+  line-height: 1;
+  animation: intro-hint 1400ms ease-in-out infinite;
+  will-change: transform;
+}
+
+.dice-intro:not(.is-idle) .dice-intro-hint {
+  animation: none;
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+
+@keyframes intro-hint {
+  0%,
+  46%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  12%,
+  32% {
+    transform: translateY(-12px) scale(0.94);
+  }
+  20% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dice-intro.is-idle .dice-intro-die,
+  .dice-intro.is-rolling .dice-intro-die,
+  .dice-intro.is-landed .dice-intro-die,
+  .dice-intro-hint {
+    animation: none;
+  }
+}
+
+
+
+/* --- 有効範囲の軌道 --- */
+/* 消える範囲を、線がサッと走ってなぞる。座標はマス単位（viewBox 0 0 7 14）。
+   マスの列は中央寄せなので、器いっぱいではなくマス7列ぶんの幅に合わせて置く。
+   にじみは filter を使わず、太く薄い線を下に敷いて作る。 */
+.range-trace {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 5; /* メ（3）と虹ボムの光（4）より上 */
+  width: calc(var(--cell-size, 0px) * 7);
+  height: calc(var(--cell-size, 0px) * 14);
+  overflow: visible;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.range-trace path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 下に敷くにじみと、本体の線と、ずらした2本目。走ってなぞり、寿命の終わりにすっと消える。
+   線そのものは JS 側で手描き風に揺らしてあり（sketchPath）、角も丸い。
+   にじみは filter を使わず、太く薄い線を2段重ねてぼかしに見せる。 */
+.trace-glow,
+.trace-line,
+.trace-echo {
+  stroke: var(--c);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  animation:
+    trace-draw var(--draw) cubic-bezier(0.2, 0.7, 0.3, 1) var(--delay) forwards,
+    trace-fade 160ms ease-in calc(var(--delay) + var(--life) - 160ms) forwards;
+}
+
+.trace-glow {
+  stroke-width: 0.3;
+  --peak: 0.24;
+}
+
+.trace-glow-wide {
+  stroke-width: 0.62;
+  --peak: 0.1;
+}
+
+.trace-line {
+  stroke-width: 0.085;
+  --peak: 0.95;
+}
+
+/* 2本目。細く薄く、ほんの少し遅れて走る。本線とわずかに食い違うのが手描きらしさ */
+.trace-echo {
+  stroke-width: 0.04;
+  --peak: 0.55;
+  animation-delay: calc(var(--delay) + 40ms), calc(var(--delay) + var(--life) - 160ms);
+}
+
+/* 線に沿って散る点々。線を描き終えたところで浮かび、またたきながら少しずつ流れる */
+.trace-dots {
+  stroke: var(--c);
+  stroke-width: 0.085;
+  stroke-dasharray: 0 0.045;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  animation:
+    trace-dots-in 220ms ease-out calc(var(--delay) + var(--draw)) forwards,
+    trace-dots-drift var(--life) linear var(--delay) forwards,
+    trace-dots-twinkle 260ms ease-in-out calc(var(--delay) + var(--draw) + 220ms) infinite alternate,
+    trace-fade 160ms ease-in calc(var(--delay) + var(--life) - 160ms) forwards;
+  --peak: 0.85;
+}
+
+@keyframes trace-dots-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: var(--peak);
+  }
+}
+
+@keyframes trace-dots-drift {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -0.09;
+  }
+}
+
+@keyframes trace-dots-twinkle {
+  from {
+    opacity: var(--peak);
+  }
+  to {
+    opacity: 0.35;
+  }
+}
+
+@keyframes trace-draw {
+  from {
+    stroke-dashoffset: 1;
+    opacity: var(--peak);
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: var(--peak);
+  }
+}
+
+@keyframes trace-fade {
+  from {
+    stroke-dashoffset: 0;
+    opacity: var(--peak);
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* 線の先頭を走る光。短い一片が、線を描き終えるのと同じ速さで端まで駆け抜ける */
+.trace-head {
+  stroke: #ffffff;
+  stroke-width: 0.17;
+  stroke-dasharray: 0.12 1;
+  stroke-dashoffset: 0.12;
+  opacity: 0;
+  animation: trace-head var(--draw) cubic-bezier(0.2, 0.7, 0.3, 1) var(--delay) forwards;
+}
+
+@keyframes trace-head {
+  0% {
+    stroke-dashoffset: 0.12;
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -1;
+    opacity: 0;
+  }
+}
+
+/* ボムの線（スパ1・スク4・スラ3・スト6）は、本線を 20ms 点灯・20ms 消灯で点滅させる。
+   消えている瞬間に、後ろの2本目の波線とにじみが見えて、線が震えているように見える。
+   点滅は描き終えてから始め、寿命の終わりのフェードで消える */
+.trace.is-blink .trace-line {
+  animation:
+    trace-draw var(--draw) cubic-bezier(0.2, 0.7, 0.3, 1) var(--delay) forwards,
+    trace-strobe 40ms steps(1, end) calc(var(--delay) + var(--draw)) infinite,
+    trace-fade 160ms ease-in calc(var(--delay) + var(--life) - 160ms) forwards;
+}
+
+@keyframes trace-strobe {
+  0% {
+    opacity: var(--peak);
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* フィーバーで広がった範囲。遅れて出て、2回点滅してから灯りつづける */
+.trace.is-fever .trace-line,
+.trace.is-fever .trace-glow,
+.trace.is-fever .trace-echo {
+  animation:
+    trace-draw var(--draw) cubic-bezier(0.2, 0.7, 0.3, 1) var(--delay) forwards,
+    trace-blink 280ms steps(1, end) calc(var(--delay) + var(--draw)) 2,
+    trace-fade 160ms ease-in calc(var(--delay) + var(--life) - 160ms) forwards;
+}
+
+@keyframes trace-blink {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: var(--peak);
+  }
+  100% {
+    opacity: var(--peak);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 走る動きはやめ、線を最初から引いた状態で出す */
+  .trace-glow,
+  .trace-line,
+  .trace-echo,
+  .trace.is-blink .trace-line,
+  .trace.is-fever .trace-line,
+  .trace.is-fever .trace-glow,
+  .trace.is-fever .trace-echo {
+    stroke-dashoffset: 0;
+    animation: trace-fade 160ms ease-in calc(var(--delay) + var(--life) - 160ms) forwards;
+    opacity: var(--peak);
+  }
+  .trace-head,
+  .trace-dots {
+    display: none;
+  }
+}
+
+
+/* --- ニコニコボムの「来るぞ来るぞ」 --- */
+/* 溜め（1200ms、NICO_CHARGE_MS と同じ長さ）のあいだ、くっついたニコニコメを
+   白黒で交互に点滅させ、間隔を 220ms から 0.8 倍ずつ詰めて最後は 25ms まで速める。
+   同時に細かく震わせ、振れ幅を 0.3px から 2.6px までだんだん強くする。
+   隣り合うメは位相を逆にしてあるので、片方が白いとき片方は黒い。
+   白黒は invert の切り替え（メは暗い地に白い目なので、反転すると白地に黒い目になる）、
+   震えは transform だけで動かすので、2つのメに掛けても軽い。
+   キーフレームは上の決め方で計算して並べた細かい刻み。変えるときは、
+   同じ決め方で並べ直す（間隔を詰める倍率と、振れ幅の最大値を変えればよい）。 */
+.die-arming {
+  z-index: 2;
+  animation-duration: 1200ms, 1200ms;
+  animation-timing-function: steps(1, end), linear;
+  animation-fill-mode: forwards, forwards;
+  will-change: transform, filter;
+}
+
+.die-arming-0 {
+  animation-name: nico-arm-flash-a, nico-arm-shake-a;
+}
+
+.die-arming-1 {
+  animation-name: nico-arm-flash-b, nico-arm-shake-b;
+}
+
+@keyframes nico-arm-flash-a {
+  0.00% { filter: invert(0); }
+  18.33% { filter: invert(1); }
+  33.00% { filter: invert(0); }
+  44.73% { filter: invert(1); }
+  54.12% { filter: invert(0); }
+  61.63% { filter: invert(1); }
+  67.64% { filter: invert(0); }
+  72.44% { filter: invert(1); }
+  76.29% { filter: invert(0); }
+  79.36% { filter: invert(1); }
+  81.82% { filter: invert(0); }
+  83.91% { filter: invert(1); }
+  85.99% { filter: invert(0); }
+  88.07% { filter: invert(1); }
+  90.16% { filter: invert(0); }
+  92.24% { filter: invert(1); }
+  94.32% { filter: invert(0); }
+  96.41% { filter: invert(1); }
+  98.49% { filter: invert(0); }
+  100% { filter: invert(1); }
+}
+
+@keyframes nico-arm-flash-b {
+  0.00% { filter: invert(1); }
+  18.33% { filter: invert(0); }
+  33.00% { filter: invert(1); }
+  44.73% { filter: invert(0); }
+  54.12% { filter: invert(1); }
+  61.63% { filter: invert(0); }
+  67.64% { filter: invert(1); }
+  72.44% { filter: invert(0); }
+  76.29% { filter: invert(1); }
+  79.36% { filter: invert(0); }
+  81.82% { filter: invert(1); }
+  83.91% { filter: invert(0); }
+  85.99% { filter: invert(1); }
+  88.07% { filter: invert(0); }
+  90.16% { filter: invert(1); }
+  92.24% { filter: invert(0); }
+  94.32% { filter: invert(1); }
+  96.41% { filter: invert(0); }
+  98.49% { filter: invert(1); }
+  100% { filter: invert(0); }
+}
+
+@keyframes nico-arm-shake-a {
+  0.00% { transform: translate(0.25px, -0.06px) rotate(0.00deg); }
+  2.50% { transform: translate(-0.27px, -0.19px) rotate(-0.03deg); }
+  5.00% { transform: translate(0.04px, 0.15px) rotate(0.01deg); }
+  7.50% { transform: translate(-0.08px, 0.09px) rotate(-0.03deg); }
+  10.00% { transform: translate(-0.03px, 0.14px) rotate(-0.01deg); }
+  12.50% { transform: translate(0.08px, 0.03px) rotate(0.05deg); }
+  15.00% { transform: translate(-0.24px, -0.24px) rotate(-0.15deg); }
+  17.50% { transform: translate(-0.13px, -0.16px) rotate(-0.09deg); }
+  20.00% { transform: translate(0.03px, -0.07px) rotate(0.02deg); }
+  22.50% { transform: translate(0.39px, 0.19px) rotate(0.32deg); }
+  25.00% { transform: translate(0.29px, -0.30px) rotate(0.24deg); }
+  27.50% { transform: translate(-0.30px, -0.30px) rotate(-0.26deg); }
+  30.00% { transform: translate(0.50px, -0.21px) rotate(0.45deg); }
+  32.50% { transform: translate(0.34px, 0.06px) rotate(0.31deg); }
+  35.00% { transform: translate(-0.07px, 0.27px) rotate(-0.06deg); }
+  37.50% { transform: translate(0.53px, -0.09px) rotate(0.48deg); }
+  40.00% { transform: translate(-0.09px, -0.17px) rotate(-0.08deg); }
+  42.50% { transform: translate(0.21px, 0.29px) rotate(0.18deg); }
+  45.00% { transform: translate(-0.27px, 0.20px) rotate(-0.24deg); }
+  47.50% { transform: translate(0.43px, -0.05px) rotate(0.37deg); }
+  50.00% { transform: translate(0.10px, 0.48px) rotate(0.08deg); }
+  52.50% { transform: translate(0.30px, -0.07px) rotate(0.25deg); }
+  55.00% { transform: translate(-0.16px, -0.72px) rotate(-0.13deg); }
+  57.50% { transform: translate(-0.77px, -0.83px) rotate(-0.63deg); }
+  60.00% { transform: translate(-0.38px, -0.07px) rotate(-0.31deg); }
+  62.50% { transform: translate(-0.01px, 0.81px) rotate(-0.01deg); }
+  65.00% { transform: translate(-1.27px, -0.93px) rotate(-0.97deg); }
+  67.50% { transform: translate(-0.91px, 0.76px) rotate(-0.68deg); }
+  70.00% { transform: translate(-0.23px, 0.33px) rotate(-0.17deg); }
+  72.50% { transform: translate(1.46px, -0.78px) rotate(1.06deg); }
+  75.00% { transform: translate(0.71px, -1.26px) rotate(0.50deg); }
+  77.50% { transform: translate(-0.72px, 0.17px) rotate(-0.50deg); }
+  80.00% { transform: translate(-0.29px, 1.11px) rotate(-0.20deg); }
+  82.50% { transform: translate(-1.12px, 0.84px) rotate(-0.74deg); }
+  85.00% { transform: translate(0.30px, 0.79px) rotate(0.19deg); }
+  87.50% { transform: translate(1.98px, 0.51px) rotate(1.26deg); }
+  90.00% { transform: translate(1.82px, -1.65px) rotate(1.14deg); }
+  92.50% { transform: translate(-0.13px, -0.08px) rotate(-0.08deg); }
+  95.00% { transform: translate(1.27px, -1.72px) rotate(0.76deg); }
+  97.50% { transform: translate(0.48px, -0.35px) rotate(0.28deg); }
+  100.00% { transform: translate(2.26px, -0.82px) rotate(1.30deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes nico-arm-shake-b {
+  0.00% { transform: translate(-0.19px, -0.08px) rotate(-0.00deg); }
+  2.50% { transform: translate(-0.20px, -0.03px) rotate(-0.02deg); }
+  5.00% { transform: translate(-0.23px, -0.08px) rotate(-0.06deg); }
+  7.50% { transform: translate(-0.11px, -0.17px) rotate(-0.04deg); }
+  10.00% { transform: translate(-0.12px, 0.19px) rotate(-0.05deg); }
+  12.50% { transform: translate(-0.15px, -0.08px) rotate(-0.08deg); }
+  15.00% { transform: translate(-0.18px, 0.25px) rotate(-0.12deg); }
+  17.50% { transform: translate(-0.09px, -0.03px) rotate(-0.06deg); }
+  20.00% { transform: translate(0.22px, 0.31px) rotate(0.16deg); }
+  22.50% { transform: translate(-0.05px, -0.11px) rotate(-0.04deg); }
+  25.00% { transform: translate(0.10px, 0.10px) rotate(0.09deg); }
+  27.50% { transform: translate(0.37px, 0.12px) rotate(0.32deg); }
+  30.00% { transform: translate(0.15px, 0.38px) rotate(0.13deg); }
+  32.50% { transform: translate(0.44px, 0.34px) rotate(0.40deg); }
+  35.00% { transform: translate(-0.02px, 0.18px) rotate(-0.01deg); }
+  37.50% { transform: translate(-0.51px, -0.38px) rotate(-0.46deg); }
+  40.00% { transform: translate(-0.07px, 0.50px) rotate(-0.07deg); }
+  42.50% { transform: translate(0.53px, 0.50px) rotate(0.47deg); }
+  45.00% { transform: translate(0.68px, -0.14px) rotate(0.60deg); }
+  47.50% { transform: translate(-0.49px, 0.37px) rotate(-0.43deg); }
+  50.00% { transform: translate(0.16px, -0.08px) rotate(0.14deg); }
+  52.50% { transform: translate(0.45px, 0.01px) rotate(0.38deg); }
+  55.00% { transform: translate(0.71px, 0.56px) rotate(0.59deg); }
+  57.50% { transform: translate(-0.37px, -0.59px) rotate(-0.30deg); }
+  60.00% { transform: translate(-0.33px, -0.56px) rotate(-0.26deg); }
+  62.50% { transform: translate(1.04px, -0.71px) rotate(0.81deg); }
+  65.00% { transform: translate(0.43px, -0.46px) rotate(0.33deg); }
+  67.50% { transform: translate(-1.06px, 0.04px) rotate(-0.80deg); }
+  70.00% { transform: translate(0.23px, -0.52px) rotate(0.17deg); }
+  72.50% { transform: translate(-1.16px, -0.55px) rotate(-0.84deg); }
+  75.00% { transform: translate(0.07px, -0.34px) rotate(0.05deg); }
+  77.50% { transform: translate(1.56px, 1.20px) rotate(1.08deg); }
+  80.00% { transform: translate(-1.62px, -0.83px) rotate(-1.10deg); }
+  82.50% { transform: translate(-0.03px, -1.02px) rotate(-0.02deg); }
+  85.00% { transform: translate(-1.83px, -0.89px) rotate(-1.19deg); }
+  87.50% { transform: translate(1.55px, -0.71px) rotate(0.99deg); }
+  90.00% { transform: translate(-0.13px, 1.41px) rotate(-0.08deg); }
+  92.50% { transform: translate(1.22px, -0.93px) rotate(0.75deg); }
+  95.00% { transform: translate(-0.91px, -0.92px) rotate(-0.55deg); }
+  97.50% { transform: translate(-0.56px, -0.24px) rotate(-0.33deg); }
+  100.00% { transform: translate(-0.92px, 0.72px) rotate(-0.53deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 震えは止め、ゆっくりした白黒の切り替えだけ残す */
+  .die-arming {
+    animation: none;
+  }
+}
+
+/* ===== ストーリーモード ===== */
+
+/* 敵のメ。白のゆるいグラデーションと白い輪郭だけで表現する。 */
+.die-enemy {
+  background-image: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.52),
+    rgba(255, 255, 255, 0.20) 48%,
+    rgba(255, 255, 255, 0.04)
+  );
+  box-shadow: none;
+}
+
+.enemy-rim {
+  /* 普通のメの縁と同じ、外側いっぱいのところに白い線を引く */
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: inherit;
+}
+
+/* 旧ハイライトはDOMに残っていても表示しない。 */
+.enemy-shine {
+  display: none;
+}
+
+/* ダーメの顔。✕の目を横に2つ並べる。1回当てると消えてコイツメになる */
+.enemy-crosses {
+  position: absolute;
+  inset: 0;
+  animation: enemy-eyes-hop 2.8s linear infinite;
+}
+
+/* コイツメは少し短い間隔で（ダーメとそろわないように） */
+.enemy-crosses.is-koitsume {
+  animation-duration: 2.3s;
+}
+
+/* 両目がまとめて、ぴょこっと素早く上下する。ふだんは止まっていて、周期の終わりだけ動く */
+@keyframes enemy-eyes-hop {
+  0%, 84%, 100% { transform: translateY(0); }
+  87% { transform: translateY(-14%); }
+  90% { transform: translateY(5%); }
+  93% { transform: translateY(-4%); }
+  96% { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enemy-crosses {
+    animation: none;
+  }
+}
+
+.enemy-cross {
+  position: absolute;
+  top: 34%;
+  width: 24%;
+  height: 24%;
+}
+
+.enemy-cross:first-child {
+  left: 19%;
+}
+
+.enemy-cross:last-child {
+  right: 19%;
+}
+
+.enemy-cross::before,
+.enemy-cross::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -6%;
+  width: 112%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 2px;
+  background: #ffffff;
+  transform: rotate(45deg);
+}
+
+.enemy-cross::after {
+  transform: rotate(-45deg);
+}
+
+.die-compact .enemy-rim {
+  border-width: 1px;
+}
+
+.die-compact .enemy-cross::before,
+.die-compact .enemy-cross::after {
+  height: 2px;
+  margin-top: -1px;
+}
+
+/* コイツメの目。ダーメの✕✕から「ハの字」になる線（左の／と右の＼）を取り除いた形。
+   ダーメと同じ部品を使うので、角度・位置・太さがぴったりそろう（左は＼、右は／の逆ハの字） */
+.enemy-crosses.is-koitsume .enemy-cross:first-child::after,
+.enemy-crosses.is-koitsume .enemy-cross:last-child::before {
+  display: none;
+}
+
+/* タイトルのストーリーモード。スコアモードと同じ四角を横に並べる（青） */
+.title-story {
+  width: clamp(62px, 10vh, 90px);
+  height: clamp(62px, 10vh, 90px);
+  margin-left: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 26%;
+  background-color: #4d8df7;
+  background-image:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 46%),
+    linear-gradient(rgba(255, 255, 255, 0) 55%, rgba(20, 8, 30, 0.22));
+  box-shadow:
+    inset 0 -3px 0 rgba(20, 8, 30, 0.22),
+    inset 0 0 0 1px rgba(20, 8, 30, 0.28),
+    0 4px 12px rgba(20, 10, 40, 0.45);
+  color: #ffffff;
+  white-space: pre-line;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.title-actions {
+  grid-template-columns: 1fr auto auto 1fr;
+}
+
+.title-story:active {
+  transform: translateY(1px);
+}
+
+/* コロえらび */
+.stage-select {
+  /* タイトル画面（fixed / z-index 40）の上に重ねる */
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 22px;
+  background: rgba(14, 12, 28, 0.9);
+  backdrop-filter: blur(4px);
+}
+
+/* 7つのチカラの枠。集めたぶんだけ埋まる（序盤はまだ空） */
+.power-slots {
+  display: flex;
+  gap: 8px;
+}
+
+.power-slots span {
+  width: 22px;
+  height: 22px;
+  border: 2px dashed rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+}
+
+.stage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 104px);
+  gap: 14px;
+}
+
+.stage-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 12px 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.stage-card .die {
+  width: 48px;
+  height: 48px;
+}
+
+.stage-card .pip {
+  width: 9px;
+  height: 9px;
+}
+
+.stage-card:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.stage-card i {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-style: normal;
+  font-size: 13px;
+  color: var(--hl);
+}
+
+.stage-close {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* 遊んでいるあいだの目標。盤面の上端に小さく重ねる */
+.story-goal {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(10, 8, 22, 0.62);
+  color: #ffffff;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  transform: translateX(-50%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.story-goal-stage,
+.story-goal-enemy {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* コロの始まり。数字のメとコロ名を1.8秒だけ出す */
+.stage-intro {
+  position: absolute;
+  inset: 8px;
+  z-index: 12;
+  display: grid;
+  align-content: center;
+  justify-items: stretch;
+  gap: 6px;
+  color: #14100a;
+  pointer-events: none;
+  animation: stage-intro 1800ms ease-out forwards;
+}
+
+.stage-intro .die {
+  width: 72px;
+  height: 72px;
+}
+
+.stage-intro .pip {
+  width: 13px;
+  height: 13px;
+}
+
+/* メンのタイトルは、盤面を横切るオレンジの帯に黒い文字（2026-10-05） */
+.stage-intro-band {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: calc(100% + 16px);
+  margin: 0 -8px;
+  padding: 12px 10px 14px;
+  background: var(--hl);
+  box-shadow: 0 4px 0 #c94f8a, 0 10px 24px rgba(0, 0, 0, 0.35);
+  color: #14100a;
+}
+
+.stage-intro b {
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.stage-intro span {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+@keyframes stage-intro {
+  0% { opacity: 0; transform: scale(1.3); }
+  15% { opacity: 1; transform: scale(1); }
+  75% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.94); }
+}
+
+/* COMBO! 2連鎖目から、盤面の中ほどに弾むように出す */
+.combo-fx {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  z-index: 11;
+  color: var(--hl);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 12px rgba(255, 133, 191, 0.8),
+    0 2px 0 rgba(80, 30, 0, 0.7);
+  pointer-events: none;
+  animation: combo-fx 900ms cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards;
+}
+
+.combo-fx b {
+  margin-left: 4px;
+  font-size: 34px;
+}
+
+@keyframes combo-fx {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.4); }
+  25% { opacity: 1; transform: translate(-50%, -10px) scale(1.1); }
+  70% { opacity: 1; transform: translate(-50%, -16px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -30px) scale(1); }
+}
+
+/* コロのクリア */
+.stage-clear .die {
+  width: 64px;
+  height: 64px;
+}
+
+.stage-clear .pip {
+  width: 12px;
+  height: 12px;
+}
+
+/* タイトルの「スコアモード」。2行に割って四角に収める */
+.title-start {
+  white-space: pre-line;
+  font-size: 13px;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+}
+
+/* コロえらびの番号。サイの目は使わず、数字だけ大きく */
+.stage-no {
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.stage-clear-no {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.story-goal-stage {
+  font-weight: 900;
+}
+
+/* 命中：左右8度の震えを徐々に収める。ENEMY_HIT_MS と同じ220ms。 */
+.die-hit {
+  transform-origin: 50% 58%;
+  animation: die-hit 220ms ease-out infinite; /* セヴン目のエフェクトから消えるまで震え続ける */
+}
+
+@keyframes die-hit {
+  0% { transform: rotate(0deg) scale(1); filter: brightness(1); }
+  16% { transform: rotate(-8deg) scale(1.06); filter: brightness(2); }
+  34% { transform: rotate(8deg) scale(1.04); filter: brightness(1.7); }
+  52% { transform: rotate(-6deg) scale(1.02); }
+  70% { transform: rotate(4deg); filter: brightness(1.3); }
+  86% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg) scale(1); filter: brightness(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .die-hit { animation-name: small-enemy-hit-soft; }
+}
+@keyframes small-enemy-hit-soft {
+  from { filter: brightness(1.6); }
+  to { filter: brightness(1); }
+}
+
+/* ストーリー中もスコアモードと同じく、サイカとセリフは盤面の下（2026-10-06） */
+
+/* ストーリー序盤ではフィーバーはまだ使えない。
+   地のグレーよりほんの少しだけ明るくして、うっすら読める程度に沈める。
+   11メンで習得してからは（is-fever-open）ふつうに光らせる */
+.game-shell.is-story:not(.is-fever-open) .fever-letter,
+.game-shell.is-story:not(.is-fever-open) .fever-letter.is-lit {
+  color: color-mix(in srgb, var(--bg) 86%, #ffffff);
+  text-shadow: none;
+}
+
+/* お手本の「ここをタップ」。半透明の白い円を点滅させる。
+   スワイプは同じ円が上（下）へすべって、なでる操作を見せる */
+.tap-hint {
+  position: absolute;
+  top: 46%;
+  z-index: 12;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7), 0 0 18px rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+.tap-hint.is-right {
+  left: 76%;
+  animation: tap-blink 500ms ease-in-out infinite;
+}
+
+.tap-hint.is-left {
+  left: 24%;
+  animation: tap-blink 500ms ease-in-out infinite;
+}
+
+.tap-hint.is-up,
+.tap-hint.is-down {
+  left: 50%;
+}
+
+.tap-hint.is-up {
+  top: 62%;
+  animation: swipe-up 700ms cubic-bezier(0.4, 0, 0.3, 1) forwards;
+}
+
+.tap-hint.is-down {
+  top: 30%;
+  animation: swipe-down 700ms cubic-bezier(0.4, 0, 0.3, 1) forwards;
+}
+
+@keyframes tap-blink {
+  0%, 100% { opacity: 0.2; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes swipe-up {
+  0% { opacity: 0; transform: translateY(0) scale(0.9); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  85% { opacity: 1; transform: translateY(-160px) scale(1); }
+  100% { opacity: 0; transform: translateY(-180px) scale(0.9); }
+}
+
+@keyframes swipe-down {
+  0% { opacity: 0; transform: translateY(0) scale(0.9); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  85% { opacity: 1; transform: translateY(160px) scale(1); }
+  100% { opacity: 0; transform: translateY(180px) scale(0.9); }
+}
+
+/* クリアのクラッカー。小さな円と四角い紙吹雪が３か所から弾け、1秒以内に消える */
+.clear-fireworks {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.clear-particle {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2);
+  background: var(--color);
+  opacity: 0;
+  animation: clear-cracker var(--dur) cubic-bezier(0.16, 0.7, 0.3, 1) var(--delay) both;
+}
+
+.clear-particle.is-square {
+  border-radius: 1px;
+}
+
+.clear-particle.is-round {
+  border-radius: 50%;
+}
+
+@keyframes clear-cracker {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0) scale(0.2);
+  }
+  12% {
+    opacity: 1;
+    transform: translate3d(var(--kick-x), var(--kick-y), 0) rotate(18deg) scale(1.15);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--spin)) scale(0.65);
+  }
+}
+
+.clear-title-letters {
+  display: inline-flex;
+  gap: 0.02em;
+}
+
+.clear-title-letters > span {
+  display: inline-block;
+  opacity: 0;
+  animation: clear-letter-in 520ms cubic-bezier(0.17, 0.9, 0.3, 1.25) var(--delay) both;
+}
+
+/* 点数とボタンは、ファンファーレが鳴り切るころに順に出す（時刻は App.tsx の CLEAR_*） */
+.stage-clear > strong {
+  animation: clear-rise 420ms ease-out var(--clear-score, 0ms) both;
+}
+
+.stage-clear > .overlay-actions {
+  animation: clear-rise 420ms ease-out var(--clear-buttons, 0ms) both;
+}
+
+@keyframes clear-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+    visibility: hidden;
+  }
+
+  1% {
+    visibility: visible;
+  }
+
+  100% {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+  }
+}
+
+@keyframes clear-letter-in {
+  0% { opacity: 0; transform: translateY(18px) rotate(-12deg) scale(0.55); }
+  65% { opacity: 1; transform: translateY(-4px) rotate(3deg) scale(1.08); }
+  100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clear-fireworks { display: none; }
+  .clear-title-letters > span { animation: none; opacity: 1; }
+  .stage-clear > strong,
+  .stage-clear > .overlay-actions { animation: none; }
+}
+
+/* クリア画面はメが見えるよう幕を薄くし、英字の CLEAR! を大きく */
+.game-overlay.stage-clear {
+  z-index: 10;
+  background: rgba(10, 8, 24, 0.35);
+  backdrop-filter: none;
+}
+
+.game-overlay p.stage-clear-title {
+  margin: 0;
+  color: var(--hl);
+  font-size: 54px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 18px rgba(255, 133, 191, 0.85),
+    0 3px 0 rgba(90, 30, 0, 0.8);
+}
+
+/* ストーリー中のサイカのセリフ。1行に入らないときは2行にする（折り方は .saika-line） */
+.game-shell.is-story .saika-bubble {
+  font-size: min(16px, 4.1vw);
+}
+
+/* チュートリアルのお手本中の表示。帯は付けず、文字に黒い影を落として出す。
+   位置は盤面の上から1/3。中央だと、7を作る下段の手元に文字がかぶって見づらい。 */
+.demo-label {
+  position: absolute;
+  top: calc(33% - 32px); /* 文字1行ぶん上へ（2026-10-06） */
+  left: 50%;
+  z-index: 11;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow:
+    0 2px 0 #000000,
+    0 0 8px rgba(0, 0, 0, 0.9),
+    0 3px 12px rgba(0, 0, 0, 0.8);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: demo-label 1600ms ease-in-out infinite;
+}
+
+/* 練習の促し。黄橙で 500ms ごとに点滅させる */
+/* 「やってみて！」は、デモプレイの表示よりマス1つぶん上に出す。
+   出るときは上から落ちてきて弾み、そのあと点滅して操作を促す */
+.demo-label.is-try {
+  top: calc(33% - 32px - var(--cell-size, 48px));
+  color: var(--hl);
+  font-size: 28px;
+  animation:
+    try-drop 560ms cubic-bezier(0.25, 0.9, 0.3, 1.25) both,
+    try-blink 1000ms steps(1, end) 560ms infinite;
+}
+
+@keyframes try-drop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -260%);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -38%);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.demo-label.is-try.is-long {
+  font-size: 19px;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+}
+
+@keyframes try-blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@keyframes demo-label {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* 持っているチカラ。スパ1ボムは最初から持っている */
+.power-slots span.is-owned {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: #fc6dac;
+  box-shadow: 0 0 10px rgba(252, 109, 172, 0.7);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* お手本で7になったメ。消す前に白く明滅させて「反応した」ことを見せる */
+.board-cell.is-demo-blink .die {
+  animation: demo-blink 400ms ease-in-out infinite;
+}
+
+@keyframes demo-blink {
+  0%, 100% { filter: brightness(1); transform: scale(1); }
+  50% { filter: brightness(1.9); transform: scale(1.08); }
+}
+
+/* 7 はいつも黄橙 */
+.seven-mark {
+  color: var(--hl);
+  font-style: normal;
+  font-weight: 900;
+}
+
+/* ストーリーでは FEVER の代わりにミッションの進み具合 */
+.mission-wrap {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.mission-wrap span {
+  color: var(--hl);
+  font-size: clamp(14px, 4.2vw, 20px);
+  letter-spacing: 0.08em;
+}
+
+.mission-wrap b {
+  font-size: clamp(20px, 6.4vw, 30px);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 901px) {
+  .mission-wrap {
+    flex-direction: column;
+    align-items: center;
+    margin-top: 130px;
+  }
+}
+
+/* セリフのひとかたまり。入らないときは2行にして、各行を中央にそろえる。
+   吹き出しは縦に中央ぞろえなので、2行になっても1行のときと同じ高さが真ん中に来る。
+   折るのは App.tsx の addLineBreaks が区切りを入れたところだけ（keep-all で字の途中では折らない）。
+   区切りが見つからない長い語だけは、はみ出さないよう最後の手段でどこでも折る。
+   text-wrap: balance で、2行の長さをなるべくそろえる */
+.saika-line {
+  display: block;
+  max-width: 100%;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.die-glyph {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  margin: 0 0.08em;
+  vertical-align: -0.28em;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+
+/* --- ヒドイメ（10メン） ---
+   2×2マスの上に重ねて描く。マスの列は盤面の中央に寄せて並んでいるので、
+   中央から数えた位置で置く（--hx, --hy は左上のマスの位置）。
+   見た目そのものは src/enemy/hidoime.css。ここは盤面に置く枠と、登場・命中の動きだけ */
+.hidoime-slot {
+  position: absolute;
+  left: calc(50% + var(--cell-size, 48px) * (var(--hx) - 3.5));
+  top: calc(var(--cell-size, 48px) * var(--hy));
+  z-index: 6;
+  width: calc(var(--cell-size, 48px) * 2);
+  height: calc(var(--cell-size, 48px) * 2);
+  pointer-events: none;
+  transition: top var(--move-ms, 0ms) linear;
+}
+
+/* 登場。すべて src/enemy/hidoimeFx.ts の長さと組になっている */
+/* 落下：重力のように加速しながら落ちる */
+.hidoime-slot.is-fall {
+  transition-timing-function: cubic-bezier(0.55, 0, 1, 0.55);
+}
+
+/* プレス：重いものがじわっと沈む。少し横に張って、下のメを押しつぶしている感じを出す */
+.hidoime-slot.is-press {
+  transform-origin: 50% 100%;
+  transform: scale(1.06, 0.94);
+  transition-timing-function: cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+/* 着地：どすんと横につぶれて、はね返って戻る（HIDOIME_LAND_MS） */
+.hidoime-slot.is-land {
+  transform-origin: 50% 100%;
+  animation: hidoime-land 460ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes hidoime-land {
+  0% {
+    transform: scale(1.22, 0.74);
+  }
+
+  45% {
+    transform: scale(0.94, 1.08);
+  }
+
+  75% {
+    transform: scale(1.03, 0.97);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ヒドイメに押しつぶされるメ。上から縦につぶれて、薄くなって消える */
+.die-pressed {
+  transform-origin: 50% 100%;
+  animation: die-press 136ms cubic-bezier(0.7, 0, 0.3, 1) forwards; /* HIDOIME_PRESS_ROW_MS と同じ */
+}
+
+@keyframes die-press {
+  60% {
+    transform: scale(1.18, 0.3);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(1.3, 0.06);
+    opacity: 0;
+  }
+}
+
+/* 命中：60ms周期で6回点滅（以前の2倍速）。最初の潰れから揺れを減衰させる */
+/* セヴン目のエフェクトから、結果が出るまで繰り返す */
+.hidoime-slot.is-hit {
+  animation:
+    hidoime-hit-flash 60ms steps(1, end) infinite,
+    hidoime-hit-recoil 360ms ease-out infinite;
+}
+
+@keyframes hidoime-hit-flash {
+  0% { filter: brightness(2.8) saturate(0.35); }
+  45%, 100% { filter: none; }
+}
+
+@keyframes hidoime-hit-recoil {
+  0% { transform: translateX(-3px) scale(1.08, 0.9); }
+  17% { transform: translateX(3px) scale(0.96, 1.04); }
+  33% { transform: translateX(-2.5px) scale(1.03, 0.97); }
+  50% { transform: translateX(2px) scale(0.98, 1.02); }
+  67% { transform: translateX(-1px); }
+  83% { transform: translateX(0.5px); }
+  100% { transform: none; }
+}
+
+@keyframes hidoime-hit-soft {
+  from { filter: brightness(1.4); }
+  to { filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 動きを減らす設定では、命中は一度だけ穏やかに明るくする */
+  .hidoime-slot.is-hit {
+    animation: hidoime-hit-soft 360ms ease-out;
+  }
+  .hidoime-slot {
+    transition: none;
+  }
+
+  .hidoime-slot.is-land,
+  .die-pressed {
+    animation: none;
+  }
+
+  .die-pressed {
+    opacity: 0;
+  }
+}
+
+/* 11メンから：ミッションの進み具合と FEVER ゲージを1つの枠に並べる */
+.hud-mission-fever {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.hud-mission-fever .mission-wrap {
+  flex: none;
+  margin-top: 0;
+}
+
+.hud-mission-fever .mission-wrap span {
+  font-size: clamp(11px, 3vw, 14px);
+}
+
+.hud-mission-fever .mission-wrap b {
+  font-size: clamp(16px, 4.6vw, 22px);
+}
+
+.hud-mission-fever .fever-wrap {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.hud-mission-fever .fever-letter {
+  font-size: clamp(16px, 5vw, 26px);
+}
+
+@media (min-width: 901px) {
+  .hud-mission-fever {
+    flex-direction: column;
+    margin-top: 110px;
+  }
+}
+
+/* 説明画面の開発用ボタン。赤みで「消える操作」だと分かるようにする */
+.help-dev {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.help-reset {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #d9536b;
+  border-radius: 12px;
+  background: transparent;
+  color: #ff8fa3;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.help-reset.is-confirm {
+  background: #d9536b;
+  color: #ffffff;
+}
+
+.help-reset.is-done {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: default;
+}
+
+/* 光らずに消えるメ（チュートリアルの全消去・段の切りかえ）。薄くなりながら少し沈む */
+.die-fade {
+  animation: die-fade 420ms ease-in forwards;
+}
+
+@keyframes die-fade {
+  to {
+    opacity: 0;
+    transform: translateY(12%) scale(0.86);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .die-fade {
+    animation: die-fade-still 420ms ease-in forwards;
+  }
+
+  @keyframes die-fade-still {
+    to {
+      opacity: 0;
+    }
+  }
+
+  .demo-label.is-try {
+    animation: try-blink 1000ms steps(1, end) infinite;
+  }
+}
+
+/* 12メンで現れた敵。上から落ちてきて、ぽんと弾む */
+.die-spawn {
+  animation: die-spawn 520ms cubic-bezier(0.25, 0.9, 0.3, 1.3) both;
+}
+
+@keyframes die-spawn {
+  0% {
+    opacity: 0;
+    transform: translateY(-160%) scale(0.8);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translateY(6%) scale(1.08, 0.92);
+  }
+
+  100% {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .die-spawn {
+    animation: none;
+  }
+}
+
+/* セリフの中で、サイノメの絵とすぐあとの字をくっつけておく（絵の直後では折らない） */
+.saika-line .nobr {
+  white-space: nowrap;
+}
+
+/* 13メンから：ミッションの下に FEVER ゲージを置く（縦に2段） */
+.hud-mission-fever {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.hud-mission-fever .fever-wrap {
+  flex: none;
+  width: 100%;
+  max-width: 190px;
+  justify-content: space-between;
+}
+
+.hud-mission-fever .fever-letter {
+  font-size: clamp(14px, 4vw, 20px);
+}
+
+@media (min-width: 901px) {
+  .hud-mission-fever {
+    gap: 8px;
+  }
+}
+
+/* 音のボタンは暗い下敷きに沈んで見えにくいので、円の窓だけ少し明るくする */
+.icon-button.is-sound {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(150, 165, 190, 0.42);
+  color: #ffffff;
+}
+
+/* クリアのひとこと。左の文字から順に、ぼかしを解きながら滑り込む */
+.clear-line > span {
+  display: inline-block;
+  opacity: 0;
+  animation: clear-char 420ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+  animation-delay: calc(var(--ci) * 70ms);
+}
+
+@keyframes clear-char {
+  0% { opacity: 0; transform: translateX(-10px) scale(0.8); filter: blur(3px); }
+  100% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+}
+
+/* コロえらびは横3列×縦8段。画面に収まらない分は縦にスワイプして見る */
+.stage-select {
+  align-content: start;
+  padding: 24px 16px;
+  overflow: hidden;
+}
+
+.stage-grid {
+  grid-template-columns: repeat(3, minmax(0, 96px));
+  gap: 10px;
+  max-height: calc(100svh - 190px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 4px 4px 12px;
+}
+
+.stage-card {
+  min-height: 92px;
+}
+
+/* まだ公開していないメン */
+.stage-card.is-unreleased {
+  display: grid;
+  place-items: center;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(120, 120, 130, 0.14);
+  cursor: default;
+}
+
+.stage-card.is-unreleased .stage-lock {
+  position: static;
+  font-size: 22px;
+  font-style: normal;
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+
+/* 説明画面の累積スコア（9桁） */
+.help-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0 18px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-weight: 800;
+}
+
+.help-total span {
+  color: var(--text-mute);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.help-total b {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+/* ミッション表示は2段。上に MISSION、下に数（得点のように桁が多くても横にはみ出さない） */
+.mission-wrap {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mission-wrap span {
+  font-size: clamp(10px, 2.8vw, 13px);
+  line-height: 1;
+}
+
+.mission-wrap b {
+  font-size: clamp(15px, 4.4vw, 20px);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hud-mission-fever .mission-wrap span {
+  font-size: clamp(9px, 2.5vw, 12px);
+}
+
+.hud-mission-fever .mission-wrap b {
+  font-size: clamp(13px, 3.8vw, 17px);
+}
+
+/* 2行になったサイカのセリフ。上の行を先に出し、少し遅れて下の行を上から下へ現す。
+   下半分を隠しておき、間をおいてから開く（行ごとの要素に分けなくても済む） */
+.saika-line.is-two-lines {
+  animation: saika-second-line 240ms ease-out 650ms both;
+}
+
+@keyframes saika-second-line {
+  from {
+    clip-path: inset(0 0 50% 0);
+  }
+
+  to {
+    clip-path: inset(0 0 -10% 0);
+  }
+}
+
+/* --- ベラボウメ（17メン） ---
+   3×3マスの上に重ねて描く枠と、登場・命中・撃破の動き。
+   見た目そのものは src/enemy/Beraboume.tsx と beraboume.css（採用デザイン：docs/beraboume/DESIGN.md） */
+.berabou-slot {
+  position: absolute;
+  left: calc(50% + var(--cell-size, 48px) * (var(--hx) - 3.5));
+  top: calc(var(--cell-size, 48px) * var(--hy));
+  z-index: 6;
+  width: calc(var(--cell-size, 48px) * 3);
+  height: calc(var(--cell-size, 48px) * 3);
+  pointer-events: none;
+}
+
+/* 登場：奥から均等に せり出してくる（手前へ飛んでいくメの後ろから）。0 → 0.72 → 1.14 → 1 */
+.berabou-slot.is-entering .beraboume {
+  animation: berabou-emerge 700ms linear both;
+}
+
+@keyframes berabou-emerge {
+  0% { transform: scale(0); }
+  35% { transform: scale(0.72); }
+  65% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+/* 命中：ヒドイメと同じく、白く6回点滅して揺れる */
+/* 揺れは本体だけ（Beraboume の .is-hit .bera-body）。目を動かさないよう、枠ごとは揺らさない */
+.berabou-slot.is-hit {
+  animation: hidoime-hit-flash 60ms steps(1, end) infinite;
+}
+
+/* 本体だけを短く破裂させ、枠と飛び散る粒は縮めない。粒は SlimeBurst が描く。 */
+.berabou-slot.is-dying .beraboume {
+  animation: slime-body-pop 140ms ease-out forwards;
+  animation-play-state: inherit;
+}
+
+@keyframes berabou-die {
+  0% { transform: scale(1); filter: none; }
+  25% { transform: scale(1.1); filter: brightness(2.4); }
+  50% { transform: translate(2%, 3%) scale(0.82); filter: brightness(1.6); }
+  75% { transform: translate(6%, 9%) scale(0.38); }
+  92% { transform: translate(9%, 14%) scale(0.08); }
+  100% { transform: translate(9%, 14%) scale(0); }
+}
+
+/* ベラボウメに弾き飛ばされるメ。奥から押されて一瞬縮み、手前（画面のこちら側）へ大きくなりながら飛んでいく。
+   --fx, --fy は3×3のまん中から見た向き。ベラボウメより手前に描く */
+.die-fling {
+  position: relative;
+  z-index: 8;
+  animation: die-fling 700ms cubic-bezier(0.2, 0.7, 0.4, 1) forwards; /* BERABOU_FLING_MS と同じ */
+}
+
+@keyframes die-fling {
+  0% { transform: none; }
+  18% { transform: scale(0.82); }
+  100% {
+    transform: translate(calc(var(--fx) * 110%), calc(var(--fy) * 110% - 50%)) scale(2.8)
+      rotate(calc(var(--fx) * 28deg));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .die-fling {
+    animation: none;
+    opacity: 0;
+  }
+
+  .berabou-slot.is-entering .beraboume {
+    animation: none;
+  }
+
+  .berabou-slot.is-hit {
+    animation: hidoime-hit-soft 360ms ease-out;
+  }
+}
+
+/* ベラボウメの最後の目が、ひっさつメ以外をはね返した。光らずに、ぐっと踏ん張って押し返す */
+.berabou-slot.is-guard {
+  animation: berabou-guard 420ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes berabou-guard {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.08, 0.92); }
+  55% { transform: scale(0.96, 1.05); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .berabou-slot.is-guard {
+    animation: none;
+  }
+}
+
+/* --- デタラメ（18メン） ---
+   1列ぶんの身体と目を重ねて描く枠。見た目そのものは src/enemy/Detarame.tsx と detarame.css。
+   伸びるときは上の辺と高さが一緒に動くので、下の段はその場のまま、身体が上へ伸びる */
+.detarame-slot {
+  position: absolute;
+  left: calc(50% + var(--cell-size, 48px) * (var(--hx) - 3.5));
+  top: calc(var(--cell-size, 48px) * var(--hy));
+  z-index: 6;
+  width: var(--cell-size, 48px);
+  height: calc(var(--cell-size, 48px) * var(--rows));
+  pointer-events: none;
+  transition:
+    top 620ms cubic-bezier(0.32, 0.05, 0.28, 1),
+    height 620ms cubic-bezier(0.32, 0.05, 0.28, 1);
+}
+
+/* 登場：空いた列の下から伸びてくる */
+.detarame-slot.is-entering {
+  transform-origin: 50% 100%;
+  animation: detarame-birth 0.8s cubic-bezier(0.25, 0.7, 0.3, 1) both;
+}
+
+/* ビーム。白い芯と、上下へ広がる黄色（青い目のとき）／青（黄色い目のとき）のぼかし。両端も同じ色で光る */
+.detarame-beam {
+  --laser: 255, 225, 53;
+  position: absolute;
+  z-index: 7;
+  top: calc(var(--cell-size, 48px) * (var(--row) + 0.6));
+  left: calc(50% + var(--cell-size, 48px) * (var(--bx) - 3.5));
+  width: calc(var(--cell-size, 48px) * var(--bw));
+  height: 14px;
+  margin-top: -7px;
+  isolation: isolate;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(var(--laser), 0.3) 18%,
+    rgba(var(--laser), 0.7) 37%,
+    #fffde7 47%,
+    #fff 50%,
+    #fffde7 53%,
+    rgba(var(--laser), 0.7) 63%,
+    rgba(var(--laser), 0.3) 82%,
+    transparent
+  );
+  transform-origin: var(--origin);
+  animation: detarame-laser-grow 0.1s ease-out both;
+}
+
+.detarame-beam.is-yellow {
+  --laser: 40, 158, 219;
+}
+
+.detarame-beam::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(transparent, rgba(var(--laser), 0.55), transparent);
+  filter: blur(3px);
+}
+
+.detarame-beam::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 1px);
+  height: 2px;
+  background: #fff;
+}
+
+.detarame-beam-tip {
+  position: absolute;
+  top: 50%;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(var(--laser), 0.9), rgba(var(--laser), 0.45) 35%, transparent 72%);
+  filter: blur(2px);
+}
+
+.detarame-beam-tip.is-start {
+  left: 0;
+}
+
+.detarame-beam-tip.is-end {
+  left: 100%;
+}
+
+/* 当たったあとは、命中点を残して目の側から縮む */
+.detarame-beam.is-retract {
+  transform-origin: var(--hit-origin);
+  animation: detarame-laser-retract 0.19s ease-in both;
+}
+
+@keyframes detarame-laser-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes detarame-laser-retract {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* ビームに当たったサイを包む波（2重）。このあとコイツメ／ダーメに変わる */
+.detarame-wave {
+  --laser: 255, 225, 53;
+  position: absolute;
+  inset: -8%;
+  z-index: 8;
+  border: 2px solid #ffe84a;
+  border-radius: 40%;
+  box-shadow: 0 0 8px rgba(var(--laser), 0.8), inset 0 0 8px rgba(var(--laser), 0.4);
+  pointer-events: none;
+  animation: detarame-wave 0.68s ease-out both;
+}
+
+.detarame-wave.is-yellow {
+  --laser: 40, 158, 219;
+  border-color: #289edb;
+}
+
+.detarame-wave.is-second {
+  border-color: #caffb0;
+  animation-delay: 0.13s;
+}
+
+@keyframes detarame-wave {
+  0% { transform: scale(0.45) rotate(-15deg); opacity: 0; }
+  20% { opacity: 1; }
+  60% { transform: scale(1.05) rotate(10deg); opacity: 0.9; }
+  100% { transform: scale(1.5) rotate(25deg); opacity: 0; }
+}
+
+/* デタラメに吸い込まれるサイ。白い3重の線だけになって、いちばん上の目へ回りながら縮む */
+.die-absorbing {
+  position: relative;
+  z-index: 8;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  animation: die-absorb 0.72s cubic-bezier(0.45, 0, 0.65, 1) both;
+}
+
+.die-absorbing .pip {
+  display: none;
+}
+
+@keyframes die-absorb {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.75; }
+  18% { transform: translate(0, 0) scale(1.04); opacity: 1; }
+  80% { opacity: 1; }
+  100% {
+    transform: translate(
+        calc(var(--cell-size, 48px) * var(--absorb-dx, 0)),
+        calc(var(--cell-size, 48px) * var(--absorb-dy, 0))
+      )
+      scale(0.015);
+    opacity: 0;
+  }
+}
+
+.absorb-ring {
+  position: absolute;
+  inset: var(--inset);
+  border: 1.5px solid #fff;
+  border-radius: 27%;
+  box-shadow: 0 0 4px #fff9, inset 0 0 4px #dcf4ff88;
+  pointer-events: none;
+  animation: absorb-ring-turn var(--tempo) var(--ease) both;
+}
+
+@keyframes absorb-ring-turn {
+  from { transform: rotate(var(--start)) scale(1); }
+  to { transform: rotate(var(--end)) scale(0.65); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detarame-slot {
+    transition: none;
+  }
+
+  .detarame-slot.is-entering {
+    animation: none;
+  }
+}
+
+/* 擬音（ゴゴゴ… / ズズズ…）。盤面に大きな文字でかぶせる。
+   あとでマンガ文字の画像に差し替えるときは、.sfx-gogogo などに background-image を当てて
+   color: transparent; -webkit-text-stroke: 0; text-shadow: none; にすればよい */
+.sfx-text {
+  position: absolute;
+  left: calc(50% + var(--cell-size, 48px) * (var(--sx) - 3.5));
+  top: calc(var(--cell-size, 48px) * var(--sy));
+  z-index: 9;
+  color: #ffffff;
+  font-size: calc(var(--cell-size, 48px) * 1.05);
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  -webkit-text-stroke: 3px #23123a;
+  paint-order: stroke fill;
+  text-shadow:
+    0 4px 0 #23123a,
+    0 0 14px rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  animation: sfx-pop 1.7s ease-out both; /* SFX_MS と同じ */
+}
+
+/* ぼんっと出て、ぶるぶる震えてから消える */
+@keyframes sfx-pop {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(-8deg) scale(0.3); }
+  12% { opacity: 1; transform: translate(-50%, -50%) rotate(-8deg) scale(1.18); }
+  20% { transform: translate(-50%, -50%) rotate(-8deg) scale(1); }
+  28% { transform: translate(-53%, -48%) rotate(-9deg); }
+  36% { transform: translate(-47%, -52%) rotate(-7deg); }
+  44% { transform: translate(-52%, -51%) rotate(-9deg); }
+  52% { transform: translate(-48%, -49%) rotate(-7deg); }
+  60% { transform: translate(-51%, -50%) rotate(-8deg); }
+  82% { opacity: 1; transform: translate(-50%, -50%) rotate(-8deg) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(-8deg) scale(1.06); }
+}
+
+.sfx-zuzuzu {
+  color: #d6eeff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sfx-text {
+    animation-name: sfx-fade;
+  }
+}
+
+@keyframes sfx-fade {
+  0%, 100% { opacity: 0; }
+  15%, 80% { opacity: 1; }
+}
+
+/* NEXT・遊び方・ベストスコアの右側は、パソコンでもスマホでも出さない（2026-10-05 ユーザー指示） */
+.game-shell > .right-hud {
+  display: none;
+}
+
+/* 敵の倒し方を教えるサイノメの組。話していない方は名前ごと小さく、話す番になった方はぽんと出る */
+.tutor-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+.tutor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+  transform: scale(0.72);
+  transition: transform 0.18s ease-out;
+}
+.tutor-on {
+  transform: scale(1);
+  animation: tutor-pop 0.32s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes tutor-pop {
+  0% { transform: scale(0.72) translateY(4px); }
+  55% { transform: scale(1.18) translateY(-3px); }
+  100% { transform: scale(1); }
+}
+.tutor-die {
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+.tutor-portrait { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 5px; }
+.tutor small {
+  margin-top: 3px;
+  font-size: 8px;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* 一時停止の「再開」はいちばん上で、緑の枠と緑の文字で目立たせる */
+.overlay-actions .overlay-resume {
+  border: 2px solid #4ade80;
+  color: #4ade80;
+}
+
+/* クリア後の「マップに進む」「門へ進む」は黄色の枠と黄色の文字 */
+.overlay-forward {
+  border: 2px solid #facc15 !important;
+  color: #facc15 !important;
+}
+
+/* デバッグ用：タイトル右上のアプリ再起動ボタン */
+.title-reload {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: 12px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(20, 22, 30, 0.6);
+  color: #fff;
+  font-size: 22px;
+  line-height: 40px;
+  cursor: pointer;
+}
+
+/* 2026-10-06：MISSION と数は横並び。FEVER は字間を詰めてスコアモードの見た目に寄せる */
+.mission-wrap,
+.hud-mission-fever .mission-wrap {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.hud-mission-fever .fever-wrap {
+  justify-content: center;
+  gap: 1px;
+  max-width: none;
+}
+
+.hud-mission-fever .fever-letter {
+  font-size: clamp(18px, 5.6vw, 26px);
+  letter-spacing: -0.03em;
+}
+
+/* 起動のサイコロ：指の絵の代わりに、サイから外へ一定の間隔で広がる波紋（2026-10-06） */
+.dice-intro-die { position: relative; }
+.dice-intro-die > .die { position: relative; z-index: 1; }
+.dice-intro-ripple { position: absolute; inset: 0; pointer-events: none; }
+.dice-intro-ripple i {
+  position: absolute; inset: -6%; border-radius: 50%;
+  border: 3px solid rgba(255, 133, 191, 0.85);
+  opacity: 0;
+  animation: intro-ripple 2400ms ease-out infinite;
+}
+.dice-intro-ripple i:nth-child(2) { animation-delay: 800ms; }
+.dice-intro-ripple i:nth-child(3) { animation-delay: 1600ms; }
+@keyframes intro-ripple {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  100% { transform: scale(2); opacity: 0; }
+}
+.dice-intro:not(.is-idle) .dice-intro-ripple { display: none; }
+
+/* --- イチニノサンダー（ウォール6） --- */
+/* 1-2-3 がつながると、そのサイが黄色く光って「なぞって」と誘う */
+.board-cell.is-thunder .die {
+  box-shadow: 0 0 0 3px #ffe14a, 0 0 16px 4px rgba(255, 225, 74, 0.85);
+  animation: thunder-ready 900ms ease-in-out infinite;
+}
+@keyframes thunder-ready {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35); }
+}
+/* 縦に2列（フィーバーは4列）を貫くイナヅマ */
+.thunder-bolt {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% + var(--cell-size, 48px) * (var(--tx) - 3.5));
+  width: calc(var(--cell-size, 48px) * var(--tw));
+  z-index: 40; /* アンチクショウメなど大きな敵の身体より上を走らせる */
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 225, 74, 0.25), rgba(255, 240, 140, 0.95) 25%, #fffef0 50%, rgba(255, 240, 140, 0.95) 75%, rgba(255, 225, 74, 0.25));
+  box-shadow: 0 0 28px 10px rgba(255, 225, 74, 0.75);
+  animation: thunder-strike 700ms ease-out both;
+}
+.thunder-bolt i {
+  position: absolute;
+  inset: 0;
+  background: #fffbe0;
+  clip-path: polygon(48% 0, 62% 0, 50% 26%, 64% 26%, 40% 58%, 54% 58%, 30% 100%, 42% 60%, 28% 60%, 46% 30%, 32% 30%);
+  filter: drop-shadow(0 0 10px #ffe14a);
+}
+.thunder-bolt.is-fever { background: linear-gradient(90deg, rgba(255, 133, 191, 0), rgba(255, 245, 160, 0.9) 25%, #fff 50%, rgba(255, 245, 160, 0.9) 75%, rgba(255, 133, 191, 0)); }
+@keyframes thunder-strike {
+  0% { transform: scaleY(0); transform-origin: top; opacity: 1; }
+  25% { transform: scaleY(1); opacity: 1; }
+  45% { opacity: 0.4; }
+  60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* 「イチ」「ニ」「サン」「ダー！」 */
+.thunder-call {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  z-index: 41;
+  transform: translate(-50%, -50%);
+  color: #ffe14a;
+  font-size: 54px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 3px 0 #7a5a00, 0 0 18px rgba(255, 225, 74, 0.9);
+  animation: thunder-call 340ms cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+@keyframes thunder-call {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  60% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* 「サンダー！」は一気に出し、「！」を稲妻の絵にする（2026-10-14 イチニノサンダー） */
+.thunder-call.is-thunder {
+  display: inline-flex;
+  align-items: center;
+  animation: thunder-call-slam 260ms cubic-bezier(0.2, 1.7, 0.4, 1) both;
+}
+.thunder-call-bang {
+  width: 0.52em;
+  height: 1.15em;
+  margin-left: 0.02em;
+  overflow: visible;
+  fill: #ffe14a;
+  stroke: #7a5a00;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(255, 225, 74, 0.95));
+  transform-origin: 50% 80%;
+  animation: thunder-bang-zap 520ms ease-out both;
+}
+@keyframes thunder-call-slam {
+  0% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+  55% { transform: translate(-50%, -50%) scale(0.94); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes thunder-bang-zap {
+  0%, 30%, 60% { fill: #ffffff; }
+  15%, 45%, 100% { fill: #ffe14a; }
+  0% { transform: rotate(-12deg) scale(1.25); }
+  40% { transform: rotate(4deg) scale(1); }
+  100% { transform: rotate(0) scale(1); }
+}
+
+
+/* --- アンチクショウメ（ウォール6-2） --- */
+.anchi-slot {
+  position: absolute;
+  left: calc(50% + var(--cell-size, 48px) * (var(--hx) - 3.5));
+  top: calc(var(--cell-size, 48px) * var(--hy));
+  z-index: 6;
+  pointer-events: none;
+}
+.anchi-slot.is-dying > canvas {
+  animation: slime-body-pop 140ms ease-out forwards;
+  animation-play-state: inherit;
+  transform-origin: center;
+}
+@keyframes anchi-pop {
+  30% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(0.2); opacity: 0; }
+}
+
+/* アンチクショウメのペンキ。ねらったマスの中心に置き、ぺちゃっと広がる */
+.anchi-paint {
+  position: absolute;
+  left: calc(50% + var(--cell-size, 48px) * (var(--px) + 0.5 - 3.5 - 2.4));
+  top: calc(var(--cell-size, 48px) * (var(--py) + 0.5 - 2.4));
+  z-index: 7;
+  pointer-events: none;
+  animation: anchi-paint-in 260ms cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+@keyframes anchi-paint-in {
+  0% { transform: scale(0.2); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* アンチクショウメに当たったマスの白いダメージの光（セヴン目・ひっさつメ。目が無いマスでも） */
+.anchi-flash {
+  position: absolute;
+  left: calc(50% + var(--cell-size, 48px) * (var(--px) - 3.5));
+  top: calc(var(--cell-size, 48px) * var(--py));
+  width: var(--cell-size, 48px);
+  height: var(--cell-size, 48px);
+  z-index: 8;
+  border-radius: 30%;
+  background: #fff;
+  pointer-events: none;
+  animation: anchi-flash 340ms steps(1, end) both;
+}
+@keyframes anchi-flash {
+  0%, 30% { opacity: 1; }
+  31%, 55% { opacity: 0; }
+  56%, 75% { opacity: 0.85; }
+  76%, 100% { opacity: 0; }
+}
+
+/* 2026-10-08：FEVER習得後のストーリーは、SCORE の文字の場所に同じ大きさで FEVER、MISSION は2段 */
+.info-panel:has(.fever-label) {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.info-panel p:has(.fever-label) {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3px;
+}
+
+.info-panel p:has(.fever-label) .score-millions {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+.fever-label {
+  display: flex;
+}
+
+.info-panel .fever-label .fever-wrap {
+  display: inline-flex;
+  gap: 0;
+  max-width: none;
+}
+
+.info-panel .fever-label .fever-letter {
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  animation: none;
+  transform: none;
+}
+
+.mission-wrap.is-stacked {
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+/* 2026-10-12：MISSION の数が長いとき。1万以上は小さく、10万以上は分数のように上下2段 */
+.mission-wrap.is-long b {
+  font-size: clamp(12px, 3.4vw, 16px);
+}
+.mission-wrap.is-fraction {
+  gap: 2px;
+}
+.mission-wrap .mission-fraction {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: clamp(11px, 3vw, 14px);
+  line-height: 1.05;
+}
+.mission-wrap .mission-fraction i {
+  display: block;
+  align-self: stretch;
+  height: 2px;
+  margin: 1px 0;
+  border-radius: 1px;
+  background: currentColor;
+}
+.board-grid.has-sanz { isolation: isolate; }.board-grid.has-sanz .board-cell.sanz-ejected { z-index: 101; }
+
+/* 2026-10-14：ウラメンの面は、まわりを真っ黒にする */
+.game-shell.is-ura { background: #050407; box-shadow: 0 0 0 100vmax #050407; }

@@ -1,0 +1,51 @@
+.gimmick-preview { margin-top:32px; border-top:1px solid #414750; padding-top:12px; }
+.gimmick-preview p {font-size:13px;line-height:1.7;color:#c4cbd4;}
+.gimmick-concepts {display:flex;flex-wrap:wrap;gap:24px;}
+.gimmick-concepts figure {display:flex;gap:18px;max-width:440px;margin:8px 0;}
+.gimmick-concepts figcaption {flex:1;}
+.gimmick-sample {width:90px;height:90px;flex:none;margin:12px 0;}
+.gimmick-die {display:block;position:relative;width:100%;height:100%;border-radius:18%;box-shadow:inset 2px 3px 3px #ffffff60,inset -3px -4px 2px #0005;}
+.gimmick-pips {position:absolute;inset:20%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:12%;}
+.gimmick-pips i {background:#fff;border-radius:50%;}
+.gimmick-die.bomb {border:3px solid #78818c;background:radial-gradient(ellipse at 30% 20%,#4c5260,#171a23 70%)!important;box-sizing:border-box;}
+.gimmick-die.bomb .gimmick-pips {inset:65% 15% 8%;}
+.gimmick-die b {position:absolute;left:0;right:0;top:4%;text-align:center;color:#ffcb54;font-size:clamp(18px,4vw,32px);line-height:1.2;}
+.gimmick-die b.urgent {color:#ff5348;animation:gimmick-warning .4s steps(2) infinite;}
+.gimmick-fuse {position:absolute;right:-7%;top:-16%;color:#ffc04a;font-size:22px;}
+.gimmick-die.ice:after {content:'';position:absolute;inset:0;border:3px solid #c9f4ff;background:linear-gradient(135deg,#c5f7ff80,#62c8f240 50%,#c5f7ff90);clip-path:polygon(12% 0,88% 0,100% 15%,100% 85%,85% 100%,15% 100%,0 85%,0 15%);}
+.gimmick-die.ice b {z-index:2;color:white;left:auto;right:2%;top:0;font-size:19px;}
+.gimmick-crack {position:absolute;inset:0;background:#d9fbff;clip-path:polygon(30% 0,33% 28%,57% 43%,39% 65%,49% 100%,44% 66%,62% 42%,37% 25%);z-index:2;}
+.gimmick-tools {display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0;}
+.gimmick-tools button,.gimmick-tools select {background:#30343b;color:white;border:1px solid #747d89;border-radius:8px;padding:9px;font:inherit;cursor:pointer;}
+.gimmick-board {display:grid;grid-template-columns:repeat(7,1fr);width:min(100%,390px);background:#1a2029;border:2px solid #667383;border-radius:12px;overflow:visible;padding:6px;gap:3px;box-sizing:border-box;}
+.gimmick-board>button {aspect-ratio:1;min-width:0;border:0;padding:2px;background:#2c3541;position:relative;color:white;cursor:pointer;}
+.gimmick-board>button:nth-child(even){background:#252d37;}
+.gimmick-board>button>span {display:block;width:100%;height:100%;}
+.gimmick-board>button[aria-pressed=true] {outline:3px solid #ffcf5c;z-index:2;}
+.gimmick-board button:focus-visible {outline:3px solid white;z-index:3;}
+.gimmick-board .thaw .gimmick-die {animation:gimmick-thaw .7s ease-out;}
+.gimmick-sparks {position:absolute;inset:0;display:grid;place-items:center;color:#ffd65c;font-size:42px;animation:gimmick-burst .8s ease-out both;pointer-events:none;}
+.gimmick-log {min-height:3.4em;max-width:620px;}
+.gimmick-preview small {display:block;max-width:650px;line-height:1.7;color:#aeb9c7;}
+@keyframes gimmick-warning {50%{opacity:.45;}}
+@keyframes gimmick-thaw {0%{box-shadow:0 0 0 5px #b8f6ff;transform:scale(1.12);}100%{transform:scale(1);}}
+@keyframes gimmick-burst {0%{transform:scale(.3);opacity:1;}45%{transform:scale(1.6);opacity:1;}100%{transform:scale(2);opacity:0;}}
+.gimmick-board .thaw>span:after {content:'';position:absolute;width:10px;height:12px;background:#cefaff;left:45%;top:45%;clip-path:polygon(20% 0,100% 35%,65% 100%,0 65%);box-shadow:18px 4px #b9f1ff,-20px 12px #8ad8f6,5px -22px #fff;animation:gimmick-ice-shards .7s ease-out both;pointer-events:none;}
+@keyframes gimmick-ice-shards {0%{transform:scale(.4) rotate(0);opacity:1;}100%{transform:scale(2.2) rotate(55deg);opacity:0;}}
+/* ヒョーケツメ：氷と内蔵メカをまとめて1.25セルまで拡縮。 */
+.gimmick-die.ice:after {display:none;}
+.gimmick-die.ice,.gimmick-die.bomb {border:0;background:transparent!important;box-shadow:none;z-index:2;}
+.gimmick-idle {position:absolute;inset:-15%;display:block;animation:hyoketsu-idle 1.6s ease-in-out infinite;transform-origin:50% 65%;}
+.gimmick-mech {width:100%;height:100%;overflow:visible;display:block;}
+.gimmick-ice-shell {position:absolute;inset:-3%;background:linear-gradient(125deg,#e2fcff70,#64d8ff25 40%,#8be4ff65 75%,#fff9);border:2px solid #c6f7ff;clip-path:polygon(15% 0,86% 0,100% 16%,95% 82%,80% 100%,12% 94%,0 77%,3% 14%);box-sizing:border-box;}
+.gimmick-ice-shell:after {content:'';position:absolute;inset:12%;border-left:3px solid #fff8;border-top:2px solid #fff7;transform:skew(-9deg);}
+.gimmick-practice-panel {padding:12px;border:1px solid #586879;border-radius:12px;margin-top:10px;}
+.gimmick-preview>.gallery-practice-button {font-weight:700;border-color:#a0ddeb;color:#e1faff;}
+@keyframes hyoketsu-idle {0%,100%{transform:scale(.9);}50%{transform:scale(1.25);}}
+
+/* 凍結中は1セル内で静止。氷の反射だけを一定周期で光らせる。 */
+.gimmick-die.ice .gimmick-idle {inset:0;animation:none;transform:none;}
+.gimmick-die.ice .gimmick-ice-shell {inset:0;animation:hyoketsu-ice-glint 2s ease-in-out infinite;}
+.gimmick-die.ice .gimmick-ice-shell:before {content:"✦";position:absolute;left:8%;top:5%;color:#fff;font-size:22px;line-height:1;text-shadow:18px 25px #e5fcff;animation:hyoketsu-sparkle 2s ease-in-out infinite;}
+@keyframes hyoketsu-ice-glint {0%,100%{filter:brightness(1);}45%{filter:brightness(1);}55%{filter:brightness(1.65);}70%{filter:brightness(1);}}
+@keyframes hyoketsu-sparkle {0%,40%,80%,100%{opacity:0;}55%{opacity:1;}65%{opacity:.4;}}

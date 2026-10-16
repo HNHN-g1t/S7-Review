@@ -1,0 +1,211 @@
+/* ベラボウメの動き。キーフレームの形は public/enemy-design/beraboume.html（採用版）から取っている。
+   半透明のフェードや縦つぶれの裏返りは使わない（DESIGN.md） */
+.beraboume {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.beraboume .bera-eye {
+  transform-origin: 0 0;
+}
+
+/* 生きている目：見本と同じ周期・位相で、ぱちっとまばたきする */
+.beraboume .bera-lid {
+  clip-path: inset(0);
+  animation: bera-blink var(--cycle) linear var(--offset) infinite;
+}
+
+@keyframes bera-blink {
+  0%, 47%, 51%, 100% { clip-path: inset(0); }
+  48.5% { clip-path: inset(50% 0 50% 0); }
+}
+
+/* きょろきょろ */
+.beraboume .bera-iris {
+  animation: bera-gaze var(--gaze) ease-in-out var(--offset) infinite;
+}
+
+@keyframes bera-gaze {
+  0%, 25%, 100% { transform: translate(-2px, 0); }
+  36%, 57% { transform: translate(2.6px, 0.5px); }
+  72%, 88% { transform: translate(0.5px, -0.5px); }
+}
+
+/* 登場：目が均等に 0 → 0.72 → 1.14 → 1 と広がり、まぶたが閉 → 半円 → 全円へ開く。目ごとに少しずらす */
+.beraboume.is-entering .bera-eye {
+  animation: bera-eye-in 420ms linear var(--in-delay) both;
+}
+
+.beraboume.is-entering .bera-lid {
+  animation: bera-lid-open 420ms linear var(--in-delay) both;
+}
+
+@keyframes bera-eye-in {
+  0% { transform: translate(3px, 5px) scale(0); }
+  25% { transform: translate(1px, 2px) scale(0.72); }
+  50% { transform: translate(0, 0) scale(1.14); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes bera-lid-open {
+  0% { clip-path: inset(50% 0 50% 0); }
+  37% { clip-path: inset(25% 0 0 0); }
+  75%, 100% { clip-path: inset(0); }
+}
+
+/* 開き直った目（放っておかれて回復）：登場と同じく、広がってパチッと開く */
+.beraboume .bera-eye.is-reopen {
+  animation: bera-eye-in 420ms linear both;
+}
+
+.beraboume .bera-eye.is-reopen .bera-lid {
+  animation: bera-lid-open 420ms linear both;
+}
+
+/* つぶれた目：まぶたが閉じながら、右下の奥へ縮んで消える（そのまま消えたまま） */
+.beraboume .bera-eye.is-lost {
+  animation: bera-eye-out 480ms linear forwards;
+}
+
+.beraboume .bera-eye.is-lost .bera-lid {
+  animation: bera-lid-close 480ms linear forwards;
+}
+
+@keyframes bera-eye-out {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(0.7px, 1.2px) scale(0.82); }
+  66% { transform: translate(2px, 3.4px) scale(0.38); }
+  90% { transform: translate(3px, 5px) scale(0.08); }
+  100% { transform: translate(3px, 5px) scale(0); }
+}
+
+@keyframes bera-lid-close {
+  0% { clip-path: inset(0); }
+  25% { clip-path: inset(25% 0 0 0); }
+  50%, 100% { clip-path: inset(50% 0 50% 0); }
+}
+
+/* 下地の柄：ゆっくり1周（48秒）。回すのは柄のグループ1つだけなので軽い */
+.beraboume .bera-texture {
+  transform-origin: 72px 72px;
+  animation: bera-texture-spin 48s linear infinite;
+}
+
+@keyframes bera-texture-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ダメージ：本体だけが上下左右に小刻みに震える。目の層は別なので座標はそのまま */
+.beraboume.is-hit .bera-body {
+  animation: bera-body-shake 320ms linear infinite;
+}
+
+@keyframes bera-body-shake {
+  0%, 100% { transform: translate(0, 0); }
+  12% { transform: translate(-5px, 1px); }
+  25% { transform: translate(4px, -2px); }
+  37% { transform: translate(-2px, 5px); }
+  50% { transform: translate(3px, -4px); }
+  62% { transform: translate(-4px, -1px); }
+  75% { transform: translate(2px, 4px); }
+  87% { transform: translate(-1px, -3px); }
+}
+
+/* 残り1つの目：2倍に大きくなって、血走った線が浮かぶ（ふちはふだんの色のまま） */
+.beraboume .bera-eye-size {
+  transform-origin: 0 0;
+  transition: transform 520ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.beraboume .bera-eye.is-last .bera-eye-size {
+  transform: scale(2);
+}
+
+.beraboume .bera-veins {
+  opacity: 0;
+  transition: opacity 400ms ease-out 200ms;
+}
+
+.beraboume .bera-eye.is-last .bera-veins {
+  opacity: 1;
+  animation: bera-veins-throb 1.5s infinite;
+}
+
+/* 血走りの脈打ち。目の中心（0,0）で、どくんと広がって、ゆっくり戻る */
+.beraboume .bera-veins {
+  transform-origin: 0 0;
+}
+
+@keyframes bera-veins-throb {
+  0% { transform: scale(0.92); animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1); }
+  14% { transform: scale(1.14); animation-timing-function: ease-in-out; }
+  28% { transform: scale(0.98); animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1); }
+  40% { transform: scale(1.08); animation-timing-function: ease-in-out; }
+  100% { transform: scale(0.92); }
+}
+
+.beraboume .bera-pupil {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 300ms ease-out;
+}
+
+/* 瞳がきゅっと小さくなって、ぎらぎら見開く */
+.beraboume .bera-eye.is-last .bera-pupil {
+  transform: scale(0.6);
+}
+
+
+/* 視線もせわしなく動かす */
+.beraboume .bera-eye.is-last .bera-iris {
+  animation-duration: 1.3s;
+}
+
+
+/* 生きている目だけブルブル。登場・消滅と最後の目の2倍拡大は別レイヤーで保つ。 */
+.beraboume.is-hit .bera-eye:not(.is-lost) .bera-eye-jolt {
+  animation: bera-eye-jolt 60ms linear infinite;
+}
+@keyframes bera-eye-jolt {
+  0%, 100% { transform: translate(-1.4px, 0.6px); }
+  25% { transform: translate(1.7px, -0.8px); }
+  50% { transform: translate(-1px, -1px); }
+  75% { transform: translate(1px, 1.3px); }
+}
+/* 最後の目の暴れ：本体と目を強く震わせる。目の位置と拡大率は保つ。 */
+.berabou-slot.is-raging .bera-body {
+  animation: bera-rage-shake 80ms linear infinite;
+}
+.berabou-slot.is-raging .bera-eye:not(.is-lost) .bera-eye-jolt {
+  animation: bera-rage-shake 60ms linear infinite reverse;
+}
+@keyframes bera-rage-shake {
+  0%, 100% { transform: translate(-7px, 3px); }
+  25% { transform: translate(7px, -4px); }
+  50% { transform: translate(-5px, -5px); }
+  75% { transform: translate(5px, 5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 動きを減らす設定では静止。つぶれた目は消えた状態だけを見せる */
+  .berabou-slot.is-raging .bera-body,
+  .berabou-slot.is-raging .bera-eye:not(.is-lost) .bera-eye-jolt,
+  .beraboume.is-hit .bera-eye:not(.is-lost) .bera-eye-jolt,
+  .beraboume .bera-texture,
+  .beraboume .bera-eye.is-last .bera-veins,
+  .beraboume.is-hit .bera-body,
+  .beraboume .bera-eye,
+  .beraboume .bera-lid,
+  .beraboume .bera-iris,
+  .beraboume.is-entering .bera-eye,
+  .beraboume.is-entering .bera-lid {
+    animation: none;
+  }
+
+  .beraboume .bera-eye.is-lost {
+    animation: none;
+    transform: scale(0);
+  }
+}

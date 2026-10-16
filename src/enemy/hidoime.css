@@ -1,0 +1,488 @@
+/*
+  ヒドイメ（2×2マスの毒ブロック）。見本 docs/hidoime/preview/poison.css の最終的な
+  計算結果を、クラス名に hidoime- を付けて整理したもの。見た目の値は変えていない。
+
+  予算は固定：奥の円8・小さい泡25・微粒子6、消滅時は親6・子24・火花11。
+  毎フレームのJSも、毎フレームの乱数も、ぼかしフィルターも使わない。動かすのは
+  transform / opacity / border-radius だけ。
+
+  寸法は 96px 基準で書き、.hidoime-stage ごと scale で盤面のマスに合わせる。
+*/
+.hidoime {
+  position: relative;
+  pointer-events: none;
+}
+
+.hidoime-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 96px;
+  height: 96px;
+  transform: scale(var(--hidoime-scale, 1));
+  transform-origin: 0 0;
+  isolation: isolate;
+  --cycle: 3.35s;
+}
+.hidoime-stage.is-rose {
+  --base-a: #590d79;
+  --base-b: #860866;
+  --base-c: #65084a;
+}
+.hidoime-stage.is-violet {
+  --base-a: #291276;
+  --base-b: #41148f;
+  --base-c: #4c0c7d;
+}
+
+.hidoime-body {
+  position: absolute;
+  inset: 0;
+}
+
+.hidoime-shape {
+  position: absolute;
+  inset: 0;
+  border-radius: 22% 27% 23% 20%;
+  background: #a900c9;
+  box-shadow: 3px 5px 9px #10051e99;
+  animation:
+    hidoime-pressure var(--cycle) linear infinite,
+    hidoime-contour 4.9s ease-in-out infinite alternate;
+}
+.hidoime-shape.is-back {
+  inset: 1px -2px -1px 2px;
+  background: #5c087e;
+  box-shadow: none;
+  animation: hidoime-contour 3.7s ease-in-out -1.8s infinite alternate;
+}
+/* 青紫は本体と奥の模様を180度回し、ぷるんの位相を半周期ずらす（周期は同じ） */
+.is-violet .hidoime-shape {
+  rotate: 180deg;
+}
+.is-violet .hidoime-shape:not(.is-back) {
+  animation-delay: -1.675s, 0s;
+}
+
+.hidoime-skin {
+  position: absolute;
+  inset: 0;
+  overflow: hidden; /* 泡は本体の中だけ */
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--base-a), var(--base-b) 48%, var(--base-c));
+  box-shadow: inset 0 -4px 0 #65087c66;
+}
+
+.hidoime-rim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.hidoime-rim path {
+  fill: none;
+  stroke: #ea86f4;
+  stroke-width: 0.55;
+  stroke-opacity: 0.42;
+  transform-origin: 48px 48px;
+  animation: hidoime-rim-waver 2.3s ease-in-out infinite alternate;
+}
+
+/* 縮む → 短く膨らむ → 戻る。輪郭のうねり（contour）とは別の動き */
+@keyframes hidoime-pressure {
+  0%,
+  62%,
+  100% {
+    transform: scale(1);
+  }
+  73% {
+    transform: scale(0.965, 1.025) rotate(-0.5deg);
+  }
+  78% {
+    transform: scale(0.945, 0.97);
+  }
+  81% {
+    transform: scale(1.055, 1.025) rotate(0.7deg);
+  }
+  87% {
+    transform: scale(0.99, 1.01);
+  }
+}
+@keyframes hidoime-contour {
+  0% {
+    border-radius: 22% 27% 23% 20% / 24% 22% 28% 23%;
+  }
+  45% {
+    border-radius: 26% 19% 27% 23% / 19% 29% 20% 27%;
+  }
+  100% {
+    border-radius: 18% 25% 21% 28% / 27% 21% 26% 19%;
+  }
+}
+@keyframes hidoime-rim-waver {
+  0% {
+    transform: scale(0.995, 1.008) rotate(-0.35deg);
+    stroke-opacity: 0.3;
+  }
+  43% {
+    transform: scale(1.006, 0.992) rotate(0.25deg);
+    stroke-opacity: 0.48;
+  }
+  100% {
+    transform: scale(0.99, 1.003) rotate(-0.1deg);
+    stroke-opacity: 0.36;
+  }
+}
+
+/* --- 奥の円（8個）--- */
+.hidoime-depths {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+}
+.hidoime-depth {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  color: var(--ink);
+  opacity: 0.35;
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    circle at 40% 38%,
+    currentColor 0%,
+    currentColor 20%,
+    transparent 73%
+  );
+  animation: hidoime-drift var(--duration) ease-in-out var(--delay) infinite alternate;
+}
+@keyframes hidoime-drift {
+  0% {
+    transform: translate(-3px, 5px) scale(0.82);
+    opacity: 0.24;
+  }
+  48% {
+    transform: translate(var(--dx), -4px) scale(1.1);
+    opacity: 0.48;
+  }
+  100% {
+    transform: translate(2px, 7px) scale(0.94);
+    opacity: 0.32;
+  }
+}
+
+/* --- 手前の泡（25個）と微粒子（6個）--- */
+.hidoime-bubbles,
+.hidoime-orbit {
+  position: absolute;
+  inset: 0;
+}
+/* 青紫は本体ごと回っているので、泡の層だけ逆回転して必ず上へ昇らせる。
+   逆回転の層はスタッキングコンテキストになるので、層そのものにも加算を掛ける */
+.is-violet .hidoime-bubbles {
+  rotate: 180deg;
+  mix-blend-mode: screen;
+}
+.hidoime-ink {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  box-sizing: border-box;
+  color: var(--ink);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 38% 34%,
+    currentColor 0%,
+    currentColor 12%,
+    transparent 72%
+  );
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  animation: hidoime-bubble var(--duration) linear var(--delay) infinite;
+}
+@keyframes hidoime-bubble {
+  0%,
+  12%,
+  100% {
+    transform: translate(0, 3px) rotate(var(--angle)) scale(0.08);
+    opacity: 0;
+  }
+  23% {
+    transform: translate(0, 1px) rotate(var(--angle)) scale(1.12);
+    opacity: 0.62;
+  }
+  34% {
+    transform: translate(1px, 0) rotate(calc(var(--angle) + 12deg)) scale(0.92);
+    opacity: 0.48;
+  }
+  58% {
+    transform: translate(3px, -3px) rotate(calc(var(--angle) + 38deg)) scale(1);
+    opacity: 0.52;
+  }
+  73% {
+    transform: translate(4px, -6px) rotate(calc(var(--angle) + 65deg)) scale(1.22);
+    opacity: 0.26;
+  }
+  81%,
+  94% {
+    transform: translate(5px, -8px) rotate(calc(var(--angle) + 80deg)) scale(1.4);
+    opacity: 0;
+  }
+}
+.hidoime-mote {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 45%;
+  background: #f142cb;
+  animation: hidoime-mote-rise var(--duration) linear var(--delay) infinite;
+}
+.is-violet .hidoime-mote {
+  background: #9b8bdf;
+}
+@keyframes hidoime-mote-rise {
+  0% {
+    transform: translate(0, 12px) scale(0.3);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  66% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate(9px, -18px) scale(1);
+    opacity: 0;
+  }
+}
+
+@supports (mix-blend-mode: plus-lighter) {
+  .hidoime-ink,
+  .hidoime-depth,
+  .is-violet .hidoime-bubbles {
+    mix-blend-mode: plus-lighter;
+  }
+}
+
+.hidoime [hidden] {
+  display: none !important;
+}
+
+/* --- HP0% の消滅：有機的な花火 --- */
+.hidoime-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: none;
+}
+.hidoime-family {
+  position: absolute;
+  left: 48px;
+  top: 48px;
+  width: 0;
+  height: 0;
+}
+.hidoime-parent,
+.hidoime-child {
+  position: absolute;
+  border-radius: 50%;
+  color: var(--ink);
+  background: radial-gradient(circle at 35% 30%, #ffffff80, currentColor 35%, transparent 75%);
+  mix-blend-mode: plus-lighter;
+  opacity: 0;
+}
+.hidoime-parent {
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2);
+}
+.hidoime-child {
+  width: var(--child-size);
+  height: var(--child-size);
+  margin: calc(var(--child-size) / -2);
+}
+.hidoime-spark {
+  position: absolute;
+  z-index: 2;
+  left: 48px;
+  top: 48px;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2);
+  border-radius: 50%;
+  opacity: 0;
+  mix-blend-mode: plus-lighter;
+  background: radial-gradient(circle, #fff8ee 0%, #fff5eaaa 6%, var(--ink) 18%, transparent 70%);
+}
+
+.is-depleted .hidoime-body {
+  animation: hidoime-burst-body 0.42s ease-out both;
+}
+.is-depleted .hidoime-burst {
+  display: block;
+}
+.is-depleted .hidoime-family {
+  animation: hidoime-scatter var(--flight) ease-out var(--start) both;
+}
+.is-depleted .hidoime-parent {
+  animation: hidoime-parent-split var(--flight) linear var(--start) both;
+}
+.is-depleted .hidoime-child {
+  animation: hidoime-child-scatter var(--flight) ease-out calc(var(--start) + var(--split-lag)) both;
+}
+.is-depleted .hidoime-spark {
+  animation: hidoime-spark-flight var(--flight) cubic-bezier(0.12, 0.65, 0.3, 1) var(--start) both;
+}
+/* HPが0のまま置かれた（消滅演出をしない）状態 */
+.is-gone .hidoime-body,
+.is-gone .hidoime-burst {
+  display: none;
+}
+
+@keyframes hidoime-burst-body {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  28% {
+    transform: scale(0.86);
+    opacity: 1;
+  }
+  58% {
+    transform: scale(1.16);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+@keyframes hidoime-scatter {
+  from {
+    transform: translate(var(--sx), var(--sy));
+  }
+  to {
+    transform: translate(var(--tx), var(--ty));
+  }
+}
+@keyframes hidoime-parent-split {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  7% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  35% {
+    transform: scale(0.68);
+    opacity: 0.85;
+  }
+  46%,
+  100% {
+    transform: scale(0.35);
+    opacity: 0;
+  }
+}
+@keyframes hidoime-child-scatter {
+  0%,
+  34% {
+    transform: translate(0, 0) scale(0.8);
+    opacity: 0;
+  }
+  43% {
+    opacity: 0.85;
+  }
+  72% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(var(--cx), var(--cy)) scale(0.08);
+    opacity: 0;
+  }
+}
+@keyframes hidoime-spark-flight {
+  0% {
+    transform: translate(0, 0) scale(0.65);
+    opacity: 0;
+  }
+  14% {
+    opacity: 0.85;
+  }
+  45% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0.08);
+    opacity: 0;
+  }
+}
+
+/* 停止中・画面が隠れている間は止める */
+.hidoime.is-paused *,
+.hidoime.is-paused *::after {
+  animation-play-state: paused !important;
+}
+
+/* 動きを減らす設定では止める。見本と同じく、祖先に .hidoime-motion-enabled が
+   あるときだけは明示的に再生する */
+@media (prefers-reduced-motion: reduce) {
+  body:not(.hidoime-motion-enabled) .hidoime * {
+    animation: none;
+  }
+  body:not(.hidoime-motion-enabled) .is-depleted .hidoime-body {
+    opacity: 0;
+  }
+  body:not(.hidoime-motion-enabled) .is-depleted .hidoime-burst {
+    display: none;
+  }
+}
+
+/* 本体のうねり・青紫の180度回転から独立させ、目の外周を正円に保つ。
+   hidoime-body 内なので、消滅時は本体と一緒に消える。 */
+/* 目は左右で周期と位相をずらして、ほんの少しふくらんだり縮んだりする（生きている感じ）。
+   目の中心（0,0）を基準に、均等に拡大縮小する */
+/* 大きさの基準（--eye-base）、ふくらみの強さ（--eye-amp）、ゆっくりさ（--eye-slow）は
+   Hidoime.tsx がHPから決める。左右は周期も位相も、ふくらむ形も変えて、そろわないようにする */
+.hidoime-eye {
+  transform-origin: 0 0;
+  transform: scale(var(--eye-base, 1));
+  animation: hidoime-eye-breathe-l calc(1.15s * var(--eye-slow, 1)) ease-in-out infinite;
+}
+
+.hidoime-eye.is-right {
+  animation-name: hidoime-eye-breathe-r;
+  animation-duration: calc(1.7s * var(--eye-slow, 1));
+  animation-delay: -0.75s;
+}
+
+@keyframes hidoime-eye-breathe-l {
+  0%, 100% { transform: scale(var(--eye-base, 1)); }
+  25% { transform: scale(calc(var(--eye-base, 1) * (1 + 0.18 * var(--eye-amp, 1)))); }
+  50% { transform: scale(calc(var(--eye-base, 1) * (1 - 0.08 * var(--eye-amp, 1)))); }
+  72% { transform: scale(calc(var(--eye-base, 1) * (1 + 0.07 * var(--eye-amp, 1)))); }
+}
+
+@keyframes hidoime-eye-breathe-r {
+  0%, 100% { transform: scale(var(--eye-base, 1)); }
+  18% { transform: scale(calc(var(--eye-base, 1) * (1 - 0.06 * var(--eye-amp, 1)))); }
+  46% { transform: scale(calc(var(--eye-base, 1) * (1 + 0.16 * var(--eye-amp, 1)))); }
+  80% { transform: scale(calc(var(--eye-base, 1) * (1 - 0.04 * var(--eye-amp, 1)))); }
+}
+
+.hidoime-eyes {
+  position: absolute;
+  inset: 0;
+  width: 96px;
+  height: 96px;
+  fill: #f3dcff;
+  pointer-events: none;
+}

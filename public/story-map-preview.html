@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f2e9">
+<title>サイノメ・セヴン｜サイノメ草原</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:#292e39;background:#e6e9e7;font-synthesis:none;--pink:#fc6dac;--purple:#8b46d2;--green:#43ae39}
+*{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}button:focus-visible{outline:3px solid #8b46d2;outline-offset:5px}button:disabled{cursor:default}.app{max-width:520px;min-height:100svh;margin:auto;background:#f5f2e9;display:flex;flex-direction:column;overflow:hidden;position:relative}
+header{padding:calc(22px + env(safe-area-inset-top)) 24px 8px;display:flex;align-items:center;justify-content:space-between}.eyebrow{font-size:10px;letter-spacing:.2em;font-weight:800;color:#727c76}h1{font-size:25px;letter-spacing:.06em;margin:5px 0 0}h1 small{font-size:13px;margin-right:9px;color:var(--green)}.reset{width:44px;height:44px;border:1px solid #d8ddd5;background:transparent;border-radius:50%;font-size:22px;color:#687568}.progress{display:flex;gap:7px;padding:12px 24px;align-items:center}.gem{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:6px;transform:rotate(45deg);background:#e0e4da;border:2px solid #c7cec1}.gem.on{background:var(--pink);border-color:#e95f9d}.progress span:last-child{font-size:11px;font-weight:700;margin-left:8px;color:#73806f}
+.map{position:relative;flex:1;min-height:480px;height:clamp(480px,60svh,560px);max-height:560px;margin:0 12px;isolation:isolate}.island{position:absolute;inset:5% 3% 2%;border-radius:43% 46% 38% 41%;background:#d5e3bd;box-shadow:0 12px 0 #c2d5a9,0 22px 0 #e5e9da;transform:rotate(-5deg);z-index:-3}.hill{position:absolute;background:#b9d098;border-radius:50%;z-index:-2}.hill.a{width:31%;height:20%;left:10%;top:31%;transform:rotate(-28deg)}.hill.b{width:30%;height:22%;right:7%;top:56%;transform:rotate(-27deg)}.pond{position:absolute;background:#a8d9d2;border:5px solid #c5e3cc;border-radius:45% 55% 55% 40%;width:23%;height:12%;left:12%;bottom:11%;transform:rotate(20deg);z-index:-2}.tree{position:absolute;width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:29px solid #7eab69;z-index:-1}.tree:after{content:"";position:absolute;top:29px;left:-2px;width:4px;height:7px;background:#7c9670}.t1{left:14%;top:19%}.t2{right:16%;top:25%;transform:scale(.8)}.t3{left:36%;top:78%;transform:scale(.7)}.t4{right:13%;top:72%}.area-caption{position:absolute;left:25px;top:5px;font-size:10px;color:#839475;letter-spacing:.15em}.path{position:absolute;height:8px;background:#f6f5dd;transform-origin:0 50%;border-radius:5px;z-index:-1;box-shadow:0 2px 0 #afc299}.path.locked{background:repeating-linear-gradient(90deg,#a2b696 0 6px,transparent 6px 13px);box-shadow:none;height:4px}.node{position:absolute;transform:translate(-50%,-50%);width:64px;height:64px;border:0;background:transparent;display:grid;place-items:center;padding:0;color:#30392e}.disc{display:grid;place-items:center;width:49px;height:49px;border-radius:50%;background:#fffef2;border:3px solid #fff;box-shadow:0 4px 0 #97b581,0 0 0 2px #a7c093;transition:transform .18s,background .18s}.node:hover .disc{transform:translateY(-3px)}.node.selected .disc{box-shadow:0 4px 0 #dc588f,0 0 0 4px var(--pink)}.node.done .disc{background:var(--green);color:white}.node.locked .disc{background:#bbcab0;color:#697c61;border-color:#cbd6c3;box-shadow:0 3px 0 #9caf90}.node.boss .disc{border-radius:15px;width:59px;height:59px;background:var(--purple);color:white;border-color:#a871dc}.node.boss.locked .disc{background:#9c9aa9;border-color:#b7b5c0;color:#e5e4eb}.node-label{position:absolute;top:66px;font-size:10px;letter-spacing:.06em;font-weight:800;white-space:nowrap;background:#f5f2e9e6;border-radius:8px;padding:3px 7px}.icon{font-size:26px;font-weight:900;line-height:1}.eyes{display:flex;gap:6px;transform:translateY(1px)}.eyes i{display:block;width:13px;height:8px;background:currentColor;border-radius:0 0 14px 14px;transform:rotate(25deg)}.eyes i+ i{transform:rotate(-25deg)}.check{position:absolute;right:1px;top:2px;width:21px;height:21px;background:#fff;border:2px solid var(--green);color:var(--green);border-radius:50%;font-size:12px;font-weight:900}.junction{position:absolute;width:13px;height:13px;background:#f6f5dd;border-radius:50%;transform:translate(-50%,-50%);z-index:-1}.player{position:absolute;width:32px;height:32px;transform:translate(-50%,-50%);pointer-events:none;z-index:4;margin-top:-29px;filter:drop-shadow(0 4px 0 #32383618)}.die{width:32px;height:32px;border-radius:9px;background:var(--pink);border:3px solid white;box-shadow:0 0 0 1px #e95e9c;display:grid;place-items:center;color:white;font-size:19px;font-weight:900}.player.walking .die{animation:hop .22s infinite alternate}.player:after{content:"";position:absolute;bottom:-5px;left:12px;border-top:6px solid white;border-left:4px solid transparent;border-right:4px solid transparent}.gate{position:absolute;left:50%;top:1%;transform:translateX(-50%);font-size:10px;color:#7c8579;letter-spacing:.08em}.gate.open{color:var(--purple);font-weight:800}
+.panel{margin:18px 20px 0;padding:18px 20px;background:#fffef9;border-radius:22px;box-shadow:0 4px 0 #e4e5dc;min-height:165px}.panel-top{display:flex;align-items:center;justify-content:space-between}.tag{font-size:10px;letter-spacing:.12em;color:#868c80;font-weight:800}h2{font-size:20px;margin:7px 0}p{margin:0;font-size:12px;line-height:1.8;color:#72786d}.action{margin-top:15px;width:100%;border:0;border-radius:12px;padding:13px;background:#303a32;color:#fff;font-weight:800;font-size:14px;box-shadow:0 3px 0 #1d251e}.action:disabled{background:#e4e8df;color:#919b8a;box-shadow:none}.panel .status{font-size:11px;color:var(--green);font-weight:800}footer{padding:16px 24px calc(16px + env(safe-area-inset-bottom));display:flex;justify-content:space-between;font-size:9px;letter-spacing:.1em;color:#92978f}.toast{position:absolute;top:125px;left:50%;transform:translateX(-50%);background:#303a32;color:white;padding:10px 16px;border-radius:20px;font-size:12px;white-space:nowrap;z-index:6;pointer-events:none}.toast:empty{display:none}dialog{width:min(350px,calc(100% - 40px));border:0;border-radius:24px;padding:28px;background:#fffef9;color:#303a32;box-shadow:0 20px 80px #19251540}dialog::backdrop{background:#25362688}dialog h2{margin:14px 0}.modal-icon{font-size:30px;color:var(--pink)}.secondary{border:0;background:transparent;width:100%;padding:15px 0 0;color:#6b7668;font-size:13px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}@keyframes hop{from{transform:translateY(0) rotate(-9deg)}to{transform:translateY(-6px) rotate(9deg)}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}@media(min-width:700px){.app{margin:24px auto;min-height:0;border-radius:30px;box-shadow:0 20px 90px #29352e18}.map{height:520px}header{padding-top:26px}}@media(max-height:740px){.map{min-height:480px;height:480px}.panel{margin-top:10px;padding:14px 18px;min-height:150px}header{padding-top:16px}footer{padding-top:12px}}
+
+.node{width:56px;height:56px}.disc{width:44px;height:44px}.node-label{top:57px;font-size:11px}.node.boss .disc{width:53px;height:53px}.node.shortcut:not(.locked) .disc{background:#fcdb8d;color:#784410}.path.shortcut-path:not(.locked){background:#e3b966}.padlock{display:block;width:17px;height:14px;border-radius:3px;background:currentColor;position:relative;margin-top:7px}.padlock:before{content:"";position:absolute;width:11px;height:11px;left:3px;top:-8px;border:3px solid currentColor;border-radius:9px 9px 0 0}.gem{transform:none;border:0;background:transparent;color:#909b84;font-style:normal;font-size:24px}.gem:after{content:"⚑"}.gem.on{border:0;background:transparent;color:#d14d8b}.toast{white-space:normal;text-align:center;width:max-content;max-width:90%}.gate{left:49%;top:0}.area-caption{top:10%;left:6px;font-size:9px;writing-mode:vertical-rl}.progress{padding-bottom:16px}
+</style>
+<main class="app">
+<header><div><div class="eyebrow">SAINOME SEVEN / STORY</div><h1><small>01</small>サイノメ草原</h1></div><button class="reset" aria-label="試作の進行をリセット">↺</button></header>
+<div class="progress" aria-label="ミッションの達成数"><i class="gem"></i><i class="gem"></i><span id="progressText">ふたつ集めて、その先へ。</span></div>
+<section class="map" aria-label="エリア1のマップ。行きたい地点を選択"><div class="island"></div><div class="hill a"></div><div class="hill b"></div><div class="pond"></div><i class="tree t1"></i><i class="tree t2"></i><i class="tree t3"></i><i class="tree t4"></i><span class="area-caption">RECLAIM THE CASTLE</span><span class="gate" id="gate">▱ NEXT AREA</span><div id="paths"></div><div id="nodes"></div><div class="player" aria-hidden="true"><div class="die">•</div></div></section>
+<section class="panel" aria-labelledby="placeTitle"><div class="panel-top"><span class="tag" id="tag">START POINT</span><span class="status" id="status"></span></div><h2 id="placeTitle">どこから行こう？</h2><p id="description">気になるマスへ、サイカといっしょに。</p><button class="action" id="action" disabled>マップで行き先を選ぶ</button></section>
+<footer><span>MAP UI / PROTOTYPE 02</span><span>ミッションは操作確認用</span></footer><div class="toast" role="status"></div><div class="sr" aria-live="polite" id="announcement"></div>
+</main>
+<dialog id="mission"><div class="tag">UI PLAYTEST</div><div class="modal-icon">✦</div><h2 id="missionTitle"></h2><p id="missionBody"></p><button class="action" id="complete">クリアを試す</button><button class="secondary" id="cancel">マップに戻る</button></dialog>
+<dialog id="resetDialog"><h2>最初から歩く？</h2><p>このマップの試作データだけをリセットします。</p><button class="action" id="confirmReset">最初から</button><button class="secondary" id="cancelReset">戻る</button></dialog>
+<script>
+/* WORLD_DATA_START */
+const WORLD = {
+  "premise": "サイリアン達に占領されたサイノメ城を取り戻す。草原から城門を突破し、城内の最終ボスへ進む。",
+  "enemyCatalog": {
+    "koitsume": "コイツメ",
+    "dame": "ダーメ",
+    "hidoime": "ヒドイメ",
+    "beraboume": "ベラボウメ",
+    "finalBossPlaceholder": "最終ボス（未定）"
+  },
+  "area": {
+    "id": "area-01",
+    "name": "サイノメ草原",
+    "order": 1,
+    "status": "prototype",
+    "bossStageId": "stage-08",
+    "flags": [
+      {
+        "id": "area-01:east",
+        "label": "東の旗"
+      },
+      {
+        "id": "area-01:west",
+        "label": "西の旗"
+      }
+    ],
+    "stageIds": [
+      "stage-01",
+      "stage-02",
+      "stage-03",
+      "stage-04",
+      "stage-05",
+      "stage-06",
+      "stage-07",
+      "stage-08"
+    ],
+    "edges": [
+      [
+        "start",
+        "stage-01"
+      ],
+      [
+        "stage-01",
+        "stage-02"
+      ],
+      [
+        "stage-01",
+        "stage-03"
+      ],
+      [
+        "stage-02",
+        "stage-04"
+      ],
+      [
+        "stage-03",
+        "stage-05"
+      ],
+      [
+        "stage-05",
+        "stage-06"
+      ],
+      [
+        "stage-04",
+        "stage-08"
+      ],
+      [
+        "stage-05",
+        "stage-08"
+      ],
+      [
+        "stage-01",
+        "stage-07"
+      ],
+      [
+        "stage-07",
+        "stage-08"
+      ]
+    ]
+  },
+  "stages": [
+    {
+      "id": "stage-01",
+      "number": 1,
+      "areaId": "area-01",
+      "title": "草原の入口",
+      "label": "出発",
+      "role": "entry",
+      "mapPosition": {
+        "x": 50,
+        "y": 84
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "makeSeven",
+            "target": 3
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-02",
+      "number": 2,
+      "areaId": "area-01",
+      "title": "セブンの広場",
+      "label": "スコア",
+      "role": "mission",
+      "mapPosition": {
+        "x": 20,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-01"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 2000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-03",
+      "number": 3,
+      "areaId": "area-01",
+      "title": "チェインの丘",
+      "label": "チェイン",
+      "role": "mission",
+      "mapPosition": {
+        "x": 80,
+        "y": 67
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-01"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "chain",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-04",
+      "number": 4,
+      "areaId": "area-01",
+      "title": "東の見張り台",
+      "label": "東の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 20,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-02"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-01:east"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "koitsume",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-05",
+      "number": 5,
+      "areaId": "area-01",
+      "title": "西の守り",
+      "label": "西の旗",
+      "role": "flag",
+      "mapPosition": {
+        "x": 80,
+        "y": 42
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-03"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-01:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "surviveTurns",
+            "target": 12
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "dame",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-06",
+      "number": 6,
+      "areaId": "area-01",
+      "title": "寄り道の小径",
+      "label": "寄り道",
+      "role": "optional",
+      "mapPosition": {
+        "x": 84,
+        "y": 19
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-05"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "normal",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 2000
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "koitsume",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-07",
+      "number": 7,
+      "areaId": "area-01",
+      "title": "危険な突破口",
+      "label": "近道・難",
+      "role": "shortcut",
+      "mapPosition": {
+        "x": 50,
+        "y": 56
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [
+          "stage-01"
+        ],
+        "anyCleared": [],
+        "allFlags": []
+      },
+      "rewards": {
+        "flags": [
+          "area-01:east",
+          "area-01:west"
+        ]
+      },
+      "difficulty": {
+        "tier": "hard",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "score",
+            "target": 6000
+          },
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 2
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 2,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": 18,
+      "timeLimitSeconds": null
+    },
+    {
+      "id": "stage-08",
+      "number": 8,
+      "areaId": "area-01",
+      "title": "草原の守り手",
+      "label": "ボス",
+      "role": "boss",
+      "mapPosition": {
+        "x": 50,
+        "y": 10
+      },
+      "artKey": null,
+      "unlock": {
+        "allCleared": [],
+        "anyCleared": [],
+        "allFlags": [
+          "area-01:east",
+          "area-01:west"
+        ]
+      },
+      "rewards": {
+        "flags": []
+      },
+      "difficulty": {
+        "tier": "boss",
+        "tuningStatus": "unbalanced-draft"
+      },
+      "objectives": {
+        "mode": "all",
+        "items": [
+          {
+            "type": "defeat",
+            "enemyType": "hidoime",
+            "target": 1
+          }
+        ]
+      },
+      "enemies": [
+        {
+          "type": "hidoime",
+          "count": 1,
+          "hpOverride": null,
+          "spawnEveryTurns": null
+        }
+      ],
+      "turnLimit": null,
+      "timeLimitSeconds": null
+    }
+  ]
+};
+/* WORLD_DATA_END */
+const KEY='sainome:castle-map-prototype:v2';
+const area=WORLD.area, stages=WORLD.stages;
+const places={start:{x:50,y:96,title:'サイノメ城を取り戻そう',tag:'PROLOGUE',desc:'サイリアン達に占領された城へ。まずは草原から。',icon:'⌂'}};
+for(const s of stages) places[s.id]={...s,...s.mapPosition,tag:s.role==='shortcut'?'SHORTCUT / HARD':s.role==='boss'?'AREA BOSS':'MISSION '+String(s.number).padStart(2,'0'),icon:s.role==='boss'?'eyes':s.role==='shortcut'?'⚡':s.role==='flag'?'⚑':s.role==='optional'?'✦':s.objectives.items[0].type==='chain'?'↗':'7'};
+const edges=area.edges;let cleared=new Set(),position='start',selected='start',busy=false,toastTimer;
+const flags=()=>new Set(stages.filter(s=>cleared.has(s.id)).flatMap(s=>s.rewards.flags));
+function available(id){if(id==='start')return true;const u=places[id].unlock,f=flags();return u.allCleared.every(x=>cleared.has(x))&&(!u.anyCleared.length||u.anyCleared.some(x=>cleared.has(x)))&&u.allFlags.every(x=>f.has(x));}
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s){const pending=new Set(Array.isArray(s.cleared)?s.cleared:[]);for(let pass=0;pass<stages.length;pass++)for(const stage of stages)if(pending.has(stage.id)&&available(stage.id))cleared.add(stage.id);if(places[s.position]&&available(s.position))position=s.position;selected=position;}}catch{}
+const $=s=>document.querySelector(s),map=$('.map'),player=$('.player'),modal=$('#mission');
+function save(){try{localStorage.setItem(KEY,JSON.stringify({cleared:[...cleared],position}));}catch{}}
+function tell(t){$('.toast').textContent=t;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('.toast').textContent='',2600);}
+function coords(id){const p=places[id];return {left:p.x+'%',top:p.y+'%'};}
+function objectiveText(s){return s.objectives.items.map(o=>o.type==='score'?o.target.toLocaleString()+'点':o.type==='chain'?o.target+'チェイン':o.type==='surviveTurns'?o.target+'ターン生き残る':o.type==='defeat'?(WORLD.enemyCatalog?.[o.enemyType]||({koitsume:'コイツメ',dame:'ダーメ',hidoime:'ヒドイメ'})[o.enemyType]||o.enemyType)+'を'+o.target+'体倒す':'7を'+o.target+'回つくる').join(s.objectives.mode==='any'?' または ':' ＋ ');}
+function missing(id){const u=places[id].unlock,f=flags(),parts=[];for(const x of u.allCleared)if(!cleared.has(x))parts.push(places[x]?.title||x);if(u.anyCleared.length&&!u.anyCleared.some(x=>cleared.has(x)))parts.push('いずれかの前提ステージ');for(const x of u.allFlags)if(!f.has(x))parts.push(area.flags.find(y=>y.id===x)?.label||x);return parts.join('・')+'が必要';}
+function layout(){const w=map.clientWidth,h=map.clientHeight;$('#paths').replaceChildren();for(const [a,b] of edges){const p=places[a],q=places[b],dx=(q.x-p.x)*w/100,dy=(q.y-p.y)*h/100,line=document.createElement('div');line.className='path'+(!available(b)?' locked':'')+((p.role==='shortcut'||q.role==='shortcut')?' shortcut-path':'');Object.assign(line.style,{left:p.x+'%',top:`calc(${p.y}% - 4px)`,width:Math.hypot(dx,dy)+'px',transform:`rotate(${Math.atan2(dy,dx)}rad)`});$('#paths').append(line);}}
+function render(){
+ $('#nodes').replaceChildren();for(const [id,p] of Object.entries(places)){if(id==='start')continue;const locked=!available(id),node=document.createElement('button');node.className='node'+(p.role==='boss'?' boss':'')+(p.role==='shortcut'?' shortcut':'')+(locked?' locked':'')+(cleared.has(id)?' done':'')+(selected===id?' selected':'');node.dataset.id=id;node.setAttribute('aria-label',p.title+(locked?'、未解放。'+missing(id):cleared.has(id)?'、クリア済み':''));node.setAttribute('aria-pressed',String(selected===id));node.setAttribute('aria-disabled',String(locked||busy));Object.assign(node.style,coords(id));node.innerHTML=`<span class="disc"><span class="icon">${locked?'<span class="padlock" aria-hidden="true"></span>':p.icon==='eyes'?'<span class="eyes"><i></i><i></i></span>':p.icon}</span></span>${p.label?`<span class="node-label">${p.label}</span>`:''}${cleared.has(id)?'<span class="check">✓</span>':''}`;node.onclick=()=>go(id);$('#nodes').append(node);}
+ const f=flags();document.querySelectorAll('.gem').forEach((e,i)=>{e.classList.toggle('on',f.has(area.flags[i].id));e.setAttribute('aria-label',area.flags[i].label+(f.has(area.flags[i].id)?'取得済み':'未取得'));});$('#progressText').textContent=cleared.has(area.bossStageId)?'草原を奪還！':available(area.bossStageId)?'旗が揃った。ボスへ！':'東と西の旗を集めよう';$('#gate').textContent=cleared.has(area.bossStageId)?'城下への街道へ →':'サイノメ城へ ↑';$('#gate').classList.toggle('open',cleared.has(area.bossStageId));layout();panel();}
+function panel(){const p=places[selected];$('#tag').textContent=busy?'ON THE WAY':p.tag;$('#placeTitle').textContent=p.title;$('#description').textContent=busy?'サイカが移動中…':selected==='start'?p.desc:objectiveText(p)+(p.turnLimit?' ／ '+p.turnLimit+'ターン以内':'')+(p.rewards.flags.length?' ／ ⚑ '+p.rewards.flags.map(x=>area.flags.find(f=>f.id===x).label).join('・'):'');$('#status').textContent=cleared.has(selected)?'✓ CLEAR':'';$('#action').disabled=busy||selected==='start';$('#action').textContent=busy?'移動中…':selected==='start'?'マップで行き先を選ぶ':cleared.has(selected)?'もう一度あそぶ':'ここに挑戦';}
+function route(from,to){const queue=[[from]],visited=new Set([from]);while(queue.length){const path=queue.shift(),last=path.at(-1);if(last===to)return path.slice(1);for(const [a,b] of edges){const next=a===last?b:b===last?a:null;if(next&&!visited.has(next)&&available(next)){visited.add(next);queue.push([...path,next]);}}}return null;}
+async function go(id){if(busy)return;if(!available(id)){tell('🔒 '+missing(id));return;}const steps=route(position,id);if(!steps){tell('通れる道がまだありません');return;}selected=id;busy=true;player.classList.add('walking');render();const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;for(const step of steps){const to=coords(step);if(!reduced){const anim=player.animate([coords(position),to],{duration:Math.hypot(places[step].x-places[position].x,places[step].y-places[position].y)*9+80,easing:'ease-in-out',fill:'forwards'});await anim.finished;Object.assign(player.style,to);anim.cancel();}else Object.assign(player.style,to);position=step;}busy=false;player.classList.remove('walking');save();render();$('#announcement').textContent=places[id].title+'に到着';document.querySelector(`[data-id="${id}"]`).focus({preventScroll:true});}
+$('#action').onclick=()=>{if(busy||selected==='start')return;$('#missionTitle').textContent=places[selected].title;$('#missionBody').textContent=objectiveText(places[selected])+'。操作確認用：クリアを試すと道や旗の変化を確認できます。';modal.showModal();};
+$('#cancel').onclick=()=>modal.close();$('#complete').onclick=()=>{const was=available(area.bossStageId);cleared.add(selected);save();modal.close();render();tell(selected===area.bossStageId?'草原を奪還！ 次は城下への街道。':!was&&available(area.bossStageId)?'⚑ 旗が揃った。ボスへの道が開いた！':places[selected].rewards.flags.length?'⚑ 旗を獲得！':'✦ 新しい道が開いた！');$('#action').focus();};
+$('.reset').onclick=()=>{if(!busy)$('#resetDialog').showModal();};$('#cancelReset').onclick=()=>$('#resetDialog').close();$('#confirmReset').onclick=()=>{cleared.clear();position=selected='start';save();Object.assign(player.style,coords(position));render();$('#resetDialog').close();tell('草原の入口に戻りました');};
+new ResizeObserver(layout).observe(map);Object.assign(player.style,coords(position));render();
+</script>
+</html>

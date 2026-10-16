@@ -1,0 +1,35 @@
+/* 本編と図鑑の共通ペンキ演出。4.8セルのCanvas中心が着弾点。 */
+.anchi-paint.is-flying {
+  animation: anchi-paint-flight 320ms cubic-bezier(.25,.7,.5,1) both;
+}
+.anchi-paint.is-spreading {
+  animation: anchi-paint-spread 260ms cubic-bezier(.2,1.4,.4,1) both;
+}
+.anchi-paint.is-resting { animation: none; }
+.anchi-paint.is-fading {
+  animation: anchi-paint-fade 420ms ease-in both;
+}
+@keyframes anchi-paint-flight {
+  0% { transform: translate(calc(var(--launch-dx) * var(--cell-size)), calc(var(--launch-dy) * var(--cell-size))) scale(.13) rotate(-35deg); opacity: .9; }
+  55% { transform: translate(calc(var(--launch-dx) * var(--cell-size) * .4), calc((var(--launch-dy) * .4 - .7) * var(--cell-size))) scale(.2) rotate(25deg); opacity: 1; }
+  100% { transform: translate(0,0) scale(.25) rotate(0); opacity: 1; }
+}
+@keyframes anchi-paint-spread {
+  0% { transform: scale(.25); opacity: 1; }
+  60% { transform: scale(1.14,.88); }
+  100% { transform: scale(1); }
+}
+@keyframes anchi-paint-fade {
+  0% { transform: scale(1); opacity: 1; }
+  35% { transform: scale(1.08,.92); opacity: .8; }
+  100% { transform: scale(.15); opacity: 0; }
+}
+.anchi-flash.is-thunder { background: #ffe83d; }
+@media (prefers-reduced-motion: reduce) {
+  .anchi-paint.is-flying { animation-name: anchi-paint-reduced-flight; }
+  .anchi-paint.is-spreading { animation-name: anchi-paint-reduced-spread; }
+  .anchi-paint.is-fading { animation-name: anchi-paint-reduced-fade; }
+  @keyframes anchi-paint-reduced-flight { from { transform: scale(.25); opacity: 0; } to { transform: scale(.25); opacity: 1; } }
+  @keyframes anchi-paint-reduced-spread { from { opacity: .5; } to { opacity: 1; } }
+  @keyframes anchi-paint-reduced-fade { from { opacity: 1; } to { opacity: 0; } }
+}

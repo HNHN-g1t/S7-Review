@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ベラボウメ｜エネミーデザイン試作</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#100e18;color:#eee6f2;font-family:system-ui,sans-serif}
+main{max-width:880px;margin:auto;padding:32px 20px}header small{color:#bc99c6;letter-spacing:.15em}h1{font-size:clamp(26px,6vw,40px);margin:10px 0}p{color:#b2a5bd;line-height:1.8;font-size:14px}
+.preview{--cell:min(64px,calc((100vw - 64px)/7));background:#171422;border:1px solid #362b42;border-radius:24px;margin:24px 0;padding:30px 10px;overflow:hidden}
+.board{position:relative;width:calc(var(--cell)*7);height:calc(var(--cell)*4.7);margin:auto;background-image:linear-gradient(#b99bc00b 1px,transparent 1px),linear-gradient(90deg,#b99bc00b 1px,transparent 1px);background-size:var(--cell) var(--cell)}
+.enemy{position:absolute;left:calc(var(--cell)*.3);top:calc(var(--cell)*.35);width:calc(var(--cell)*3);height:calc(var(--cell)*3)}
+.enemy.second{left:calc(var(--cell)*3.7)}
+.variant-label{position:absolute;top:calc(var(--cell)*3.65);width:calc(var(--cell)*3);text-align:center;font-size:11px;color:#e8b47f;left:calc(var(--cell)*.3)}
+.variant-label.second{left:calc(var(--cell)*3.7);color:#c5dc88}
+.enemy svg{width:100%;height:100%;overflow:visible}
+.preview{overflow:auto}
+.body{transform-origin:72px 72px;animation:none}
+@keyframes breathe{0%,100%{transform:scale(1,1)}43%{transform:scale(1.014,.988)}62%{transform:scale(.992,1.008)}}
+.mist{animation:mist 7.3s ease-in-out infinite alternate;transform-origin:72px 72px}
+@keyframes mist{from{opacity:.2;transform:translate(-3px,2px)}to{opacity:.5;transform:translate(3px,-2px)}}
+.eye-presence{transform-origin:0 0;animation:presence var(--cycle) linear var(--offset) infinite}
+@keyframes presence{0%,15%,92%,100%{transform:translate(3px,5px) scale(0)}16%{transform:translate(1px,2px) scale(.72)}18%{transform:translate(0,0) scale(1.14)}21%,82%{transform:translate(0,0) scale(1)}85%{transform:translate(.7px,1.2px) scale(.82)}88%{transform:translate(2px,3.4px) scale(.38)}91%{transform:translate(3px,5px) scale(.08)}}
+.eye-lid{clip-path:inset(0);animation:eyelid var(--cycle) linear var(--offset) infinite}
+@keyframes eyelid{0%,15%,86%,100%{clip-path:inset(50% 0 50% 0)}16.5%{clip-path:inset(25% 0 0 0)}18%,47%,51%,82%{clip-path:inset(0)}48.5%{clip-path:inset(50% 0 50% 0)}84%{clip-path:inset(25% 0 0 0)}}
+.eye-rim{fill:none;stroke:var(--accent);stroke-width:1.5}
+.geo{transform-box:fill-box;transform-origin:center;animation:geo-shift var(--tempo) steps(1,end) var(--phase) infinite}
+@keyframes geo-shift{0%,100%{transform:translate(0,0)}33%{transform:translate(2px,-2px) rotate(90deg)}68%{transform:translate(-1px,2px) rotate(180deg)}}
+.iris{animation:gaze var(--gaze) ease-in-out var(--offset) infinite}
+@keyframes gaze{0%,25%,100%{transform:translate(-2px,0)}36%,57%{transform:translate(2.6px,.5px)}72%,88%{transform:translate(.5px,-.5px)}}
+.still-eye .eye-presence{animation:none;transform:scale(1)}.still-eye .eye-lid{animation:none;clip-path:inset(0)}
+.paused .enemy *{animation-play-state:paused!important}
+.die{position:absolute;left:calc(var(--cell)*.08);bottom:calc(var(--cell)*.1);width:calc(var(--cell)*.84);height:calc(var(--cell)*.84);border-radius:20%;background:#8b46d2;box-shadow:inset 0 0 0 1px #bc83e0;display:grid;place-items:center}
+.die:after{content:"";width:22%;height:22%;border-radius:50%;background:#fff}
+.measure{position:absolute;left:var(--cell);top:calc(var(--cell)*3.6);width:calc(var(--cell)*3);border-top:1px solid #766182;text-align:center;padding-top:8px;color:#a99ab4;font-size:11px;letter-spacing:.12em}
+.controls{display:flex;gap:9px;flex-wrap:wrap}button{font:inherit;font-size:13px;color:#dfd2e9;background:#292032;border:1px solid #55405f;border-radius:10px;padding:11px 15px;cursor:pointer}
+button[aria-pressed="true"]{background:#c5dc88;color:#151a10;border-color:#c5dc88}button:focus-visible{outline:2px solid #e4ffac;outline-offset:3px}
+.note{border-top:1px solid #33293e;margin-top:24px;padding-top:16px}footer{color:#776982;font-size:12px;margin-top:30px}
+@media(prefers-reduced-motion:reduce){body:not(.motion-enabled) .enemy *{animation:none!important}body:not(.motion-enabled) .eye-presence{transform:scale(1)}body:not(.motion-enabled) .eye-lid{clip-path:inset(0)}}
+</style></head>
+<body><main>
+<header><small>ENEMY DESIGN / 02</small><h1>ベラボウメ</h1><p>きょろきょろ、ぱちぱち。九つの目が、こっちに興味津々。</p></header>
+<section class="preview" id="preview" aria-label="ベラボウメの動く見本">
+<div class="board"><div class="enemy" id="enemy" role="img"></div><div class="enemy second" id="enemy-lime" role="img"></div><div class="variant-label">ORANGE</div><div class="variant-label second">YELLOW GREEN</div><div class="die" aria-label="比較用の通常サイ、1マス"></div></div>
+</section>
+<div class="controls">
+<button id="pause" aria-pressed="false">一時停止</button>
+<button id="all" aria-pressed="false">9眼を全部表示</button>
+<button id="size" aria-pressed="false">実寸で見る（144px）</button>
+</div>
+<p class="note">9つの目は、それぞれ違う間で浮かび、まばたきし、沈みます。左下の通常サイは大きさ比較用です。<br>見た目のみの試作。攻撃・HP・ダメージ・消滅演出は未設定です。</p>
+<footer>DESIGN BRANCH ONLY / メイン未マージ</footer>
+</main><script>
+(() => {
+  // 基準：通常サイ48px、ベラボウメ144px。9眼の座標は再描画で変えない。
+  const eyes = [
+    {x:35,y:34,w:31,a:-12,cycle:5.8,offset:-1.9},
+    {x:75,y:29,w:29,a:8,cycle:7.1,offset:-4.4},
+    {x:110,y:39,w:30,a:19,cycle:6.4,offset:-.7},
+    {x:30,y:74,w:28,a:9,cycle:8.2,offset:-5.1},
+    {x:73,y:71,w:38,a:-4,cycle:6.9,offset:-3},
+    {x:112,y:79,w:27,a:-17,cycle:5.6,offset:-4.2},
+    {x:36,y:108,w:30,a:-16,cycle:7.7,offset:-.3},
+    {x:76,y:114,w:32,a:12,cycle:6.2,offset:-2.7},
+    {x:108,y:110,w:26,a:-7,cycle:8.6,offset:-6}
+  ];
+  // Two gentle waves per edge, joined by soft rounded corners.
+  const contour = 'M24 7C32 3 40 3 48 7S64 11 72 7S88 3 96 7S112 11 120 7Q137 5 137 24C141 32 141 40 137 48S133 64 137 72S141 88 137 96S133 112 137 120Q139 137 120 137C112 141 104 141 96 137S80 133 72 137S56 141 48 137S32 133 24 137Q7 139 7 120C3 112 3 104 7 96S11 80 7 72S3 56 7 48S11 32 7 24Q5 7 24 7Z';
+  const eyeShape = 'M14 0A14 14 0 1 0-14 0A14 14 0 1 0 14 0Z';
+  function drawVariant(target,lime) {
+  const accent=lime?'#d2ff4b':'#ffc04a';
+  const eyeColors = lime?['#c4ff32','#deff69','#9ff02b']:['#ffab32','#ffd05a','#ff8524'];
+  const eyeMarkup = eyes.map((e,i) => `<g transform="translate(${e.x} ${e.y}) rotate(${e.a}) scale(${e.w/34})">
+    <g class="eye-presence" style="--cycle:${e.cycle}s;--offset:${e.offset-(lime?1.7+i*.07:0)}s;--gaze:${3.7+i*.23}s;--accent:${eyeColors[i%3]}">
+      <circle cx="3" cy="5" r="16.5" fill="${lime?'#131b11':'#1d1611'}" filter="url(#eye-shadow)"/>
+      <g class="eye-lid">
+        <path d="${eyeShape}" transform="translate(0 1.5)" fill="#321c4b" opacity=".35"/>
+        <path d="${eyeShape}" fill="url(#sclera)" stroke="#e9cff7" stroke-width=".6"/>
+        <g clip-path="url(#eye-clip)"><g class="iris">
+          <circle r="10.5" fill="#21182e"/>
+          <circle cx="1" cy="1.2" r="6.3" fill="${eyeColors[i%3]}"/>
+          <circle cx="1" cy=".5" r="3.1" fill="#382544"/>
+          <circle cx="-3.4" cy="-4.3" r="2.8" fill="#fffafc"/>
+          <circle cx="4.3" cy="5" r="1.2" fill="#ffffff" opacity=".75"/>
+        </g></g>
+        <path class="eye-rim" d="${eyeShape}"/>
+      </g>
+    </g></g>`).join('');
+  const texture=Array.from({length:8},(_,i)=>{
+    const x=-24+(i*53)%150,y=-28+(i*71)%152,s=28+(i%4)*12;
+    const shape=i%3===0?`<path d="M0 ${s}L${s} 0L${s*1.6} ${s*1.4}Z" fill="url(#facet)"/>`:i%3===1?`<rect width="${s*1.4}" height="${s}" fill="url(#facet)"/>`:`<circle r="${s*.7}" fill="url(#pool)"/>`;
+    return `<g transform="translate(${x} ${y}) rotate(${i*23})">${shape}</g>`;
+  }).join('');
+  const inner=contour.replace(/\d+/g,n=>(72+(Number(n)-72)*.89).toFixed(2));
+  const node=document.querySelector(target);
+  node.setAttribute('aria-label',lime?'イエローグリーンのベラボウメ':'オレンジのベラボウメ');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+    <defs>
+      <filter id="eye-shadow" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="1.7"/></filter>
+      <linearGradient id="bevel" x2=".8" y2="1"><stop stop-color="${lime?'#dcff83':'#ffd17c'}"/><stop offset=".43" stop-color="${lime?'#8ac52b':'#f49a2e'}"/><stop offset=".6" stop-color="${lime?'#467f1d':'#b65314'}"/><stop offset="1" stop-color="${lime?'#244716':'#632e15'}"/></linearGradient>
+      <linearGradient id="facet" x2="1" y2="1"><stop stop-color="${lime?'#b7f33d':'#ffad32'}" stop-opacity=".7"/><stop offset="1" stop-color="${lime?'#509b29':'#d55914'}" stop-opacity=".2"/></linearGradient>
+      <radialGradient id="pool"><stop stop-color="${accent}" stop-opacity=".4"/><stop offset="1" stop-color="${accent}" stop-opacity="0"/></radialGradient>
+      <radialGradient id="skin" cx="38%" cy="30%" r="85%"><stop stop-color="${lime?'#75b42b':'#e88424'}"/><stop offset=".56" stop-color="${lime?'#407d24':'#b8551c'}"/><stop offset="1" stop-color="${lime?'#234d23':'#71361e'}"/></radialGradient>
+      <radialGradient id="sclera" cx="35%" cy="25%"><stop stop-color="#fff9ff"/><stop offset=".75" stop-color="#f0e1f7"/><stop offset="1" stop-color="#c9b2df"/></radialGradient>
+      <radialGradient id="iris"><stop stop-color="#f5d67c"/><stop offset=".48" stop-color="#cfdd85"/><stop offset="1" stop-color="#6c9b76"/></radialGradient>
+      <radialGradient id="haze"><stop stop-color="#ad467f" stop-opacity=".45"/><stop offset="1" stop-color="#ad467f" stop-opacity="0"/></radialGradient>
+      <clipPath id="body-clip"><path d="${inner}"/></clipPath>
+      <clipPath id="eye-clip"><path d="${eyeShape}"/></clipPath>
+    </defs>
+    <g class="body">
+      <path d="${contour}" transform="translate(1 3)" fill="#090911" opacity=".8"/>
+      <path d="${contour}" fill="url(#bevel)" stroke="#292e2b" stroke-width=".8"/>
+      <path d="M7 24Q5 7 24 7L29 14Q15 13 14 29Z" fill="${lime?'#efffb6':'#ffe6aa'}"/>
+      <path d="${inner}" fill="url(#skin)" stroke="${lime?'#376b20':'#91400f'}" stroke-width=".6"/>
+      <g clip-path="url(#body-clip)">
+        <g transform="${lime?'translate(144 151) rotate(180) translate(-10 7)':'translate(0 0)'}">${texture}</g>
+        ${eyeMarkup}
+      </g>
+    </g></svg>`;
+  const prefix=lime?'lime-':'orange-';
+  node.innerHTML=svg.replace(/id="([^"]+)"/g,(_,id)=>`id="${prefix}${id}"`).replace(/url\(#([^)]+)\)/g,(_,id)=>`url(#${prefix}${id})`);
+  }
+  drawVariant('#enemy',false);
+  drawVariant('#enemy-lime',true);
+  const preview=document.querySelector('#preview');
+  let userPaused=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelector('#pause').textContent=userPaused?'動きを見る':'一時停止';
+  document.querySelector('#pause').setAttribute('aria-pressed',String(userPaused));
+  const syncPause=()=>preview.classList.toggle('paused',userPaused||document.hidden);
+  document.querySelector('#pause').onclick=e=>{
+    document.body.classList.add('motion-enabled');
+    userPaused=!userPaused;syncPause();
+    e.currentTarget.setAttribute('aria-pressed',String(userPaused));
+    e.currentTarget.textContent=userPaused?'再生する':'一時停止';
+  };
+  document.addEventListener('visibilitychange',syncPause);
+  syncPause();
+  document.querySelector('#all').onclick=e=>{
+    const on=preview.classList.toggle('still-eye');
+    e.currentTarget.setAttribute('aria-pressed',String(on));
+    e.currentTarget.textContent=on?'出現・消失に戻す':'9眼を全部表示';
+  };
+  document.querySelector('#size').onclick=e=>{
+    const on=e.currentTarget.getAttribute('aria-pressed')!=='true';
+    e.currentTarget.setAttribute('aria-pressed',String(on));
+    preview.style.setProperty('--cell',on?'48px':'min(64px,calc((100vw - 64px)/7))');
+    e.currentTarget.textContent=on?'拡大して見る':'実寸で見る（144px）';
+  };
+})();
+</script></body></html>

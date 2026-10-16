@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ブロック配色 Before → After（2026-09-07）</title>
+<style>
+  :root{
+    --ink:#2b3444; --dim:#5d6a7f; --mute:#8d9aad;
+    --line:#d2dae6; --paper:#ffffff; --bg:#e9edf4;
+    /* 盤面のタイル（実機と同じ値） */
+    --board:#9fabbd; --tile:#b4bfcf; --tile-alt:#a9b5c7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Inter","Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
+    line-height:1.7;padding:28px 20px 60px}
+  .wrap{max-width:880px;margin:0 auto}
+  h1{font-size:20px;letter-spacing:.04em;margin:0 0 4px}
+  .sub{color:var(--mute);font-size:12px;margin:0 0 26px}
+  h2{font-size:15px;letter-spacing:.04em;margin:30px 0 10px;
+     padding-bottom:6px;border-bottom:1px solid var(--line)}
+  p{font-size:13px;color:var(--dim);margin:0 0 12px}
+  .note{background:var(--paper);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;font-size:13px;color:var(--dim)}
+  .note b{color:var(--ink)}
+
+  /* --- 見本の並び --- */
+  .strip{border-radius:12px;padding:14px;background:var(--board);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0;
+    border-radius:6px;overflow:hidden;max-width:392px}
+  .cell{aspect-ratio:1;background:var(--tile);position:relative}
+  .cell:nth-child(even){background:var(--tile-alt)}
+  .row-label{font-size:12px;font-weight:800;letter-spacing:.06em;
+    color:var(--ink);margin:0 0 8px}
+
+  /* --- メ本体：ゲーム側の .die と同じ指定 --- */
+  .die{position:absolute;inset:0;border-radius:26%;
+    background-image:
+      radial-gradient(circle at 30% 24%, rgba(255,255,255,.42), rgba(255,255,255,0) 46%),
+      linear-gradient(rgba(255,255,255,0) 55%, rgba(20,8,30,.22));
+    box-shadow:
+      inset 0 -3px 0 rgba(20,8,30,.22),
+      inset 0 0 0 1px rgba(20,8,30,.28),
+      0 1px 2px rgba(40,30,60,.3)}
+  .pip{position:absolute;width:12%;height:12%;border-radius:999px;
+    background:#fff;transform:translate(-50%,-50%)}
+
+  /* --- 数値表 --- */
+  table{border-collapse:collapse;width:100%;font-size:12.5px;background:var(--paper);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:#f3f6fa;font-weight:700;font-size:12px;letter-spacing:.03em}
+  tr:last-child td{border-bottom:0}
+  td.num{font-variant-numeric:tabular-nums;color:var(--dim)}
+  .chip{display:inline-block;width:13px;height:13px;border-radius:4px;
+    vertical-align:-2px;margin-right:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+  .same{color:var(--mute)}
+  .hit{color:#2f7d32;font-weight:700}
+  code{background:#eef2f7;padding:1px 5px;border-radius:4px;font-size:12px}
+  .rejected{opacity:.55}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>ブロック配色 Before → After</h1>
+  <p class="sub">サイノメ・セヴン ／ 2026-09-07 ／ 決定済み・ゲーム本体に適用済み</p>
+
+  <div class="note">
+    この資料は<b>ブロックのグラフィックスだけ</b>を並べたものです。
+    メの形・ツヤ・陰り・目の描き方はゲーム本体と同じ指定を使っているので、
+    見えているとおりの色味が実機でも出ます。
+    <b>この After の配色はゲーム本体に適用済みです。</b>
+    以降ここは、なぜこの色になったかを残しておくための記録として置いておきます。
+  </div>
+
+  <h2>Before（現在の実装）</h2>
+  <div class="strip">
+    <p class="row-label">1 &nbsp; 2 &nbsp; 3 &nbsp; 4 &nbsp; 5 &nbsp; 6 &nbsp; ニコニコメ</p>
+    <div class="grid" id="before"></div>
+  </div>
+
+  <h2>After（決定案）</h2>
+  <p>
+    変えるのは<b>ピンクだけ</b>です。パープルとグリーンは現在の実装のまま据え置きます。
+  </p>
+  <div class="strip">
+    <p class="row-label">1 &nbsp; 2 &nbsp; 3 &nbsp; 4 &nbsp; 5 &nbsp; 6 &nbsp; ニコニコメ</p>
+    <div class="grid" id="after"></div>
+  </div>
+
+  <h2>色の変化</h2>
+  <table>
+    <thead>
+      <tr><th>目</th><th>Before</th><th>After</th><th>色相</th><th>明度 L*</th><th>彩度 C*</th></tr>
+    </thead>
+    <tbody id="table"></tbody>
+  </table>
+
+  <h2>目の見やすさ</h2>
+  <p>
+    目のフチ取りは廃止済みで、丸だけで見せています。そのため<b>地の明るさが目の読みやすさに直結</b>します。
+    下の数値は目と地のコントラスト比で、メ下部は陰りが乗るぶん白い目には有利、暗い目には不利に働きます。
+  </p>
+  <table>
+    <thead>
+      <tr><th>目</th><th>目の色</th><th>Before 上部 / 下部</th><th>After 上部 / 下部</th><th>判定</th></tr>
+    </thead>
+    <tbody id="contrast"></tbody>
+  </table>
+
+  <div class="note" style="margin-top:14px">
+    <b>手当ては要りません。</b>
+    ピンク <code>#FC6DAC</code> は明度が 12 上がるため、白い目のコントラストは
+    4.06 から 2.65 に下がります。ただしこれは、すでに実装済みで問題なく遊べている
+    グリーン <code>#43AE39</code>（2.86）とほぼ同じ水準です。
+    ピンクだけが読みにくい状態にはならないので、目のフチを戻す必要はありません。
+    <br /><br />
+    パープルとグリーンは変更しないため、そのままです。
+  </div>
+
+  <h2>経緯</h2>
+  <p>
+    ピンクは4案を検討しました。パープルとグリーンも一度は変更案を出しましたが、
+    最終的に現行のまま据え置くことにしています。
+  </p>
+  <table>
+    <thead>
+      <tr><th>案</th><th>色</th><th>明度 L*</th><th>白い目のコントラスト</th><th>結果</th></tr>
+    </thead>
+    <tbody>
+      <tr class="rejected">
+        <td>ピンク 第1案</td>
+        <td><span class="chip" style="background:#fe97bf"></span>#FE97BF</td>
+        <td class="num">74</td>
+        <td class="num">2.02</td>
+        <td>却下。明度が 21 上がり、目が地に溶ける水準まで落ちた</td>
+      </tr>
+      <tr class="rejected">
+        <td>ピンク 第2案</td>
+        <td><span class="chip" style="background:#f8749f"></span>#F8749F</td>
+        <td class="num">66</td>
+        <td class="num">2.63</td>
+        <td>却下。見やすさは戻ったが色味が好みに合わず</td>
+      </tr>
+      <tr class="rejected">
+        <td>ピンク 第3案</td>
+        <td><span class="chip" style="background:#e44987"></span>#E44987</td>
+        <td class="num">55</td>
+        <td class="num">3.75</td>
+        <td>却下。現行との差が小さすぎた</td>
+      </tr>
+      <tr>
+        <td><b>ピンク 決定</b></td>
+        <td><span class="chip" style="background:#fc6dac"></span>#FC6DAC</td>
+        <td class="num">65</td>
+        <td class="num">2.65</td>
+        <td class="hit">採用</td>
+      </tr>
+      <tr class="rejected">
+        <td>パープル 変更案</td>
+        <td><span class="chip" style="background:#9f5af5"></span>#9F5AF5</td>
+        <td class="num">53</td>
+        <td class="num">—</td>
+        <td>見送り。現行 #8B46D2 のまま</td>
+      </tr>
+      <tr class="rejected">
+        <td>グリーン 変更案</td>
+        <td><span class="chip" style="background:#49b932"></span>#49B932</td>
+        <td class="num">67</td>
+        <td class="num">2.54</td>
+        <td>見送り。現行 #43AE39 のまま</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<script>
+  // ゲーム側と同じ目の配置・色の決まり
+  const PIPS = {
+    1:['c'], 2:['tl','br'], 3:['tl','c','br'],
+    4:['tl','tr','bl','br'], 5:['tl','tr','c','bl','br'],
+    6:['tl','tr','ml','mr','bl','br']
+  };
+  const POS = {tl:[28,28], tr:[72,28], ml:[28,50], mr:[72,50], c:[50,50], bl:[28,72], br:[72,72]};
+  const NICO = '#241a30', PIP_DARK = '#330066';
+
+  const BEFORE = {1:'#e33a7d',2:'#8b46d2',3:'#43ae39',4:'#43ae39',5:'#8b46d2',6:'#e33a7d'};
+  // 変えるのはピンクだけ。パープルとグリーンは Before と同じ値を入れてある。
+  const AFTER  = {1:'#fc6dac',2:'#8b46d2',3:'#43ae39',4:'#43ae39',5:'#8b46d2',6:'#fc6dac'};
+
+  function die(value, colours) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const d = document.createElement('div');
+    d.className = 'die';
+    const isNico = value === 0;
+    d.style.backgroundColor = isNico ? NICO : colours[value];
+    // ニコニコメは 2 と 5 の顔を交互に光らせる。静止画なので 2 の顔を出す
+    const faces = isNico ? PIPS[2] : PIPS[value];
+    const pipColour = isNico ? '#ffffff' : (value === 2 || value === 5 ? PIP_DARK : '#ffffff');
+    for (const key of faces) {
+      const s = document.createElement('span');
+      s.className = 'pip';
+      s.style.left = POS[key][0] + '%';
+      s.style.top = POS[key][1] + '%';
+      s.style.background = pipColour;
+      d.appendChild(s);
+    }
+    cell.appendChild(d);
+    return cell;
+  }
+
+  for (const [id, colours] of [['before', BEFORE], ['after', AFTER]]) {
+    const host = document.getElementById(id);
+    for (const v of [1, 2, 3, 4, 5, 6, 0]) host.appendChild(die(v, colours));
+  }
+
+  // ---- 測定値（別途 CIELAB で算出した実測） ----
+  // [ラベル, 色名, Before, After, 色相, L*before, L*after, C*before, C*after]
+  const ROWS = [
+    ['1 と 6', 'ピンク',   '#e33a7d', '#fc6dac', 334, 53, 65, 68, 61],
+    ['2 と 5', 'パープル', '#8b46d2', '#8b46d2', 269, 45, 45, 82, 82],
+    ['3 と 4', 'グリーン', '#43ae39', '#43ae39', 116, 63, 63, 72, 72],
+  ];
+  const chip = (hex) => '<span class="chip" style="background:' + hex + '"></span>' + hex.toUpperCase();
+  const sign = (n) => (n > 0 ? '+' : '') + n;
+  document.getElementById('table').innerHTML = ROWS.map(function (r) {
+    const unchanged = r[2] === r[3];
+    const move = (a, b) =>
+      unchanged
+        ? '<span class="same">' + a + '（変更なし）</span>'
+        : a + ' → ' + b + '（' + sign(b - a) + '）';
+    return '<tr><td>' + r[0] + ' ' + r[1] + '</td><td>' + chip(r[2]) + '</td><td>' +
+      (unchanged ? '<span class="same">据え置き</span>' : chip(r[3])) +
+      '</td><td class="num">' + r[4] + '°</td>' +
+      '<td class="num">' + move(r[5], r[6]) + '</td>' +
+      '<td class="num">' + move(r[7], r[8]) + '</td></tr>';
+  }).join('');
+
+  const CONTRAST = [
+    ['1 と 6 ピンク',   '白',           '4.06 / 5.88', '2.65 / 4.01', '', 'グリーンと同水準'],
+    ['2 と 5 パープル', '暗いパープル', '2.93 / 2.14', '2.93 / 2.14', 'same', '変更なし'],
+    ['3 と 4 グリーン', '白',           '2.86 / 4.37', '2.86 / 4.37', 'same', '変更なし'],
+  ];
+  document.getElementById('contrast').innerHTML = CONTRAST.map(function (r) {
+    return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td class="num">' + r[2] +
+      '</td><td class="num">' + r[3] + '</td><td class="' + r[4] + '">' + r[5] + '</td></tr>';
+  }).join('');
+</script>
+</body>
+</html>

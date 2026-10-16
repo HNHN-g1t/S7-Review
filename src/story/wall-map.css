@@ -1,0 +1,283 @@
+.wall-map-screen {
+  --map-ground: #d3e3b9;
+  --map-shadow: #bdd39d;
+  --map-ink: #283b31;
+  position: fixed; inset: 0; z-index: 55;
+  background: #f5f2e9; color: var(--map-ink);
+  overflow-y: auto; overflow-x: hidden; touch-action: pan-y;
+  font-family: system-ui, sans-serif;
+}
+.wall-map-screen.wall-area-2 { --map-ground: #e7d3ac; --map-shadow: #c8b083; }
+.wall-map-screen.wall-area-3 { --map-ground: #bcdcd6; --map-shadow: #99bcb6; }
+.wall-map-screen.wall-area-4 { --map-ground: #d4c7e7; --map-shadow: #b6a2cc; }
+.wall-map-screen.wall-area-5 { --map-ground: #dbcfb4; --map-shadow: #b8a887; }
+.wall-map-screen.wall-area-6 { --map-ground: #d6d0c4; --map-shadow: #b3ab9b; }
+.wall-map-screen.wall-area-9 { --map-ground: #e4d4ea; --map-shadow: #c2a9cc; }
+.wall-map-shell { box-sizing: border-box; width: min(100%, 480px); margin: auto; padding: 18px 22px max(16px, env(safe-area-inset-bottom)); }
+.wall-map-shell header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wall-map-shell h1 { font-size: 25px; line-height: 1.3; margin: 3px 0 0; }
+.wall-map-shell header small { font-size: 11px; color: #657455; }
+.wall-map-shell button { box-sizing: border-box; font: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.wall-map-shell button:focus-visible { outline: 3px solid #8b46d2; outline-offset: 4px; }
+.wall-map-shell header button { flex: none; width: 44px; height: 44px; border: 0; border-radius: 50%; background: #e1e7d7; color: #384730; }
+.wall-navigation { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 5px; margin-top: 16px; }
+.wall-navigation button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 0; height: 46px; padding: 3px 0; border: 1px solid #d1d6c6; border-radius: 9px; background: #e7e9df; color: #727a68; }
+.wall-navigation button b { font-size: 15px; line-height: 1; }
+.wall-navigation button > span { display: grid; place-items: center; height: 11px; font-size: 11px; line-height: 1; }
+.wall-navigation button.open { background: #fffdf0; color: #465940; }
+.wall-navigation button.future { border-style: dashed; background: none; color: #898b86; }
+.wall-navigation button.current { border: 2px solid #e45395; color: #8a2355; background: #fff7fa; }
+.wall-navigation .wall-lock-icon { width: 7px; height: 6px; margin-top: 3px; border-radius: 1px; }
+.wall-navigation .wall-lock-icon:before { left: 1px; top: -4px; width: 5px; height: 5px; border-width: 1.5px; border-radius: 4px 4px 0 0; }
+.wall-powers { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 35px; font-size: 11px; padding: 8px 0 0; }
+.wall-abilities { display: flex; align-items: center; gap: 5px; color: #7656a0; }
+.wall-abilities > span:not(:first-child) { display: inline-grid; place-items: center; min-width: 15px; font-size: 11px; font-weight: 700; }
+.wall-land { position: relative; width: 100%; aspect-ratio: 1 / 1.4; isolation: isolate; margin: 29px 0 24px; }
+.wall-meadow { position: absolute; inset: 0 2% 8%; background: var(--map-ground); border-radius: 43% 45% 28% 35%; box-shadow: 0 9px var(--map-shadow); z-index: -3; }
+.wall-tutorial-island { position: absolute; left: 0; bottom: 0; width: 24%; height: 19%; border-radius: 50%; background: #dae8c8; box-shadow: 0 5px #b8d09f; z-index: -2; }
+.wall-roads { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: -1; }
+.wall-roads line, .wall-roads polyline { fill: none; stroke: #fff8df; stroke-width: 7px; stroke-linecap: round; stroke-linejoin: round; }
+.wall-roads line.locked, .wall-roads polyline.locked { stroke: #9ca68e; stroke-width: 3px; stroke-dasharray: 5 7; }
+.wall-node { box-sizing: border-box; position: absolute; transform: translate(-50%, -50%); width: 50px; height: 50px; padding: 0; border: 0; border-radius: 50%; background: #fffdf0; color: #48543e; box-shadow: 0 3px #91a779; display: grid; place-items: center; }
+.wall-node > span { display: grid; place-items: center; font-size: 22px; font-weight: 800; line-height: 1; }
+.wall-node small { position: absolute; top: 52px; white-space: nowrap; font-size: 11px; font-weight: 700; line-height: 1.2; color: #35472e; }
+.wall-node.selected { outline: 3px solid #f768a4; outline-offset: 3px; }
+.wall-node.locked { background: #c3c9b7; color: #67745e; box-shadow: 0 3px #9ca68d; }
+.wall-node.done { background: #43ae39; color: white; }
+.wall-node.gate { width: 43px; height: 39px; border-radius: 8px; background: #8b46d2; color: white; }
+.wall-node.gate small { top: auto; bottom: 44px; }
+.wall-node.gate.locked { background: #9692a0; color: #f1eff5; }
+.wall-node.shortcut { border: 2px solid #b88a48; }
+.wall-node:disabled { cursor: default; }
+.wall-optional-mark { position: absolute; right: -4px; top: -4px; display: grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; background: #fae4af; color: #7b5527; font-size: 12px; font-style: normal; font-weight: 800; }
+.wall-traveler { position: absolute; pointer-events: none; transform: translate(-50%, -50%); margin: -36px 0 0 30px; box-sizing: border-box; width: 42px; height: 42px; padding: 3px; border-radius: 12px; background: #fc6dac; box-shadow: 0 2px 6px rgba(0,0,0,.25); transition: left .32s ease-in-out, top .32s ease-in-out; z-index: 4; }
+.wall-traveler img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 9px; background: #fff; }
+/* 吹き出しのしっぽ。左下から今いるマスを指す */
+.wall-traveler::after { content: ''; position: absolute; left: 2px; bottom: -7px; border-style: solid; border-width: 9px 9px 0 0; border-color: #fc6dac transparent transparent transparent; transform: skewX(20deg); }
+.wall-land.future .wall-meadow { background: #e4e4df; box-shadow: 0 9px #d3d4cc; }
+.wall-node.future { border: 2px dashed #aaaea2; box-shadow: none; background: #f0f0e9; color: #959b8c; }
+.wall-node.future small { color: #787d72; }
+.wall-detail { background: #fffdf5; border-radius: 18px; padding: 16px; overflow-wrap: anywhere; }
+.wall-detail > small { font-size: 11px; color: #826873; }
+.wall-detail h2 { font-size: 17px; line-height: 1.5; margin: 5px 0; }
+.wall-detail p { font-size: 12px; line-height: 1.65; min-height: 20px; margin: 0 0 12px; }
+.wall-detail .wall-unlock-hint { color: #86542b; padding-top: 7px; border-top: 1px solid #e9dfc9; }
+.wall-detail button { width: 100%; min-height: 45px; padding: 9px; background: #303b31; border: 0; border-radius: 10px; color: white; font-weight: 700; }
+.wall-detail button:disabled { opacity: .45; cursor: default; }
+.wall-map-shell footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 8px; align-items: center; padding-top: 8px; font-size: 10px; color: #66745d; }
+.wall-map-shell footer button { min-height: 44px; padding: 0; background: transparent; border: 0; text-decoration: underline; color: #66745d; font-size: 11px; }
+@media (max-width: 350px) {
+  .wall-map-shell { padding-left: 18px; padding-right: 18px; }
+  .wall-navigation { gap: 4px; }
+  .wall-node { width: 44px; height: 44px; }
+  .wall-node small { top: 47px; font-size: 10px; }
+  .wall-node > span { font-size: 20px; }
+  .wall-node.gate { width: 39px; height: 35px; }
+  .wall-node.gate small { top: auto; bottom: 40px; }
+  .wall-map-shell .wall-node .zorome-sage { transform: scale(.7); }
+  .wall-detail { padding: 14px; }
+  .wall-detail h2 { font-size: 16px; }
+  .wall-detail p { font-size: 11px; }
+}
+@media (min-width: 700px) { .wall-map-shell { padding-top: 28px; } }
+@media (prefers-reduced-motion: reduce) { .wall-traveler { transition: none; } }
+
+.wall-mode-toggle{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:52;padding:10px 20px;border-radius:20px;border:0;background:#fc6dac;color:#20152b}.wall-mission-theme{position:absolute;left:5%;right:5%;top:5px;z-index:8;background:#211c32e8;color:white;border-radius:8px;text-align:center;font-size:11px;padding:5px;pointer-events:none}.wall-mission-theme b{display:block;font-size:12px}.wall-return{margin-top:6px}.zorome-sage{position:relative;display:inline-block;width:44px;height:50px;flex:none}.sage-die{position:absolute;left:4px;top:6px;width:33px;height:33px;border:2px solid #fff9de;border-radius:9px;background:#9a72cb;box-shadow:0 2px #624888}.sage-brows{position:absolute;left:3px;top:9px;width:10px;height:3px;transform:rotate(-15deg);background:#fff9de;border-radius:4px}.sage-brows:after{content:'';position:absolute;left:13px;top:3px;width:10px;height:3px;transform:rotate(30deg);background:#fff9de;border-radius:4px}.sage-beard{position:absolute;top:19px;left:5px;width:19px;height:23px;background:#fff9de;clip-path:polygon(0 0,50% 18%,100% 0,85% 65%,50% 100%,15% 65%)}.sage-pips{position:absolute;left:6px;top:11px;color:#fff9de;font-size:11px;letter-spacing:5px;font-style:normal}.sage-staff{position:absolute;right:0;top:13px;width:4px;height:35px;background:#8a633c;border-radius:4px;transform:rotate(9deg)}.sage-staff:before{content:'';position:absolute;left:-4px;top:-8px;width:10px;height:10px;border:3px solid #8a633c;border-radius:50%}.sage-portrait{width:100%;height:100%;display:grid;place-items:center}.sage-portrait .zorome-sage{transform:scale(1.55)}.sage-portrait small{position:absolute;bottom:0;font-size:10px;color:white;background:#71558f;border-radius:4px;padding:2px 4px}.wall-node .zorome-sage{transform:scale(.8);margin-top:-5px}
+.wall-lock-icon { display: block; width: 17px; height: 14px; background: currentColor; border-radius: 3px; position: relative; margin-top: 8px; }
+.wall-lock-icon:before { box-sizing: border-box; content: ""; position: absolute; left: 3px; top: -8px; width: 11px; height: 11px; border: 3px solid currentColor; border-radius: 9px 9px 0 0; }
+.wall-gate-icon { display: block; position: relative; width: 26px; height: 23px; background: currentColor; clip-path: polygon(0 0,22% 0,22% 20%,40% 20%,40% 0,60% 0,60% 20%,78% 20%,78% 0,100% 0,100% 100%,62% 100%,62% 65%,38% 65%,38% 100%,0 100%); }
+
+.saika-bubble.has-wall-theme{flex-direction:column;gap:3px}.saika-bubble .wall-mission-theme{position:static;display:block;flex:none;width:100%;padding:0;background:none;border-radius:0;color:#ffe5a3;font-size:10px;line-height:1.35}.saika-bubble .wall-mission-theme b{font-size:11px}.saika-bubble.has-wall-theme .saika-line{font-size:14px}.wall-clear-no{overflow-wrap:anywhere}.stage-clear .wall-clear-no{font-size:clamp(14px,4vw,23px)}
+
+.saika-bubble .wall-mission-theme b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+
+/* ===== 2026-10-05：スマホの1画面に収める ===== */
+/* 画面の高さいっぱいの縦並び。島（wall-land）が残りの高さを使い、全体はスクロールしない */
+.wall-map-screen { overflow: hidden; }
+.wall-map-shell {
+  display: flex; flex-direction: column;
+  height: 100vh; height: 100dvh;
+  padding: max(8px, env(safe-area-inset-top)) 16px max(8px, env(safe-area-inset-bottom));
+}
+.wall-map-shell header { flex: none; }
+.wall-map-shell h1 { font-size: 21px; margin: 0; }
+.wall-map-shell header button { width: 40px; height: 40px; }
+.wall-powers { flex: none; min-height: 26px; padding: 2px 0 0; }
+.wall-land { flex: 1 1 auto; min-height: 0; aspect-ratio: auto; margin: 4px 0 12px; }
+.wall-detail { flex: none; padding: 10px 14px; border-radius: 14px; }
+.wall-detail h2 { font-size: 16px; margin: 2px 0; }
+.wall-detail p { min-height: 0; margin: 0 0 8px; }
+.wall-detail p:empty { display: none; }
+.wall-detail button { min-height: 44px; }
+.wall-map-shell footer { flex: none; padding-top: 2px; }
+.wall-map-shell footer button { min-height: 32px; }
+
+/* 前後のウォールへの ▲ ▼。マップの最上部と最下部に置く */
+.wall-step {
+  flex: none; display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; height: 34px; padding: 0; border: 0; border-radius: 10px;
+  background: #e7e9df; color: #465940; font-size: 15px; font-weight: 800;
+}
+.wall-step span { font-size: 12px; }
+.wall-step:disabled { opacity: .5; cursor: default; }
+.wall-step.is-empty { visibility: hidden; }
+.wall-step.is-down { margin-bottom: 8px; }
+@media (max-height: 640px) {
+  .wall-node { width: 42px; height: 42px; }
+  .wall-node small { top: 44px; font-size: 10px; }
+  .wall-node > span { font-size: 19px; }
+  .wall-map-shell .wall-node .zorome-sage { transform: scale(.68); }
+  .wall-detail p { display: none; }
+}
+/* 門（いちばん上のノード）のラベルが ▲ に重ならないよう、島の上に余白をとる */
+.wall-land { margin-top: 26px; }
+
+/* サイカの吹き出しの上のメン名：「ウォール1-1 セヴン目、はじめの一歩」を1行で、ダークグレーの帯に白い文字（2026-10-05） */
+.saika-bubble .wall-mission-theme {
+  display: block; width: auto; align-self: center; max-width: 100%;
+  padding: 2px 10px; border-radius: 4px;
+  background: #343941; color: #ffffff;
+  font-size: 11px; font-weight: 800; line-height: 1.5;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.saika-bubble .wall-mission-theme b,
+.saika-bubble .wall-mission-theme span { display: inline; font-size: 11px; color: inherit; }
+.saika-bubble .wall-mission-theme b { margin-right: .5em; }
+/* 面番号・名称・挑戦を同じ行へ。説明と解放条件はその下に置く。 */
+.wall-detail { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 8px; }
+.wall-detail > small { grid-column: 1; grid-row: 1; white-space: nowrap; font-size: 11px; }
+.wall-detail > h2 { grid-column: 2; grid-row: 1; min-width: 0; margin: 0; font-size: clamp(11px, 3.2vw, 16px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wall-detail > button { grid-column: 3; grid-row: 1; width: auto; margin: 0; padding: 0 10px; white-space: nowrap; font-size: 12px; }
+.wall-detail > p { grid-column: 1 / -1; margin: 6px 0 0; }
+@media (max-width: 360px) { .wall-detail { padding: 8px; column-gap: 5px; } .wall-detail > button { padding: 0 7px; font-size: 11px; } }
+
+/* 面番号を名称と同じ大きさに。0メンの任意経路は太い破線。 */
+.wall-detail > small { font-size: clamp(11px, 3.2vw, 16px); font-weight: 800; }
+.wall-detail > small, .wall-detail > h2 { box-sizing: border-box; display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 6px 8px; border: 1px solid #d4d7d5; border-radius: 8px; background: #f0f1ec; text-align: center; }
+.wall-detail > h2 { display: block; align-content: center; }
+.wall-roads line.tutorial-link { stroke: #fff8df; stroke-width: 7px; stroke-dasharray: 9 7; }
+/* メン名はサイカの画像の上辺にそろえ、セリフは残りの高さのまん中に（一時停止中も出したまま） */
+.saika-bubble.has-wall-theme { align-self: stretch; justify-content: flex-start; }
+.saika-bubble.has-wall-theme > .saika-talk { margin-block: auto; }
+
+.zorome-face-image{object-fit:contain;width:44px;height:50px}.sage-portrait .zorome-face-image{width:100%;height:100%;transform:none;object-fit:contain}
+
+/* The same stage-name strip alternates with every required objective. Keep a
+   stable two-line minimum, wrapping further if needed; never ellipsize a clear condition. */
+.saika-bubble .wall-mission-theme {
+  box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+  width: 100%; min-width: 0; min-height: 3.2em; padding: 2px 5px;
+  white-space: normal; overflow: visible; text-overflow: clip;
+  font-size: 10px; line-height: 1.4; overflow-wrap: anywhere;
+}
+.saika-bubble .wall-mission-theme span { font-size: inherit; }
+
+@media (max-height: 640px) {
+  .wall-detail > .wall-objective { display: block; margin-top: 4px; font-size: 10px; line-height: 1.35; }
+}
+
+.saika-bubble.has-wall-theme { min-width: 0; }
+
+/* Only the story banner grew: 20.5px -> 32px. Reserve 14px on the
+   single-column layout (one whole pixel per board row avoids rounding loss).
+   Score mode, isolated enemy practice and the desktop grid keep their sizes. */
+@media (max-width: 900px) {
+  .game-shell.has-mission-banner .board-panel {
+    width: min(100%, 420px, calc((100svh - 118px - 14px) * 7 / 14));
+  }
+}
+/* クリア済みメンの「再トライ」は緑の枠と緑の文字（2026-10-06） */
+.wall-detail button.wall-retry { background: #fff; border: 2px solid #22a35a; color: #22a35a; }
+/* 未クリアの「挑戦する！」は強調色（ピンノメの明るいマゼンタ）の塗りに白文字 */
+.wall-detail button.wall-challenge { background: #ff85bf; border-color: #ff85bf; color: #fff; }
+/* 2026-10-06：メン名の帯はセリフの行数で上下しないよう、吹き出しの高さを固定して上端に置く。
+   帯の文字は一時停止メニューの「リスタート」と同じ12px、帯の高さは従来（32px）の90% */
+.saika-bubble.has-wall-theme { height: 74px; min-height: 74px; justify-content: flex-start; }
+.saika-bubble .wall-mission-theme { min-height: 29px; height: 29px; font-size: 12px; line-height: 1.2; padding: 0 5px; }
+.saika-bubble .wall-mission-theme b, .saika-bubble .wall-mission-theme span { font-size: 12px; }
+/* 2026-10-06：帯の下のセリフは、帯と同じ幅のライトグレーの角丸吹き出し。ツノは左のキャラを指す */
+.saika-bubble.has-wall-theme > .saika-talk {
+  position: relative; box-sizing: border-box; flex: 1; width: 100%; min-height: 0;
+  margin: 4px 0 0; padding: 2px 8px;
+  display: block; align-content: center; text-align: center;
+  background: #e4e7ec; color: #2b3038; border-radius: 10px;
+}
+.saika-bubble.has-wall-theme > .saika-talk::before {
+  content: ''; position: absolute; left: -7px; top: 50%; transform: translateY(-50%);
+  border-style: solid; border-width: 6px 8px 6px 0; border-color: transparent #e4e7ec transparent transparent;
+}
+/* 2026-10-06：吹き出しは常に2行ぶんの高さ（1行でも2行でも変えない）。
+   ツノはおたまじゃくしのしっぽのように、左のキャラへ曲がって伸びる */
+.saika-bubble.has-wall-theme { height: auto; min-height: 0; }
+.saika-bubble.has-wall-theme > .saika-talk {
+  flex: none; height: 46px; padding: 4px 10px; line-height: 1.3; overflow: visible;
+}
+.saika-bubble.has-wall-theme > .saika-talk::before {
+  left: -19px; top: auto; bottom: 22%; transform: none;
+  width: 24px; height: 18px; border: 0;
+  background: radial-gradient(circle at 0 0, transparent 17px, #e4e7ec 17.5px);
+  border-bottom-right-radius: 4px;
+}
+/* 帯のないとき（スコアモードなど）は、包みの span は無いものとして扱う */
+.saika-talk { display: contents; }
+.saika-bubble.has-wall-theme > .saika-talk { display: flex; align-items: center; justify-content: center; text-align: center; }
+.saika-bubble.has-wall-theme { position: relative; z-index: 2; }
+/* ツノ：おたまじゃくしのしっぽ。吹き出しの左下から、曲がってキャラの方へ細く伸びる */
+.saika-bubble.has-wall-theme > .saika-talk::before {
+  left: -16px; bottom: 5px; width: 22px; height: 20px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 20'%3E%3Cpath d='M22 3C15 6 8 11 0 19C9 17 16 16 22 16Z' fill='%23e4e7ec'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+  border-radius: 0;
+}
+/* ツノを上下反転（先が左上へ）し、短くして先がキャラの絵にちょうど届くくらいに */
+.saika-bubble.has-wall-theme > .saika-talk::before { left: -11px; bottom: 6px; width: 15px; height: 16px; transform: scaleY(-1); }
+
+/* 2026-10-11：ウォールごとの地形（src/story/wallTerrain.ts）。絵に差し替えるまでのラフ */
+.wall-terrain { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: -3; pointer-events: none; }
+.wall-terrain .terrain-shadow { fill: var(--map-shadow); }
+.wall-terrain .terrain-land { fill: var(--map-ground); }
+.terrain-pond .rim { fill: #a8c99a; }
+.terrain-pond .water { fill: #8ccbe0; }
+.terrain-pond .basin { fill: #e9f1ee; }
+.terrain-pond .spray { fill: #ffffff; opacity: .9; }
+.terrain-river { fill: none; stroke: #8ccbe0; stroke-linecap: round; stroke-linejoin: round; }
+.terrain-bridge { fill: #c79a62; stroke: #8f6a3c; stroke-width: .5; }
+.terrain-trees ellipse { fill: #79a65d; stroke: #5d8a45; stroke-width: .5; }
+.terrain-rocks ellipse { fill: #b9b4a8; stroke: #958f82; stroke-width: .5; }
+.terrain-flowers ellipse { fill: #f4b8cf; stroke: #e58db0; stroke-width: .4; }
+.terrain-hill { fill: #c3d6a3; stroke: #a8c08a; stroke-width: .5; }
+.terrain-plaza { fill: #ece5d3; stroke: #cfc5ab; stroke-width: .5; }
+.terrain-house rect { fill: #e9dcc4; stroke: #a99470; stroke-width: .5; }
+.terrain-house rect.roof { fill: #c9796b; stroke: none; }
+.terrain-hedge { fill: #6f9a57; stroke: #557c41; stroke-width: .5; }
+.terrain-court { fill: #c6d7b0; stroke: #a4a08f; stroke-width: .8; }
+.terrain-rampart { fill: none; stroke: #9a948a; stroke-width: 3.2; stroke-linecap: square; }
+.terrain-towers rect { fill: #aaa398; stroke: #7f786c; stroke-width: .5; }
+.terrain-pillars ellipse { fill: #bdb6a8; stroke: #8f887a; stroke-width: .5; }
+
+/* 2026-10-14：ウラメン（黒い世界）。王座から下へ、ウラ9 → ウラ1 */
+.wall-map-screen.wall-ura {
+  --map-ground: #2a2533;
+  --map-shadow: #120f17;
+  --map-ink: #e9e3f2;
+  background: #0b0a0e;
+  color: var(--map-ink);
+}
+.wall-ura .wall-map-shell header small, .wall-ura .wall-powers { color: #a99fbb; }
+.wall-ura .wall-map-shell header button { background: #2a2533; color: #e9e3f2; }
+.wall-ura .wall-step { background: #1b1822; color: #c9bfdc; }
+.wall-ura .wall-node { background: #3b3447; color: #efe8fa; box-shadow: 0 3px #120f17; }
+.wall-ura .wall-node small { color: #d8cfe8; }
+.wall-ura .wall-node.locked { background: #24202c; color: #6f6680; box-shadow: 0 3px #120f17; }
+.wall-ura .wall-node.done { background: #7b3fb6; color: #fff; }
+.wall-ura .wall-node.gate { background: #c23a5c; }
+.wall-ura .wall-roads polyline { stroke: #5b5168; }
+.wall-ura .wall-roads polyline.locked { stroke: #3a3443; }
+.wall-ura .wall-detail { background: #1b1822; color: #e9e3f2; }
+.wall-ura .wall-detail > small { color: #a99fbb; }
+.wall-ura footer, .wall-ura footer button { color: #8f86a0; }
+.wall-ura-entry { display: block; margin: 10px auto 0; padding: 10px 28px; border: 2px dashed #6b5a85; border-radius: 999px; background: #14121a; color: #e9e3f2; font-weight: 800; letter-spacing: .2em; }
+.wall-detail > .wall-ura-entry { grid-column: 1 / -1; grid-row: auto; width: 100%; margin-top: 8px; padding: 10px; background: #14121a; border: 2px dashed #6b5a85; letter-spacing: .3em; }
+.wall-ura .wall-detail > small, .wall-ura .wall-detail > h2 { background: #2a2533; border-color: #3b3447; color: #e9e3f2; }
+.wall-ura .wall-detail > button:not(.wall-retry):not(.wall-challenge) { background: #4a3d5c; }
+.wall-ura .wall-node.gate small { bottom: auto; top: 44px; }

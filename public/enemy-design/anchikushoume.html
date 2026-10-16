@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>アンチクショウメ｜エネミー試作</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#10131b;color:#eff3ff;font:14px system-ui,sans-serif}main{max-width:1000px;margin:auto;padding:28px 20px}small{letter-spacing:.18em;color:#a7aabd}h1{font-size:30px;margin:10px 0}p{color:#aab2c5;line-height:1.8}.layout{display:grid;grid-template-columns:minmax(280px,490px) 1fr;gap:28px;margin-top:24px}canvas{width:100%;border-radius:20px;border:1px solid #42485c;touch-action:manipulation;background:#191e2c}button{padding:12px 14px;border-radius:10px;border:1px solid #586077;background:#2b3145;color:white;cursor:pointer;font:inherit}button.primary{background:#e4eea8;color:#222738}button:disabled{opacity:.4;cursor:default}.buttons{display:flex;gap:9px;flex-wrap:wrap}.metric{font-size:26px;margin:0 0 20px}.status{background:#202638;border-left:3px solid #f7a6d1;padding:15px;line-height:1.8;min-height:95px;margin:20px 0}.note{font-size:12px;color:#9ea8bf;line-height:1.9}label{display:block;margin:20px 0}input{accent-color:#e5efa9}@media(max-width:700px){.layout{grid-template-columns:1fr}main{padding:20px 14px}h1{font-size:27px}}
+</style><main><small>ENEMY DESIGN / 04</small><h1>アンチクショウメ</h1><p>喰らって、膨らんで、塗りつぶす。弱点は、たった一つの目。</p><div class="layout"><canvas id="board" width="720" height="810" aria-label="アンチクショウメの試作盤面。必殺目を選んでセルをクリックすると命中確認。"></canvas><section><div class="metric" id="metric"></div><div class="buttons"><button class="primary" id="turn">1ターン進める</button><button id="paint">ペンキ飛散</button><select id="paintShape" aria-label="ペンキの形状" style="background:#2b3145;color:white;border:1px solid #586077;border-radius:10px;padding:10px"><option value="-1">ペンキ形状：ランダム</option></select><button id="attack">ひっさつメを狙う</button><button id="normal">通常攻撃</button><button id="reset">リセット</button></div><div class="status" id="status" aria-live="polite">まずは1×1。ターンを進めて成長と弱点の移動を確認できます。</div><label><input type="checkbox" id="auto"> 自動でターンを進める</label><p class="note">ひっさつメを選択後、盤面のセルをクリック。目のあるセルだけが弱点です。<br>ペンキは周囲のサイを一時的に覆い隠します。</p><p class="note">仮設定：2ターンごとに成長、毎ターン目が移動。<br>1×1 → 1×2 → 2×2 → 2×3 → 3×3 → 3×4 → 4×4。<br>成長予定の辺に餌がある場合、その辺へ拡張します。<br>ペンキは9形状（1×1〜2×2セル）から2〜3か所へ飛散し、着弾から3〜5秒で消失。実ゲームの数値・判定は未統合。</p><small>DESIGN PREVIEW / ゲーム本体未統合</small></section></div></main>
+<script>
+(()=>{'use strict';const canvas=document.querySelector('canvas'),g=canvas.getContext('2d'),$=s=>document.querySelector(s),C=80,ox=40,oy=45,colors=['#ff4f9c','#30d7e8','#b28aff','#ffd44c','#96e353'];let w,h,vw,vh,eye,turn,dead,aim,dice,shots,painted,born,lastAuto=0,time=0,tentacleCycle=-1,tentacles=[];
+
+const SIZES = [5, 9, 16, 30, 46, 7, 22];
+const MOTIFS = (() => {
+  const oval = new Path2D(); oval.ellipse(0, 0, 1, 0.7, 0, 0, Math.PI * 2);
+  const tile = new Path2D(); tile.roundRect(-0.9, -0.65, 1.8, 1.3, 0.3);
+  const triangle = new Path2D(); triangle.moveTo(0, -0.9); triangle.quadraticCurveTo(0.15, -1, 0.3, -0.7); triangle.lineTo(0.9, 0.5); triangle.quadraticCurveTo(1, 0.7, 0.7, 0.7); triangle.lineTo(-0.7, 0.7); triangle.quadraticCurveTo(-1, 0.7, -0.85, 0.4); triangle.closePath();
+  const bean = new Path2D(); bean.moveTo(-0.9, 0); bean.bezierCurveTo(-0.9, -1, 0.4, -1, 0.8, -0.4); bean.bezierCurveTo(1.3, 0.4, 0.2, 0.1, 0, 0.7); bean.bezierCurveTo(-0.3, 1.1, -1, 0.7, -0.9, 0); bean.closePath();
+  return [oval, tile, triangle, bean];
+})();
+
+
+const COLORS=colors;
+// ぼかしは初期化時の小さな画像だけに適用し、毎フレームのfilterを避ける。
+const MOTIF_IMAGES = MOTIFS.map(motif => COLORS.map(color => [false, true].map(() => {
+  const image = document.createElement('canvas'); image.width = image.height = 144;
+  const ctx = image.getContext('2d');
+  ctx.translate(72, 72); ctx.scale(48, 48);
+  ctx.filter = 'blur(2.5px)'; ctx.fillStyle = color; ctx.fill(motif);
+  return image;
+})));
+
+function drawTexture(g, x, y, width, height, time, salt = 0) {
+  const hash = (n) => { const v = Math.sin(n * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+  for (let row = -3; row < height / 40 + 4; row++) for (let col = -3; col < width / 40 + 4; col++) {
+    const seed = col * 917 + row * 1913 + salt * 101;
+    const size = SIZES[Math.floor(hash(seed + 2) * SIZES.length)];
+    const speed = (size >= 30 ? 0.65 : 1.4) * (0.75 + hash(seed + 3) * 0.5);
+    const px = x + col * 40 + (hash(seed + 4) - 0.5) * 38 + Math.sin(time * speed + hash(seed + 5) * 6.28) * 17;
+    const py = y + row * 40 + (hash(seed + 6) - 0.5) * 38 + Math.cos(time * speed * (0.8 + hash(seed + 7) * 0.4) + hash(seed + 8) * 6.28) * 21;
+    const colorIndex = Math.floor(hash(seed + 11) * COLORS.length);
+    const r = size * 1.16 * (colorIndex === 0 ? 1.5 : 1) * (1 + Math.sin(time * speed + seed) * 0.06);
+    g.save(); g.translate(px, py); g.rotate(hash(seed + 9) * 6.28 + Math.sin(time * 0.45 + seed) * 0.12); g.scale(r, r);
+    const motifIndex = Math.floor(hash(seed + 10) * MOTIFS.length);
+    const soft = 1;
+    g.drawImage(MOTIF_IMAGES[motifIndex][colorIndex][soft], -1.5, -1.5, 3, 3); g.restore();
+  }
+}
+
+function paintOutline(width, height, seed) {
+  // 2セル枠の主塊が約2セル幅に達するよう拡張（旧外形比1.8倍）。
+  const sx = width >= 160 ? 1.8 : width >= 120 ? 1.35 : 1;
+  const sy = height >= 160 ? 1.8 : height >= 120 ? 1.35 : 1;
+  const blob = new Path2D();
+  for (let i = 0; i < 7; i++) {
+    const angle = i * 2.399 + seed * 0.73;
+    const cx = i === 0 ? 0 : Math.cos(angle) * width * (0.16 + (i % 3) * 0.055);
+    const cy = i === 0 ? 0 : Math.sin(angle) * height * (0.16 + ((i + 1) % 3) * 0.05);
+    const rx = width * (i === 0 ? 0.31 : 0.12 + (i % 3) * 0.055);
+    const ry = height * (i === 0 ? 0.3 : 0.12 + ((i + 1) % 3) * 0.05);
+    blob.moveTo(cx + rx, cy); blob.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  }
+  for (let i = 0; i < 10; i++) {
+    const angle = i * 2.399 + seed * 0.61;
+    const radius = [2.5, 5, 9, 13, 3, 7, 11, 4, 8, 3][i];
+    const cx = Math.cos(angle) * (width * 0.48 + 7 + (i % 3) * 5);
+    const cy = Math.sin(angle) * (height * 0.48 + 7 + ((i + 1) % 3) * 5);
+    blob.moveTo(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)); blob.ellipse(cx, cy, radius, radius * (0.6 + (i % 3) * 0.2), angle, 0, Math.PI * 2);
+  }
+  const expanded = new Path2D();
+  expanded.addPath(blob, new DOMMatrix([sx, 0, 0, sy, 0, 0]));
+  return expanded;
+}
+
+// Nine fixed circular-union silhouettes. Size is measured in cells.
+const paintPalettes=Object.fromEntries(colors.map(color=>{
+ const rgb=color.slice(1).match(/../g).map(c=>parseInt(c,16));
+ const mix=(target,amount)=>'rgb('+rgb.map(v=>Math.round(v+(target-v)*amount)).join(',')+')';
+ return [color,{tones:[mix(0,.48),mix(0,.23),color,mix(255,.3),mix(255,.64)],shadow:mix(0,.90)}];
+}));
+const paintShapes=[];
+for(const height of [1,1.5,2])for(const width of [1,1.5,2]){
+ const circles=[],nx=width===1?1:width===1.5?2:3,ny=height===1?1:height===1.5?2:3;
+ for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){
+  const cx=nx===1?width/2:.42+x*(width-.84)/(nx-1),cy=ny===1?height/2:.42+y*(height-.84)/(ny-1);
+  circles.push([cx,cy,.40+((x+y)%2)*.02]);
+ }
+ paintShapes.push({width,height,circles});
+}
+paintShapes.forEach((p,i)=>{const option=document.createElement('option');option.value=i;option.textContent=(i+1)+'：'+p.width+'×'+p.height;$('#paintShape').append(option);});
+
+const say=t=>$('#status').textContent=t;const metric=()=>$('#metric').textContent=`${w} × ${h} セル　／　${turn} ターン`;
+function reset(){w=h=vw=vh=1;eye={x:0,y:0};turn=0;dead=false;aim=false;shots=[];painted=[];born=time;tentacleCycle=-1;tentacles=[];dice=[];for(let y=0;y<9;y++)for(let x=0;x<8;x++)if(!(x===2&&y===2)&&((x*7+y*3)%5!==0))dice.push({x,y,n:1+(x*3+y*5)%6,color:colors[(x+y*2)%5]});$('#auto').checked=false;$('#attack').textContent='ひっさつメを狙う';metric();say('1×1から開始。小さくても通常攻撃は効きません。');}
+function moveEye(){if(w*h===1)return;const candidates=[];for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(Math.min(w,h)>=3&&x!==0&&x!==w-1&&y!==0&&y!==h-1)continue;if(x!==eye.x||y!==eye.y)candidates.push({x,y});}eye=candidates[Math.floor(Math.random()*candidates.length)];born=time;}
+function next(){if(dead)return;turn++;if(turn%2===0&&(w<4||h<4)){const nw=w===h?w:w+1,nh=w===h?h+1:h;const food=dice.filter(d=>d.x>=2&&d.x<2+nw&&d.y>=2&&d.y<2+nh);if(food.length){food.forEach(d=>shots.push({x:d.x+.5,y:d.y+.5,tx:2+w/2,ty:2+h/2,start:time,type:'food',color:d.color}));dice=dice.filter(d=>!food.includes(d));w=nw;h=nh;say('隣のサイを餌にして成長。目のあるセルを狙ってください。');}else say('成長する辺に餌がないため、今回は成長しません。');}else say('弱点の目が移動しました。通常攻撃は効きません。');moveEye();if(turn%2===1)paint(false);metric();}
+function paint(notice=true){
+ if(dead)return;
+ if(painted.some(p=>time<p.until)){if(notice)say("ペンキが残っています。3〜5秒で消えてから次を飛ばします。");return;}
+ const cx=2+w/2,cy=2+h/2,candidates=[];
+ for(let y=0;y<8;y++)for(let x=0;x<7;x++){
+  if(x<2+w&&x+2>2&&y<2+h&&y+2>2)continue;
+  if(dice.filter(d=>d.x>=x&&d.x<x+2&&d.y>=y&&d.y<y+2).length>=2)candidates.push({x,y});
+ }
+ // Limit each volley to separate patches, even when turns advance quickly.
+ painted=[];shots=shots.filter(s=>s.type!=='paint');
+ const count=2+Math.floor(Math.random()*2);
+ for(let i=0;i<count&&candidates.length;i++){
+  const patch=candidates.splice(Math.floor(Math.random()*candidates.length),1)[0];
+  const color=colors[Math.floor(Math.random()*colors.length)],start=time+.5+i*.09;
+  const chosen=Number($("#paintShape").value),shape=chosen<0?Math.floor(Math.random()*9):chosen;
+  painted.push({...patch,color,shape,start,until:start+3+Math.random()*2});
+  shots.push({x:cx,y:cy,tx:patch.x+paintShapes[shape].width/2,ty:patch.y+paintShapes[shape].height/2,start:time+i*.09,type:'paint',color});
+  for(let j=candidates.length-1;j>=0;j--)if(Math.abs(candidates[j].x-patch.x)<3&&Math.abs(candidates[j].y-patch.y)<3)candidates.splice(j,1);
+ }
+ if(notice)say(painted.length+'か所へペンキ！ 1〜2×2セルの丸い塊で覆い、着弾から3〜5秒で消えます。');
+}
+function rounded(x,y,a,b,r,fill){g.beginPath();g.roundRect(x,y,a,b,r);g.fillStyle=fill;g.fill();}
+function draw(t){time=t/1000;g.clearRect(0,0,720,810);g.save();g.translate(ox,oy);g.strokeStyle='#7582a015';for(let x=0;x<=8;x++){g.beginPath();g.moveTo(x*C,0);g.lineTo(x*C,9*C);g.stroke();}for(let y=0;y<=9;y++){g.beginPath();g.moveTo(0,y*C);g.lineTo(8*C,y*C);g.stroke();}
+for(const d of dice){const x=d.x*C,y=d.y*C;rounded(x+5,y+5,70,70,16,d.color);g.fillStyle='#fff';const pips={1:[[.5,.5]],2:[[.3,.3],[.7,.7]],3:[[.3,.3],[.5,.5],[.7,.7]],4:[[.3,.3],[.7,.3],[.3,.7],[.7,.7]],5:[[.3,.3],[.7,.3],[.5,.5],[.3,.7],[.7,.7]],6:[[.3,.25],[.7,.25],[.3,.5],[.7,.5],[.3,.75],[.7,.75]]};for(const [a,b]of pips[d.n]){g.beginPath();g.arc(x+C*a,y+C*b,5,0,7);g.fill();}}
+painted=painted.filter(p=>time<p.until);
+for(const p of painted){
+ if(time<p.start)continue;
+ const shape=paintShapes[p.shape],cx=(p.x+shape.width/2)*C,cy=(p.y+shape.height/2)*C;
+ const pop=Math.min(1,(time-p.start)*9),halfW=shape.width*C/2,halfH=shape.height*C/2;
+ g.save();g.translate(cx,cy);g.scale(.8+.2*pop,.8+.2*pop);
+ const blob=paintOutline(shape.width*C,shape.height*C,p.shape);
+ g.save();g.translate(0,8);g.fillStyle='#45566c';g.fill(blob);g.restore();g.fillStyle='#f4f1eb';g.fill(blob);g.save();g.clip(blob);
+ drawTexture(g,-halfW,-halfH,shape.width*C,shape.height*C,time,p.shape+3);
+ g.restore();g.restore();
+}
+
+vw+=(w-vw)*.09;vh+=(h-vh)*.09;if(!dead){
+ const x=2*C+3,y=2*C+3,bw=vw*C-6,bh=vh*C-6;
+ // One shared silhouette and texture coordinate space for body and tentacles.
+ const silhouette=new Path2D();silhouette.roundRect(x,y,bw,bh,Math.min(24,bw*.28));
+ const growth=Math.max(0,Math.min(w,h)-1),period=1.12/(1.25**growth);const cycle=Math.floor(time/period),phase=(time%period)/period;
+ if(tentacles.length===0){
+  tentacleCycle=cycle;const count=4+Math.floor(Math.random()*2)+[0,1,2,4][growth];
+  tentacles=Array.from({length:count},(_,k)=>({angle:k<4?k*Math.PI/2:(k-4+.5)*Math.PI*2/(count-4),length:.5+Math.random()*1.5,delay:(k%3)/3+Math.random()*.025,cycle:-1}));
+ }
+ for(const tentacle of tentacles){
+  const localTime=time/period+tentacle.delay,localCycle=Math.floor(localTime),p=localTime-localCycle;
+  if(localCycle!==tentacle.cycle){tentacle.cycle=localCycle;tentacle.length=.5+Math.random()*1.5;}
+  const reach=p<.22?1-Math.pow(1-p/.22,3):p<.66?1:p<.84?Math.pow(1-(p-.66)/.18,2):0;
+  const a=tentacle.angle+Math.sin(time*.5)*.1,dx=Math.cos(a),dy=Math.sin(a);
+  const edge=Math.min((bw/2-9)/Math.max(.001,Math.abs(dx)),(bh/2-9)/Math.max(.001,Math.abs(dy)));
+  const ex=x+bw/2+dx*edge,ey=y+bh/2+dy*edge,len=(5+reach*48)*tentacle.length;
+  const arm=new Path2D();arm.moveTo(-14,-12);arm.quadraticCurveTo(len*.55,-8,len,0);arm.quadraticCurveTo(len*.55,8,-14,12);arm.closePath();
+  silhouette.addPath(arm,new DOMMatrix([dx,dy,-dy,dx,ex,ey]));
+ }
+ g.save();g.shadowColor='#04081799';g.shadowBlur=18;g.shadowOffsetY=7;g.fillStyle='#f4f1eb';g.fill(silhouette);g.restore();
+ g.save();g.clip(silhouette);
+drawTexture(g,x,y,bw,bh,time);
+      g.restore();
+
+
+const ex=(2+eye.x+.5)*C,ey=(2+eye.y+.5)*C,pop=Math.min(1,(time-born)*6);g.save();g.translate(ex,ey);g.scale(.85+.15*Math.sin(pop*Math.PI/2),.85+.15*Math.sin(pop*Math.PI/2));g.shadowBlur=0;g.fillStyle='#13131d';g.beginPath();g.ellipse(0,0,28,26,0,0,7);g.fill();g.shadowBlur=0;const eyeCycle=time%7.225;
+// Narrow slowly, hold the smile, then open sharply.
+const smile=eyeCycle<.6?eyeCycle/.6:eyeCycle<3.6?1:eyeCycle<3.85?1-(eyeCycle-3.6)/.25:0;
+const aperture=20.8-12*smile;
+g.rotate(Math.PI);
+g.beginPath();g.moveTo(-20,-3*smile);g.quadraticCurveTo(0,-aperture+11*smile,20,-3*smile);g.quadraticCurveTo(0,aperture+11*smile,-20,-3*smile);g.closePath();
+g.fillStyle='#fff';g.fill();g.save();g.clip();
+g.fillStyle='#11121c';g.beginPath();g.ellipse(Math.sin(time*.8)*4,1,4,12,0,0,7);g.fill();g.restore();g.restore();}
+shots=shots.filter(s=>time-s.start<.65);for(const s of shots){const p=Math.max(0,Math.min(1,(time-s.start)/.5));g.fillStyle=s.color;g.beginPath();g.arc((s.x+(s.tx-s.x)*p)*C,(s.y+(s.ty-s.y)*p)*C-Math.sin(p*Math.PI)*22,(s.type==='food'?19:10)*(1-p*.8),0,7);g.fill();}
+if(aim){g.strokeStyle='#f8ffae';g.lineWidth=2;for(let y=0;y<h;y++)for(let x=0;x<w;x++)g.strokeRect((2+x)*C+2,(2+y)*C+2,76,76);}
+g.restore();if($('#auto').checked&&time-lastAuto>2.4){lastAuto=time;next();}requestAnimationFrame(draw);}
+$('#turn').onclick=next;$('#paint').onclick=()=>paint();$('#reset').onclick=reset;$('#normal').onclick=()=>say(dead?'すでに撃破しています。':'通常攻撃は無効。ひっさつメを、目のあるセルに当てる必要があります。');$('#attack').onclick=()=>{if(dead)return;aim=!aim;$('#attack').textContent=aim?'照準をキャンセル':'ひっさつメを狙う';say('盤面のセルをクリックして、ひっさつメの命中を確認してください。');};canvas.onclick=e=>{if(!aim||dead)return;const r=canvas.getBoundingClientRect(),x=Math.floor(((e.clientX-r.left)*720/r.width-ox)/C),y=Math.floor(((e.clientY-r.top)*810/r.height-oy)/C);aim=false;$('#attack').textContent='ひっさつメを狙う';if(x===2+eye.x&&y===2+eye.y){dead=true;$('#auto').checked=false;for(let j=0;j<32;j++)shots.push({x:2+w/2,y:2+h/2,tx:2+w/2+Math.cos(j)*3,ty:2+h/2+Math.sin(j)*3,start:time,type:'paint',color:colors[j%5]});say('弱点へひっさつメ命中！ アンチクショウメを撃破。');}else say('弱点から外れました。身体へのひっさつメでは倒せません。');};reset();requestAnimationFrame(draw);
+})();
+</script>

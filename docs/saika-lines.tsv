@@ -1,0 +1,54 @@
+場面	日本語	English
+# ─────────────────────────────────────────────────────────────
+# サイカのセリフ一覧。このファイルを直接書き換えて渡してください。
+#
+# ・タブ区切りです。Excel や Googleスプレッドシートにそのまま貼れます
+# ・「#」で始まる行は無視されます（説明用）
+# ・IDLE / WORRY / PRAISE は行を増やしても減らしてもかまいません
+# ・BOMB_* と CHAIN は1場面につき1行だけ。増やさないでください
+# ・CHAIN の {n} は連鎖数に置き換わります。必ず残してください
+# ・日本語と英語の両方を埋めてください（片方だけだと差し替えできません）
+# ─────────────────────────────────────────────────────────────
+#
+# 【IDLE】手が空いているとき。7秒ごとに入れ替わる。表情=01（通常）
+IDLE	ハロー わたしはサイカ	Hello! I'm Saika
+IDLE	ふふ〜ん♪	La la la~♪
+IDLE	となりどうしで7だよ	Neighbours adding to 7!
+IDLE	おもしろい？	Having fun?
+IDLE	いい感じ いい感じ	Nice, nice
+IDLE	あせらなくて だいじょうぶ	No rush, take your time
+IDLE	つぎ なにが来るかな	What's coming next?
+IDLE	ひまだな〜	I'm getting bored~
+IDLE	2と5は ちょっとコワいの	2 and 5 scare me a little
+IDLE	まだまだ いけるよ	You can keep going!
+#
+# 【WORRY】危険領域（上から7段目より上）に届いた瞬間。2600ms表示。表情=02（焦り）
+WORRY	ちょっと危ないかも……	This looks a bit risky...
+WORRY	うわっ 積みすぎ！	Whoa, too high!
+WORRY	ニコニコメ、呼ぶね！	I'll call the Niko dice!
+WORRY	まだ大丈夫……だよね？	We're still okay... right?
+#
+# 【CHAIN】2連鎖以上のとき。表情=01（通常）。{n} は連鎖数
+CHAIN	{n}チェイン！	{n} CHAIN!
+#
+# 【BOMB】技が成立した瞬間。表情=03（ボム）。1場面1行
+BOMB_spa1	スパ1！	Super One!
+BOMB_sla3	スラ3！	Slash Three!
+BOMB_squ4	スク4！	Square Four!
+BOMB_str6	スト6！	Straight Six!
+BOMB_nico	ニコフラ！	Niko Flash!
+#
+# 【PRAISE】ボムが片づいたあと。1000ms表示。表情=03（ボム）
+PRAISE	決まったぁ〜	Nailed it~
+PRAISE	やったね！	You did it!
+PRAISE	ナイス〜♪	Nice one~♪
+#
+# ─────────────────────────────────────────────────────────────
+# 【参考】画面中央に出る英字バナー。サイカのセリフとは別物です。
+# 変えたい場合はここも書き換えてください。nico は空欄＝バナーを出さない。
+# ─────────────────────────────────────────────────────────────
+BANNER_spa1	SUPER 1	SUPER 1
+BANNER_sla3	SLASH 3	SLASH 3
+BANNER_squ4	SQUARE 4	SQUARE 4
+BANNER_str6	STRAIGHT 6	STRAIGHT 6
+BANNER_nico
