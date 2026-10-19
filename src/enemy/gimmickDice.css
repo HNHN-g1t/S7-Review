@@ -32,16 +32,16 @@
 @keyframes gimmick-burst {0%{transform:scale(.3);opacity:1;}45%{transform:scale(1.6);opacity:1;}100%{transform:scale(2);opacity:0;}}
 .gimmick-board .thaw>span:after {content:'';position:absolute;width:10px;height:12px;background:#cefaff;left:45%;top:45%;clip-path:polygon(20% 0,100% 35%,65% 100%,0 65%);box-shadow:18px 4px #b9f1ff,-20px 12px #8ad8f6,5px -22px #fff;animation:gimmick-ice-shards .7s ease-out both;pointer-events:none;}
 @keyframes gimmick-ice-shards {0%{transform:scale(.4) rotate(0);opacity:1;}100%{transform:scale(2.2) rotate(55deg);opacity:0;}}
-/* ヒョーケツメ：氷と内蔵メカをまとめて1.25セルまで拡縮。 */
+/* 解凍後は最大1.25セルまで拡縮。凍結中は下の指定で静止する。 */
 .gimmick-die.ice:after {display:none;}
 .gimmick-die.ice,.gimmick-die.bomb {border:0;background:transparent!important;box-shadow:none;z-index:2;}
-.gimmick-idle {position:absolute;inset:-15%;display:block;animation:hyoketsu-idle 1.6s ease-in-out infinite;transform-origin:50% 65%;}
+.gimmick-idle {position:absolute;inset:-15%;display:block;animation:hyoketsu-idle 1.4s linear infinite;transform-origin:50% 65%;}
 .gimmick-mech {width:100%;height:100%;overflow:visible;display:block;}
 .gimmick-ice-shell {position:absolute;inset:-3%;background:linear-gradient(125deg,#e2fcff70,#64d8ff25 40%,#8be4ff65 75%,#fff9);border:2px solid #c6f7ff;clip-path:polygon(15% 0,86% 0,100% 16%,95% 82%,80% 100%,12% 94%,0 77%,3% 14%);box-sizing:border-box;}
 .gimmick-ice-shell:after {content:'';position:absolute;inset:12%;border-left:3px solid #fff8;border-top:2px solid #fff7;transform:skew(-9deg);}
 .gimmick-practice-panel {padding:12px;border:1px solid #586879;border-radius:12px;margin-top:10px;}
 .gimmick-preview>.gallery-practice-button {font-weight:700;border-color:#a0ddeb;color:#e1faff;}
-@keyframes hyoketsu-idle {0%,100%{transform:scale(.9);}50%{transform:scale(1.25);}}
+
 
 /* 凍結中は1セル内で静止。氷の反射だけを一定周期で光らせる。 */
 .gimmick-die.ice .gimmick-idle {inset:0;animation:none;transform:none;}
@@ -51,9 +51,11 @@
 @keyframes hyoketsu-sparkle {0%,40%,80%,100%{opacity:0;}55%{opacity:1;}65%{opacity:.4;}}
 
 .hyoketsu-fuse-spark{animation:hyoketsu-fuse-spark .63s ease-out infinite;animation-play-state:var(--fuse-play,running);}
-@keyframes hyoketsu-fuse-spark{0%{transform:translate(0,0) scale(.7);opacity:1;}75%{opacity:.8;}100%{transform:translate(var(--spark-x),var(--spark-y)) scale(.15);opacity:0;}}
+@keyframes hyoketsu-fuse-spark{0%{transform:translate(0,0) rotate(var(--spark-angle)) scale(.3,.6);opacity:0;}10%{opacity:1;}65%{opacity:1;}100%{transform:translate(var(--spark-x),var(--spark-y)) rotate(var(--spark-angle)) scale(.1,1.8);opacity:0;}}
+.hyoketsu-fuse-core{animation:hyoketsu-fuse-core .16s steps(2) infinite;animation-play-state:var(--fuse-play,running);}
+@keyframes hyoketsu-fuse-core{50%{opacity:.4;transform:scale(.6);}}
 
 /* Body stays centered within its cell; only the fuse extends into the cell above. */
 .gimmick-idle{inset:0;transform-origin:50% 50%;}
-@keyframes hyoketsu-idle{0%,100%{transform:scale(.92);}50%{transform:scale(1.25);}}
+@keyframes hyoketsu-idle{0%,100%{transform:scale(1);animation-timing-function:cubic-bezier(.15,.8,.25,1);}10%{transform:scale(1.25);animation-timing-function:cubic-bezier(.4,0,.2,1);}34%{transform:scale(1.2);animation-timing-function:cubic-bezier(.7,0,.8,.2);}43%{transform:scale(.96);animation-timing-function:ease-out;}67%{transform:scale(1);}}
 .board-cell.hyoketsu-layer{z-index:120;overflow:visible;}

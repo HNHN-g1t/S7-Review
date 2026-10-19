@@ -55,17 +55,18 @@ vm.runInNewContext(compile('src/review.ts'), {
   exports: {}, document, location: { origin: 'http://localhost:5180' },
   require: () => ({ CAMPAIGN_MISSIONS: [{ stage: 20, number: '1-1', title: 'A' }, { stage: 21, number: '1-2', title: 'B' }] }),
 });
-// 2026-10-19：タブは 図鑑→マップ→進行表→ヒッサツメ図鑑。ストーリー・スコアは外し、本編は公開版へのリンク
-assert.equal(frames.length, 4);
-assert.equal(frames[0].src, '/enemies.html', 'opens on the character gallery');
-nav.children[1].onclick(); assert.match(frames[1].src, /review-game.html\?story=map&review=map/);
-nav.children[2].onclick(); assert.equal(frames[1].src, 'about:blank', 'hidden map game is disposed'); assert.equal(frames[2].src, '/story-progress.html');
-nav.children[3].onclick(); assert.equal(frames[3].src, '/skills.html');
-nav.children[1].onclick(); assert.match(frames[1].src, /review-game.html\?story=map&review=map/, 'map restarts when shown again');
-nav.children[0].onclick(); assert.equal(frames[1].src, 'about:blank');
-assert.equal(frames[2].src, '/story-progress.html', 'feedback UI stays mounted');
-assert.equal(frames[0].src, '/enemies.html', 'gallery stays mounted and receives visibility notice');
+// 図鑑→技図鑑→マップ→進行表→反映。マップのみ非表示時に破棄。
+assert.equal(frames.length, 5);
+assert.equal(frames[0].src, '/enemies.html');
+nav.children[1].onclick(); assert.equal(frames[1].src, '/skills.html');
+nav.children[2].onclick(); assert.match(frames[2].src, /review-game.html\?story=map&review=map/);
+nav.children[3].onclick(); assert.equal(frames[2].src, 'about:blank'); assert.equal(frames[3].src, '/story-progress.html');
+nav.children[4].onclick(); assert.equal(frames[4].src, '/sync.html');
+nav.children[2].onclick(); assert.match(frames[2].src, /review-game.html\?story=map&review=map/);
+nav.children[0].onclick(); assert.equal(frames[2].src, 'about:blank');
+assert.equal(frames[3].src, '/story-progress.html');
+assert.equal(frames[1].src, '/skills.html');
 assert(notices.some(n => n.data.type === 'sainome-review-visible' && n.data.visible === false));
-const link = nav.children[4];
+const link = nav.children[5];
 assert.equal(link.tag, 'a'); assert.equal(link.href, 'https://sainome-seven.vercel.app/'); assert.equal(link.target, '_blank');
 console.log('PASS: review game memory isolation/fail-closed bootstrap; hidden map disposal; visible restart; feedback/gallery retention; public game link.');

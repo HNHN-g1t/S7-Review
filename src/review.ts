@@ -1,5 +1,5 @@
 // 2026-10-19：本編は公開版を別タブで開き、反映手順は確認サイト内に表示する
-const screens = [['キャラクター図鑑', '/enemies.html'], ['マップ', '/review-game.html?story=map&review=map'], ['ストーリー進行表', '/story-progress.html'], ['ヒッサツメ図鑑', '/skills.html'], ['本体へ反映', '/sync.html']];
+const screens = [['キャラクター図鑑', '/enemies.html'], ['ヒッサツメ図鑑', '/skills.html'], ['マップ', '/review-game.html?story=map&review=map'], ['ストーリー進行表', '/story-progress.html'], ['本体へ反映', '/sync.html']];
 const RESET_WHEN_HIDDEN = ['マップ'];
 const PUBLIC_GAME_URL = 'https://sainome-seven.vercel.app/';
 const nav = document.querySelector('nav')!;
