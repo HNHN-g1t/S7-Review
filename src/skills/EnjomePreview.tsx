@@ -3,27 +3,27 @@ import {enjoRange,ENJO_STEPS,ENJO_LABELS,type EnjoPhase} from './enjomeModel';
 import './enjome.css';
 import {playEnjoWallBreak,playEnjoImpact} from './enjomeAudio';
 // 2026-10-19 Claude：一つ目の炎の幽霊が、上下二段の黒い外壁に閉じ込められている姿に描き直し。
-// 幽霊は下の段に目、炎の先は中央の留め具を越えて上の段まで伸びる（出たがっている）。
+// 炎は縦2セルの輪郭、目と口は揺らぐボディとは別の固定座標で描く。
 export function EnjomeBomb({walls=2,breaking}:{walls?:0|1|2;breaking?:'top'|'bottom'}){const id=useId().replace(/:/g,'');const g=(n:string)=>'url(#'+id+n+')';return <svg className={'enjo-capsule'+(breaking?' enjo-breaking':'')} viewBox="0 0 100 200" role="img" aria-label="縦2セルの炎の投下ボム・エンジョーメ">
  <defs>
   <linearGradient id={id+'glass'} x1="0" x2="1"><stop stopColor="#d9f6ff" stopOpacity=".34"/><stop offset=".22" stopColor="#bfe9ff" stopOpacity=".08"/><stop offset=".78" stopColor="#bfe9ff" stopOpacity=".06"/><stop offset="1" stopColor="#d9f6ff" stopOpacity=".3"/></linearGradient>
   <radialGradient id={id+'glow'} cx=".5" cy=".62" r=".55"><stop stopColor="#ff9a2e" stopOpacity=".55"/><stop offset="1" stopColor="#ff5a1f" stopOpacity="0"/></radialGradient>
-  <linearGradient id={id+'body'} x1="0" y1="1" x2="0" y2="0"><stop stopColor="#e2301c"/><stop offset=".45" stopColor="#ff7a26"/><stop offset=".8" stopColor="#ffc247"/><stop offset="1" stopColor="#fff1a0"/></linearGradient>
-  <linearGradient id={id+'core'} x1="0" y1="1" x2="0" y2="0"><stop stopColor="#ffb13a"/><stop offset="1" stopColor="#fff8d6"/></linearGradient>
-  <linearGradient id={id+'metal'} x1="0" x2="0" y2="1"><stop stopColor="#5d6372"/><stop offset=".5" stopColor="#2b2f3a"/><stop offset="1" stopColor="#1b1e26"/></linearGradient>
+  <radialGradient id={id+'body'} cx=".45" cy=".65" r=".72"><stop stopColor="#ffac1d"/><stop offset=".58" stopColor="#ff6518"/><stop offset=".82" stopColor="#fa360b"/><stop offset="1" stopColor="#ba1709"/></radialGradient>
+  <radialGradient id={id+'core'} cx=".5" cy=".68" r=".67"><stop stopColor="#fff56a"/><stop offset=".42" stopColor="#ffe82b"/><stop offset=".72" stopColor="#ffbf0e"/><stop offset="1" stopColor="#ff7810"/></radialGradient>
+  <linearGradient id={id+'mouth'} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#220407"/><stop offset="1" stopColor="#8f0b16"/></linearGradient>
   <clipPath id={id+'inside'}><rect x="17" y="16" width="66" height="168" rx="31"/></clipPath>
  </defs>
  {/* 中の光と幽霊（壁が取れた後も炎の本体として描く） */}
  <g clipPath={g('inside')}>
   <rect x="0" y="0" width="100" height="200" fill={g('glow')}/>
   <g className="enjo-ghost">
-   <path className="enjo-ghost-body" d="M50 30C53 44 63 46 61 60C66 52 70 47 69 38C78 52 79 68 77 82C79 100 78 122 76 142C75 156 74 166 71 172L64 165L57 173L50 165L43 173L36 165L29 172C26 166 25 156 24 142C22 122 21 100 23 82C21 68 23 55 31 44C31 52 34 57 39 61C37 50 45 42 50 30Z" fill={g('body')}/>
-   <path className="enjo-ghost-core" d="M50 70C54 80 62 86 61 100C64 118 63 140 58 152L50 146L42 152C37 140 36 118 39 100C38 88 46 82 50 70Z" fill={g('core')} opacity=".85"/>
-   <g className="enjo-eye">
-    <ellipse cx="50" cy="122" rx="15" ry="17" fill="#fffaf0"/>
-    <ellipse cx="51" cy="125" rx="8.5" ry="10" fill="#2a0d18"/>
-    <circle cx="54" cy="120" r="3" fill="#fff"/>
-   </g>
+   <path className="enjo-ghost-body" d="M35 17C29 40 42 47 51 59C62 74 59 94 67 98C75 101 73 80 75 70C83 84 79 105 81 122C84 140 83 159 74 172C65 185 36 188 25 173C16 161 16 144 20 124C24 106 22 91 23 81C31 86 29 106 38 104C49 101 45 83 39 73C29 57 26 35 35 17Z" fill={g('body')}/>
+   <path className="enjo-ghost-core" d="M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z" fill={g('core')}/>
+   <path d="M33 30C30 53 45 62 49 76" fill="none" stroke="#ff9a38" strokeWidth="2" strokeLinecap="round" opacity=".65"/>
+  </g>
+  <g className="enjo-face" aria-hidden="true">
+   <g className="enjo-eye"><circle cx="50" cy="134" r="11" fill="#080707"/><circle cx="50" cy="134" r="5.4" fill="#fff"/><circle cx="50" cy="134" r="4" fill="#090909"/><circle cx="50" cy="134" r="2.2" fill="#fff"/></g>
+   <path className="enjo-mouth" d="M42 152C44 150 45 155 50 155C55 155 56 150 58 152C60 155 56 164 50 164C44 164 40 155 42 152Z" fill={g('mouth')}/>
   </g>
   {/* 幽霊からのぼる火の粉 */}
   {Array.from({length:8},(_,i)=><circle key={i} className="enjo-spark" cx={30+i*17%43} cy={148+i*13%20} r={i%3===0?2.4:1.3} fill={i%2?'#ffc74a':'#fff0bd'} style={{animationDelay:-i*.19+'s','--enjo-drift':(i%2?1:-1)*(5+i*2)+'px'} as CSSProperties}/>)}
