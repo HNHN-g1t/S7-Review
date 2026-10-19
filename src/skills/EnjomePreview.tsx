@@ -1,5 +1,5 @@
 import {useEffect,useState,useId,useRef,type CSSProperties} from 'react';
-import {enjoRange,ENJO_STEPS,ENJO_LABELS,type EnjoPhase} from './enjomeModel';
+import {enjoRange,enjoDemoOccupied,ENJO_STEPS,ENJO_LABELS,type EnjoPhase} from './enjomeModel';
 import './enjome.css';
 import {playEnjoWallBreak,playEnjoImpact} from './enjomeAudio';
 // 2026-10-19 Claude：一つ目の炎の幽霊が、上下二段の黒い外壁に閉じ込められている姿に描き直し。
@@ -14,15 +14,15 @@ export function EnjomeBomb({walls=2,breaking}:{walls?:0|1|2;breaking?:'top'|'bot
   <clipPath id={id+'inside'}><rect x="17" y="16" width="66" height="168" rx="31"/></clipPath>
  </defs>
  {/* 中の光と幽霊（壁が取れた後も炎の本体として描く） */}
- <g clipPath={g('inside')}>
+ <g className="enjo-inner">
   <rect x="0" y="0" width="100" height="200" fill={g('glow')}/>
   <g className="enjo-ghost">
-   <path className="enjo-ghost-body" d="M35 17C29 40 42 47 51 59C62 74 59 94 67 98C75 101 73 80 75 70C83 84 79 105 81 122C84 140 83 159 74 172C65 185 36 188 25 173C16 161 16 144 20 124C24 106 22 91 23 81C31 86 29 106 38 104C49 101 45 83 39 73C29 57 26 35 35 17Z" fill={g('body')}/>
+   <path className="enjo-ghost-body" d="M35 17C29 40 42 47 51 59C62 74 59 94 67 98C75 101 73 80 75 70C83 84 79 105 81 122C85 143 80 167 69 179C59 191 40 190 29 179C18 167 15 145 20 124C24 106 22 91 23 81C31 86 29 106 38 104C49 101 45 83 39 73C29 57 26 35 35 17Z" fill={g('body')}/>
    <path className="enjo-ghost-core" d="M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z" fill={g('core')}/>
    <path d="M33 30C30 53 45 62 49 76" fill="none" stroke="#ff9a38" strokeWidth="2" strokeLinecap="round" opacity=".65"/>
   </g>
   <g className="enjo-face" aria-hidden="true">
-   <g className="enjo-eye"><circle cx="50" cy="134" r="11" fill="#080707"/><circle cx="50" cy="134" r="5.4" fill="#fff"/><circle cx="50" cy="134" r="4" fill="#090909"/><circle cx="50" cy="134" r="2.2" fill="#fff"/></g>
+   <g className="enjo-eye"><circle cx="50" cy="134" r="12.5" fill="#050505"/><circle cx="50" cy="134" r="8.4" fill="none" stroke="#fff" strokeWidth="1.2"/><circle cx="50" cy="134" r="5.7" fill="#fff"/></g>
    <path className="enjo-mouth" d="M42 152C44 150 45 155 50 155C55 155 56 150 58 152C60 155 56 164 50 164C44 164 40 155 42 152Z" fill={g('mouth')}/>
   </g>
   {/* 幽霊からのぼる火の粉 */}
@@ -62,7 +62,7 @@ export function EnjomePreview({paused=false}:{paused?:boolean}){
  // 2026-10-19：盤面のクラスは enjo-phase-○○。以前の「enjo-wall」は壁の飾りと同じ名前で、最初の段階だけ盤面が浮いて表示されていた
  return <section className="enjo-preview" data-paused={paused}><div className="enjo-tools"><button onClick={()=>{setAuto(true);setPhase('wall');}}>▶ 一連のデモを再生</button><button aria-pressed={fever} onClick={()=>{setFever(v=>!v);setAuto(false);setPhase('wall');}}>{fever?'FEVER：9・7・5・3・1':'通常：7・5・3・1'}</button><button onClick={()=>{setAuto(false);setPhase('wall');}}>リセット</button><label><input type="checkbox" checked={sound} onChange={e=>{if(e.target.checked){audio.current??=new AudioContext();void audio.current.resume();}setSound(e.target.checked);}}/> SEを鳴らす（初期OFF）</label></div>
  <p className="enjo-status" aria-live="polite">{ENJO_LABELS[phase]}</p><div className={'enjo-board enjo-phase-'+phase}>
- {Array.from({length:81},(_,i)=>{const x=i%9,y=Math.floor(i/9),hit=keys.has(x+','+y),occupied=y>=4;return <span key={i} className={'enjo-cell '+(hit?'enjo-target ':'')+(phase==='blast'&&hit?'enjo-hit ':'')+(phase==='done'&&hit?'enjo-cleared':'')} style={{'--enjo-delay':Math.abs(x-4)*.07+(8-y)*.09+'s'} as CSSProperties}>{occupied&&!(phase==='done'&&hit)&&(i%11===0?<span className="enjo-obstacle">💣</span>:i%5===0?<span className="enjo-obstacle enjo-enemy">× ×</span>:<span className={'enjo-die enjo-die-'+i%3}><i/><i/><i/></span>)}</span>;})}
+ {Array.from({length:81},(_,i)=>{const x=i%9,y=Math.floor(i/9),hit=keys.has(x+','+y),occupied=enjoDemoOccupied(x,y,phase);return <span key={i} className={'enjo-cell '+(hit?'enjo-target ':'')+(phase==='blast'&&hit?'enjo-hit ':'')+(phase==='done'&&hit?'enjo-cleared':'')} style={{'--enjo-delay':Math.abs(x-4)*.07+(8-y)*.09+'s'} as CSSProperties}>{occupied&&!(phase==='done'&&hit)&&(i%11===0?<span className="enjo-obstacle">💣</span>:i%5===0?<span className="enjo-obstacle enjo-enemy">× ×</span>:<span className={'enjo-die enjo-die-'+i%3}><i/><i/><i/></span>)}</span>;})}
  {phase==='blast'&&<EnjoBlast range={range}/>}
  {phase!=='blast'&&phase!=='done'&&<button className="enjo-bomb" disabled={phase!=='ready'||auto} onClick={()=>setPhase('hover')} aria-label="エンジョーメをタップして上空待機"><EnjomeBomb walls={phase==='wall'?2:phase==='lower'||phase==='breakUpper'?1:0} breaking={phase==='breakUpper'?'top':phase==='breakLower'?'bottom':undefined}/></button>}
  {phase==='hover'&&<span className="enjo-wait">上空待機</span>}

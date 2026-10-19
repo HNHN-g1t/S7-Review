@@ -6,7 +6,7 @@
 .enjo-capsule .enjo-ghost-core{transform-box:view-box;transform-origin:50px 150px;animation:enjo-core-flicker .7s ease-in-out infinite alternate}
 .enjo-capsule .enjo-eye{transform-box:view-box;transform-origin:50px 134px;animation:enjo-blink 3.6s steps(1,end) infinite}
 .enjo-capsule .enjo-spark{animation:enjo-spark 1.5s ease-out infinite}
-@keyframes enjo-ghost-flicker{0%,100%{transform:scale(1,1) skewX(0)}30%{transform:scale(.98,1.03) skewX(-2deg)}65%{transform:scale(1.02,.98) skewX(2deg)}}
+@keyframes enjo-ghost-flicker{0%,100%{transform:scale(.98,1) skewX(-2deg)}24%{transform:scale(.92,1.07) skewX(4deg)}58%{transform:scale(1.05,.96) skewX(-4deg)}82%{transform:scale(.96,1.04) skewX(2deg)}}
 @keyframes enjo-core-flicker{from{transform:scale(1,1);opacity:.75}to{transform:scale(.92,1.06);opacity:.95}}
 @keyframes enjo-blink{0%,92%,100%{opacity:1}94%,96%{opacity:.12}}
 @keyframes enjo-spark{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-110px);opacity:0}}

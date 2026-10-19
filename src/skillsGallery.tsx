@@ -8,7 +8,7 @@ import './skillsGallery.css';
 const pips=[[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
 const colors=['#fc6dac','#8b46d2','#43ae39','#43ae39','#8b46d2','#fc6dac'];
 function Diagram({entry}:{entry:SkillEntry}) {
- if(entry.id==='enjo')return <figure className="skill-demo"><div style={{width:48,height:96}}><EnjomeBomb/></div><figcaption>{entry.caption}</figcaption></figure>;
+ if(entry.id==='enjo')return <figure className="skill-demo enjo-live-demo"><div style={{width:76,height:152}}><EnjomeBomb walls={0}/></div><figcaption>{entry.caption}</figcaption></figure>;
  return <figure className="skill-demo"><div className={`skill-grid ${entry.id==='rainbow'?'tall':''}`} role="img" aria-label={entry.caption}>{entry.diagram.flatMap((row,y)=>[...row].map((v,x)=><span key={`${x}-${y}`} className={`skill-cell ${v==='*'?'effect':''}`}>
  {/[1-6]/.test(v)?<span className="skill-die" style={{background:colors[Number(v)-1]}}>{Array.from({length:9},(_,i)=><i key={i} style={{opacity:pips[Number(v)-1].includes(i)?1:0,background:Number(v)===2||Number(v)===5?'#330066':'#fff'}}/>)}</span>:v==='n'?<span className="skill-die skill-nico">{Array.from({length:9},(_,i)=><i key={i} style={{opacity:pips[x%2?4:1].includes(i)?1:0}}/>)}</span>:v==='b'?<HyoketsumeDice cell={{value:3,kind:'bomb',fuse:1}}/>:null}
  </span>))}</div><figcaption>{entry.caption}</figcaption></figure>;
