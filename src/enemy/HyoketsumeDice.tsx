@@ -26,19 +26,19 @@ export function HyoketsumeDice({cell,detonating=false,paused=false}: {cell: Cell
       <defs><linearGradient id={metalId} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#d0f5ff"/><stop offset=".18" stopColor="#64b9df"/><stop offset=".43" stopColor="#2876ad"/><stop offset=".55" stopColor="#a3e6fa"/><stop offset=".64" stopColor="#408db9"/><stop offset="1" stopColor="#174f82"/></linearGradient></defs>
       <g transform="translate(50 50) scale(1.29) translate(-50 -57.5)">
       <path d="M19 21H81L88 28V87L81 94H19L12 87V28Z" fill={`url(#${metalId})`}/>
-      <path d="M20 25H79L84 30M16 32V84L21 89M23 91H79L84 86V35" fill="none" stroke="#73b6d3" strokeOpacity=".5" strokeWidth="1.5"/>
+      <g className="hyoketsu-body-bevel">{[[19,21],[81,21],[88,28],[88,87],[81,94],[19,94],[12,87],[12,28]].map((v,i,outer)=>{const inner=[[21,25.5],[79,25.5],[83.5,30],[83.5,85],[79,89.5],[21,89.5],[16.5,85],[16.5,30]];const q=outer[(i+1)%8],p=inner[i],r=inner[(i+1)%8];return <polygon key={i} points={`${v} ${q} ${r} ${p}`} fill={['#f1fdff','#c8f5ff','#367ba5','#21517c','#1d527f','#4b98bf','#c1f1ff','#fff'][i]}/>;})}</g>
       <path d="M18 49H82M20 84H27M73 84H80" fill="none" stroke="#07192e" strokeWidth="2"/>
       {[27,73].map(x=><g className="hyoketsu-face" key={x} transform={`translate(${x} 36)`}><circle r="9" fill="#63869e" stroke="#071a31" strokeWidth="2"/><circle r="6.7" fill="#fff"/><path className="hyoketsu-eye-plus" d={detonating?'M-4 0H4M0-4V4':'M-4 0H4'} stroke="#187bc2" strokeWidth="3" strokeLinecap="round"/></g>)}
       <g className="hyoketsu-mouth">
-      <circle cx="50" cy="67" r="22" fill="#0a2038" stroke="#5c8ea7" strokeWidth="3"/>
-      <circle cx="50" cy="67" r="18.8" fill="#020b15" stroke="#90c9dd" strokeWidth=".8"/>
+      <g>{Array.from({length:8},(_,i)=>{const points=(radius:number,reverse=false)=>Array.from({length:5},(_,k)=>{const a=(-135+(i+(reverse?4-k:k)/4)*45)*Math.PI/180;return `${50+Math.cos(a)*radius},${67+Math.sin(a)*radius}`;}).join(' ');return <polygon key={i} points={points(24)+' '+points(18,true)} fill={['#245275','#1b466a','#477ea1','#a6dfef','#e4fcff','#c4eff7','#76b6d0','#356e93'][i]}/>;})}</g>
+      <circle className="hyoketsu-timer-well" cx="50" cy="67" r="18" fill="#071e32"/>
       <SevenSegment value={detonating?0:cell.kind==='ice'?null:cell.fuse??6} />
       </g>
       </g>
       <path d="M50 8Q44-14 60-17" fill="none" stroke="#88cce7" strokeWidth="6"/>
-      {cell.kind==='bomb'&&!detonating&&<g transform="translate(60 -17) scale(2.772)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
+      {cell.kind==='bomb'&&!detonating&&<g transform="translate(60 -17) scale(4.4352)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
         <g className="hyoketsu-fuse-core"><polygon points={sparkCorePoints} fill="#197bff"/><polygon points={sparkCorePoints} transform="scale(.72)" fill="#68dfff"/><polygon points={sparkCorePoints} transform="scale(.4)" fill="#c9f6ff"/></g>
-        {Array.from({length:16},(_,i)=>{const angle=i*137.508*Math.PI/180;const reach=9+i%5*2;return <path key={i} className="hyoketsu-fuse-spark" d={`M-1 1L1 -2L-.8 -3L1.8 -5L.3 -6L1 -8L-2 -4L-.3 -3L-2 0Z`} fill={['#298dff','#9eeaff','#ffffff'][i%3]} style={{'--spark-x':Math.cos(angle)*reach+'px','--spark-y':Math.sin(angle)*reach+'px','--spark-angle':(angle*180/Math.PI+90)+'deg',animationDelay:i*-.0414+'s',animationDuration:(.32+i%4*.045)+'s'} as CSSProperties}/>;})}
+
       </g>}
     </svg>{cell.kind==='ice'&&<><span className="gimmick-ice-shell"/><svg className="gimmick-cracks" viewBox="0 0 100 100" aria-hidden="true">{iceCrackPair(crackSeed).flatMap((p,k)=>ICE_CRACKS[p].map((line,j)=><polygon key={`${k}-${j}`} points={iceCrackRibbon(line,crackSeed+p*3+j,j).map(([x,y])=>`${x*100},${y*100}`).join(' ')} fill="#e4ffff" opacity={j?.65:.9}/>))}</svg></>}</span> : <span className="gimmick-pips">{Array.from({length:9},(_,i)=><i key={i} style={{opacity:pips[cell.value-1].includes(i)?1:0}} />)}</span>}
   </span>;

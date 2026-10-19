@@ -27,3 +27,6 @@
 .gimmick-die.is-detonating .gimmick-mech .hyoketsu-face path.hyoketsu-eye-plus{fill:none!important;stroke:#187bc2!important;}
 .gimmick-die.is-detonating .hyoketsu-count{animation:hyoketsu-count-zero 320ms steps(2,end) infinite;animation-play-state:inherit;}
 @keyframes hyoketsu-count-zero{50%{opacity:.15;}}
+
+.gimmick-die.is-detonating .hyoketsu-body-bevel polygon{fill:currentColor!important;}
+.gimmick-die.is-detonating .gimmick-mech .hyoketsu-mouth circle.hyoketsu-timer-well{fill:#071e32!important;stroke:none!important;}

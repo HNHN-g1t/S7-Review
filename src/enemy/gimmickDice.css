@@ -53,7 +53,7 @@
 .hyoketsu-fuse-spark{animation:hyoketsu-fuse-spark .63s ease-out infinite;animation-play-state:var(--fuse-play,running);}
 @keyframes hyoketsu-fuse-spark{0%{transform:translate(0,0) rotate(var(--spark-angle)) scale(.3,.6);opacity:0;}10%{opacity:1;}65%{opacity:1;}100%{transform:translate(var(--spark-x),var(--spark-y)) rotate(var(--spark-angle)) scale(.1,1.8);opacity:0;}}
 .hyoketsu-fuse-core{animation:hyoketsu-fuse-core .16s steps(2) infinite;animation-play-state:var(--fuse-play,running);}
-@keyframes hyoketsu-fuse-core{50%{opacity:.4;transform:scale(.6);}}
+@keyframes hyoketsu-fuse-core{0%,100%{transform:scale(1);}50%{transform:scale(.85);}}
 
 /* Body stays centered within its cell; only the fuse extends into the cell above. */
 .gimmick-idle{inset:0;transform-origin:50% 50%;}
