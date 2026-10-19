@@ -13,7 +13,7 @@ type Practice = { enemy: PracticeEnemy; name: string; stage: number };
 let ready: Practice | null = null;
 
 export function parseEnemyPractice(location: Pick<Location, 'hostname' | 'pathname' | 'search'>): Practice | null {
-  if (!['localhost', '127.0.0.1'].includes(location.hostname) || location.pathname !== '/enemy-practice.html') return null;
+  if (!['localhost', '127.0.0.1', 's7-review.vercel.app'].includes(location.hostname) || !['/enemy-practice.html', '/enemy-practice'].includes(location.pathname)) return null;
   const enemy = new URLSearchParams(location.search).get('enemy');
   if (!enemy || !Object.hasOwn(PRACTICE_ENEMIES, enemy)) return null;
   return { enemy: enemy as PracticeEnemy, ...PRACTICE_ENEMIES[enemy as PracticeEnemy] };

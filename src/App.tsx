@@ -123,7 +123,7 @@ const ANCHI_PAINT_RANGE = 3; // 身体からこのマス数以内のサイをね
 const ANCHI_PAINT_SHAPES = [0, 1, 3, 4]; // 1×1〜1.5×1.5の小さめの形（サイの端は見えてよい）
 // 広がる順（横×縦）。1×1→2×1→2×2→3×2→3×3→4×3→4×4
 const ANCHI_SIZES: Array<[number, number]> = [[1, 1], [2, 1], [2, 2], [3, 2], [3, 3], [4, 3], [4, 4]];
-const isStoryReview = () => ['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('review') === 'story';
+const isStoryReview = () => ['localhost', '127.0.0.1', 's7-review.vercel.app'].includes(location.hostname) && new URLSearchParams(location.search).get('review') === 'story';
 const SWARM_MAX_COUNT = STORY_SWARM_COUNT; // 16メンで降ってくるヒドイメの数
 const ENEMY_COLOR = '#2c3446';
 const isEnemy = (value: number) => value < 0;
@@ -13019,7 +13019,7 @@ export default function App() {
 
   const reviewStarted = useRef(false);
   useEffect(() => {
-    if (reviewStarted.current || !['localhost', '127.0.0.1'].includes(location.hostname)) return;
+    if (reviewStarted.current || !['localhost', '127.0.0.1', 's7-review.vercel.app'].includes(location.hostname)) return;
     if (enemyPractice) {
       reviewStarted.current = true;
       setTitleRoll(1); setShowStages(false); startStage(enemyPractice.stage);

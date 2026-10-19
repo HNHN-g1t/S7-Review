@@ -4,7 +4,7 @@ import { CAMPAIGN_MISSIONS, WALL_SAVE_KEY } from './story/wall1';
 export function prepareReviewGameStorage(target: Window = window): void {
   const { hostname, pathname, search } = target.location;
   const screen = new URLSearchParams(search).get('review');
-  if (!['localhost', '127.0.0.1'].includes(hostname) || pathname !== '/review-game.html' || !['story', 'score', 'map'].includes(screen ?? '')) {
+  if (!['localhost', '127.0.0.1', 's7-review.vercel.app'].includes(hostname) || !['/review-game.html', '/review-game'].includes(pathname) || !['story', 'score', 'map'].includes(screen ?? '')) {
     throw new Error('PCの確認画面から開いてください。');
   }
   const values = new Map<string, string>();
