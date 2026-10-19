@@ -9400,9 +9400,9 @@ export default function App() {
           if(soundModeRef.current!=='none')playHyoketsuFreezeSound();
           setBoard(workingBoard);setClearingCells(new Set());
           await wait(1000);if(storyRunRef.current!==activeScriptRun)return;
-          await wait(400);if(storyRunRef.current!==activeScriptRun)return;
+          await wait(800);if(storyRunRef.current!==activeScriptRun)return;
           if(soundModeRef.current!=='none')playHyoketsuCrashSound();
-          shakeBoard('sm');await wait(HYOKETSU_BURST_MS-1400);
+          shakeBoard('sm');await wait(HYOKETSU_BURST_MS-1800);
           if(storyRunRef.current!==activeScriptRun)return;
           const before=workingBoard;
           workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>blast.has(x+','+y)&&(!c?.hyoketsu||expiredHyoketsu.has(c.id))?null:c));

@@ -29,9 +29,13 @@ export function playIceCrash(ctx:AudioContext,out:AudioNode){
   }hallImpulses.set(ctx,impulse);
  }
  reverb.buffer=impulse;send.gain.value=.7;wet.gain.value=.34;send.connect(out);send.connect(reverb);reverb.connect(wet);wet.connect(out);
- // Stable, gently detuned glass modes: no descending comic low-pitch attack.
- frost(ctx,send,at,.065,.045,7800,4900);
- [1480,2220,2963,3950,5180,6630].forEach((f,i)=>tone(ctx,send,f,f*(1+(i%2?.0007:-.0006)),at+i*.003,1.65+i*.07,.038/(1+i*.55)));
+ // Shakkiiin: broadband icy slash, bright crack attack and a moving airy tail.
+ // Avoid sustained sine partials, which made the previous version sound like a bell.
+ frost(ctx,send,at,.055,.18,9500,5200);
+ frost(ctx,send,at+.018,.24,.14,1800,10500);
+ frost(ctx,send,at+.09,1.15,.105,8300,2800);
+ tone(ctx,send,2600,7400,at+.012,.13,.018,'sawtooth');
+ tone(ctx,send,4900,6100,at+.05,.24,.009,'triangle');
  // Audio-clock cleanup follows suspension/resume, so pausing never truncates the hall tail.
  const clock=ctx.createOscillator(),silence=ctx.createGain();silence.gain.value=0;clock.connect(silence);silence.connect(out);clock.start(at);clock.stop(at+5.2);clock.onended=()=>{clock.disconnect();silence.disconnect();send.disconnect();reverb.disconnect();wet.disconnect();};
 }

@@ -9,7 +9,7 @@
 .hyoketsu-burst-preview>small{font-size:12px;color:#b5c7d8;}
 
 .gimmick-die.is-detonating .gimmick-idle{animation:none;}
-.gimmick-die.is-detonating .gimmick-mech{animation:hyoketsu-silhouette 1400ms linear forwards;}
+.gimmick-die.is-detonating .gimmick-mech{animation:hyoketsu-silhouette 1800ms linear forwards;}
 .gimmick-die.is-detonating .gimmick-mech path,.gimmick-die.is-detonating .gimmick-mech circle,.gimmick-die.is-detonating .gimmick-mech rect{fill:currentColor!important;stroke:currentColor!important;opacity:1;}
 @keyframes hyoketsu-silhouette{0%,20%,40%,60%,80%{color:#2288ed;opacity:1;}7%,27%,47%,67%,87%{color:#27d8c8;opacity:1;}14%,34%,54%,74%,94%,99.9%{color:#f1ffff;opacity:1;}100%{opacity:0;}}
 
