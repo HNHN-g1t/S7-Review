@@ -1,9 +1,9 @@
 import {useEffect,useState,useId,type CSSProperties} from 'react';
 import {enjoRange,ENJO_STEPS,ENJO_LABELS,type EnjoPhase} from './enjomeModel';
 import './enjome.css';
-// 2026-10-19 Claude：一つ目の炎の幽霊が、上下二段の透明なカプセルに閉じ込められている姿に描き直し。
+// 2026-10-19 Claude：一つ目の炎の幽霊が、上下二段の黒い外壁に閉じ込められている姿に描き直し。
 // 幽霊は下の段に目、炎の先は中央の留め具を越えて上の段まで伸びる（出たがっている）。
-export function EnjomeBomb(){const id=useId().replace(/:/g,'');const g=(n:string)=>'url(#'+id+n+')';return <svg className="enjo-capsule" viewBox="0 0 100 200" role="img" aria-label="縦2セルの炎の投下ボム・エンジョーメ">
+export function EnjomeBomb({walls=2}:{walls?:0|1|2}){const id=useId().replace(/:/g,'');const g=(n:string)=>'url(#'+id+n+')';return <svg className="enjo-capsule" viewBox="0 0 100 200" role="img" aria-label="縦2セルの炎の投下ボム・エンジョーメ">
  <defs>
   <linearGradient id={id+'glass'} x1="0" x2="1"><stop stopColor="#d9f6ff" stopOpacity=".34"/><stop offset=".22" stopColor="#bfe9ff" stopOpacity=".08"/><stop offset=".78" stopColor="#bfe9ff" stopOpacity=".06"/><stop offset="1" stopColor="#d9f6ff" stopOpacity=".3"/></linearGradient>
   <radialGradient id={id+'glow'} cx=".5" cy=".62" r=".55"><stop stopColor="#ff9a2e" stopOpacity=".55"/><stop offset="1" stopColor="#ff5a1f" stopOpacity="0"/></radialGradient>
@@ -12,7 +12,7 @@ export function EnjomeBomb(){const id=useId().replace(/:/g,'');const g=(n:string
   <linearGradient id={id+'metal'} x1="0" x2="0" y2="1"><stop stopColor="#5d6372"/><stop offset=".5" stopColor="#2b2f3a"/><stop offset="1" stopColor="#1b1e26"/></linearGradient>
   <clipPath id={id+'inside'}><rect x="17" y="16" width="66" height="168" rx="31"/></clipPath>
  </defs>
- {/* 中の光と幽霊（ガラスの内側だけに描く） */}
+ {/* 中の光と幽霊（壁が取れた後も炎の本体として描く） */}
  <g clipPath={g('inside')}>
   <rect x="0" y="0" width="100" height="200" fill={g('glow')}/>
   <g className="enjo-ghost">
@@ -25,19 +25,11 @@ export function EnjomeBomb(){const id=useId().replace(/:/g,'');const g=(n:string
    </g>
   </g>
   {/* 幽霊からのぼる火の粉 */}
-  {[[34,150,'0s'],[62,140,'.5s'],[46,160,'1s']].map(([x,y,d])=><circle key={String(d)} className="enjo-spark" cx={x} cy={y} r="2" fill="#ffe08a" style={{animationDelay:String(d)}}/>)}
+  {Array.from({length:8},(_,i)=><circle key={i} className="enjo-spark" cx={30+i*17%43} cy={148+i*13%20} r={i%3===0?2.4:1.3} fill={i%2?'#ffc74a':'#fff0bd'} style={{animationDelay:-i*.19+'s','--enjo-drift':(i%2?1:-1)*(5+i*2)+'px'} as CSSProperties}/>)}
  </g>
- {/* ガラス */}
- <rect x="17" y="16" width="66" height="168" rx="31" fill={g('glass')} stroke="#dff6ff" strokeOpacity=".75" strokeWidth="2.5"/>
- <path d="M26 44V156" stroke="#fff" strokeOpacity=".55" strokeWidth="4" strokeLinecap="round"/>
- <path d="M32 36V58" stroke="#fff" strokeOpacity=".35" strokeWidth="2.5" strokeLinecap="round"/>
- {/* 上下のふたと、二段を分ける中央の留め具 */}
- <rect x="24" y="4" width="52" height="16" rx="5" fill={g('metal')} stroke="#ff8a3d" strokeWidth="1.5"/>
- <rect x="40" y="0" width="20" height="6" rx="2" fill="#ff8a3d"/>
- <rect x="24" y="180" width="52" height="16" rx="5" fill={g('metal')} stroke="#ff8a3d" strokeWidth="1.5"/>
- <path d="M18 100H82" stroke="#dff6ff" strokeOpacity=".5" strokeWidth="1.5" strokeDasharray="3 3"/>
- <rect x="9" y="93" width="14" height="14" rx="3" fill={g('metal')} stroke="#ff8a3d" strokeWidth="1.5"/>
- <rect x="77" y="93" width="14" height="14" rx="3" fill={g('metal')} stroke="#ff8a3d" strokeWidth="1.5"/>
+ {/* Black capsule walls are removed independently, top first. */}
+ {walls===2&&<g className="enjo-shell enjo-shell-top"><path d="M17 99V49Q17 16 50 16Q83 16 83 49V99Z" fill="none" stroke="#03050a" strokeWidth="12"/><path d="M24 27Q50 9 76 27M18 98H82" fill="none" stroke="#181c25" strokeWidth="2"/></g>}
+ {walls>=1&&<g className="enjo-shell enjo-shell-bottom"><path d="M17 101V151Q17 184 50 184Q83 184 83 151V101Z" fill="none" stroke="#03050a" strokeWidth="12"/><path d="M24 174Q50 191 76 174M18 102H82" fill="none" stroke="#181c25" strokeWidth="2"/></g>}
  </svg>;}
 // 着弾後：落ちた地面の列から、範囲の高さぶんだけ炎の柱が下から吹き上がる（中央から外へ少しずつ遅れて）
 function EnjoBlast({range}:{range:{x:number;y:number}[]}){
@@ -46,21 +38,21 @@ function EnjoBlast({range}:{range:{x:number;y:number}[]}){
  return <div className="enjo-blast" aria-hidden="true">
   <span className="enjo-ground" style={{'--enjo-span':(half*2+1)/9} as CSSProperties}/>
   {[...columns].map(([x,h])=><span key={x} className="enjo-pillar" style={{left:x/9*100+'%',height:h/9*100+'%','--enjo-lag':Math.abs(x-4)*.07+'s'} as CSSProperties}>
-   <i className="enjo-pillar-outer"/><i className="enjo-pillar-inner"/>
-   {[0,1,2].map(k=><b key={k} className="enjo-ember" style={{'--enjo-ember':k} as CSSProperties}/>)}
+   <i className="enjo-pillar-outer"/><i className="enjo-pillar-mid"/><i className="enjo-pillar-inner"/>
+   {[0,1,2,3].map(k=><b key={k} className="enjo-ember" style={{'--enjo-ember':k,'--enjo-drift':((k%2?1:-1)*(14+k*11))+'px'} as CSSProperties}/>)}
   </span>)}
  </div>;
 }
 export function EnjomePreview({paused=false}:{paused?:boolean}){
  const [phase,setPhase]=useState<EnjoPhase>('wall'),[fever,setFever]=useState(false),[auto,setAuto]=useState(false);
  const range=enjoRange(fever),keys=new Set(range.map(p=>p.x+','+p.y));
- useEffect(()=>{if(paused)return;if(!auto&&phase!=='drop'&&phase!=='blast')return;const times={wall:1100,ready:900,hover:1100,drop:450,blast:1700,done:0};if(phase==='done'){setAuto(false);return;}const timer=setTimeout(()=>setPhase(ENJO_STEPS[ENJO_STEPS.indexOf(phase)+1]),times[phase]);return()=>clearTimeout(timer);},[phase,auto,paused]);
+ useEffect(()=>{if(paused)return;if(!auto&&phase!=='drop'&&phase!=='blast')return;const times={wall:1000,lower:1000,ready:900,hover:1100,drop:450,blast:1700,done:0};if(phase==='done'){setAuto(false);return;}const timer=setTimeout(()=>setPhase(ENJO_STEPS[ENJO_STEPS.indexOf(phase)+1]),times[phase]);return()=>clearTimeout(timer);},[phase,auto,paused]);
  // 2026-10-19：盤面のクラスは enjo-phase-○○。以前の「enjo-wall」は壁の飾りと同じ名前で、最初の段階だけ盤面が浮いて表示されていた
  return <section className="enjo-preview" data-paused={paused}><div className="enjo-tools"><button onClick={()=>{setAuto(true);setPhase('wall');}}>▶ 一連のデモを再生</button><button aria-pressed={fever} onClick={()=>{setFever(v=>!v);setAuto(false);setPhase('wall');}}>{fever?'FEVER：9・7・5・3・1':'通常：7・5・3・1'}</button><button onClick={()=>{setAuto(false);setPhase('wall');}}>リセット</button></div>
  <p className="enjo-status" aria-live="polite">{ENJO_LABELS[phase]}</p><div className={'enjo-board enjo-phase-'+phase}>
  {Array.from({length:81},(_,i)=>{const x=i%9,y=Math.floor(i/9),hit=keys.has(x+','+y),occupied=y>=4;return <span key={i} className={'enjo-cell '+(hit?'enjo-target ':'')+(phase==='blast'&&hit?'enjo-hit ':'')+(phase==='done'&&hit?'enjo-cleared':'')} style={{'--enjo-delay':Math.abs(x-4)*.07+(8-y)*.09+'s'} as CSSProperties}>{occupied&&!(phase==='done'&&hit)&&(i%11===0?<span className="enjo-obstacle">💣</span>:i%5===0?<span className="enjo-obstacle enjo-enemy">× ×</span>:<span className={'enjo-die enjo-die-'+i%3}><i/><i/><i/></span>)}</span>;})}
  {phase==='blast'&&<EnjoBlast range={range}/>}
- {phase!=='blast'&&phase!=='done'&&<button className="enjo-bomb" disabled={phase!=='ready'||auto} onClick={()=>setPhase('hover')} aria-label="エンジョーメをタップして上空待機"><EnjomeBomb/>{phase==='wall'&&<span className="enjo-wall"/>}</button>}
+ {phase!=='blast'&&phase!=='done'&&<button className="enjo-bomb" disabled={phase!=='ready'||auto} onClick={()=>setPhase('hover')} aria-label="エンジョーメをタップして上空待機"><EnjomeBomb walls={phase==='wall'?2:phase==='lower'?1:0}/></button>}
  {phase==='hover'&&<span className="enjo-wait">上空待機</span>}
- </div><div className="enjo-tools">{phase==='wall'&&<button disabled={auto} onClick={()=>setPhase('ready')}>隣接セヴン目を消す（壁解除）</button>}{phase==='hover'&&<button disabled={auto} onClick={()=>setPhase('drop')}>次のサイを落とす → 発動</button>}</div><small>デザイン・挙動の確認用デモ。範囲内の敵・ボムをすべて破壊する想定。9列の模式盤で通常16セル／FEVER25セルを表示しています。実ゲームへの配置・盤端での扱いは未実装です。</small></section>;
+ </div><div className="enjo-tools">{(phase==='wall'||phase==='lower')&&<button disabled={auto} onClick={()=>setPhase(phase==='wall'?'lower':'ready')}>{phase==='wall'?'隣接セヴン目 → 上部の壁を除去':'隣接セヴン目 → 下部の壁を除去'}</button>}{phase==='hover'&&<button disabled={auto} onClick={()=>setPhase('drop')}>次のサイを落とす → 発動</button>}</div><small>デザイン・挙動の確認用デモ。範囲内の敵・ボムをすべて破壊する想定。9列の模式盤で通常16セル／FEVER25セルを表示しています。実ゲームへの配置・盤端での扱いは未実装です。</small></section>;
 }
