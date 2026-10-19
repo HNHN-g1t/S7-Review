@@ -1,16 +1,16 @@
-import { playIcePing } from './icePing';
+import { playIceFreeze, playIceCrash } from './icePing';
 import { useEffect, useRef, useState } from 'react';
 import { HYOKETSU_BURST_MS, HYOKETSU_RING, hyoketsuIceState } from './hyoketsuFireworks';
 import { HyoketsumeDice } from './HyoketsumeDice';
 import './hyoketsuBurst.css';
 type Point={x:number;y:number};
-export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep}:{cell:number;flashCells?:Point[];paused?:boolean;onEnd?:()=>void;onSweep?:()=>void}) {
- const canvas=useRef<HTMLCanvasElement>(null),latest=useRef({paused,flashCells,onEnd,onSweep});latest.current={paused,flashCells,onEnd,onSweep};
+export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onCrash}:{cell:number;flashCells?:Point[];paused?:boolean;onEnd?:()=>void;onSweep?:()=>void;onCrash?:()=>void}) {
+ const canvas=useRef<HTMLCanvasElement>(null),latest=useRef({paused,flashCells,onEnd,onSweep,onCrash});latest.current={paused,flashCells,onEnd,onSweep,onCrash};
  useEffect(()=>{
   const ctx=canvas.current?.getContext('2d');if(!ctx)return;
   const size=3*cell,dpr=Math.min(devicePixelRatio||1,2);canvas.current!.width=Math.round(size*dpr);canvas.current!.height=Math.round(size*dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  let elapsed=0,last=performance.now(),frame=0,ended=false,swept=false;
+  let elapsed=0,last=performance.now(),frame=0,ended=false,swept=false,crashed=false;
   const draw=(now:number)=>{
    const delta=Math.max(0,now-last);last=now;
    if(!latest.current.paused&&!document.hidden)elapsed=Math.min(HYOKETSU_BURST_MS,elapsed+delta);
@@ -18,6 +18,7 @@ export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep}:{c
    if(elapsed>=HYOKETSU_BURST_MS){if(!ended){ended=true;latest.current.onEnd?.();}return;}
    const state=hyoketsuIceState(elapsed);
    if(elapsed>=1000&&!swept){swept=true;latest.current.onSweep?.();}
+   if(elapsed>=1400&&!crashed){crashed=true;latest.current.onCrash?.();}
    ctx.globalCompositeOperation='source-over';
    const tile=(x:number,y:number,alpha:number)=>{
     ctx.save();ctx.translate(x*cell,y*cell);ctx.globalAlpha=alpha;
@@ -53,9 +54,12 @@ export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep}:{c
 }
 export function HyoketsuBurstPreview({paused=false}:{paused?:boolean}){
  const audio=useRef<AudioContext|null>(null);
- const [sound,setSound]=useState(false);
+ const [sound,setSound]=useState(false),[loop,setLoop]=useState(false),[stopped,setStopped]=useState(false);
  useEffect(()=>()=>{void audio.current?.close();},[]);
+ useEffect(()=>{if(audio.current){if(paused||stopped||!sound)void audio.current.suspend();else void audio.current.resume();}},[paused,stopped,sound]);
  const [run,setRun]=useState(0),[phase,setPhase]=useState<'idle'|'running'|'done'>('idle');
+ useEffect(()=>{if(phase==='running'&&sound&&audio.current)playIceFreeze(audio.current,audio.current.destination);},[run,phase]);
+ useEffect(()=>{if(!loop||phase!=='done'||paused||stopped)return;const timer=setTimeout(()=>{setRun(n=>n+1);setPhase('running');},650);return()=>clearTimeout(timer);},[loop,phase,paused,stopped]);
  const points=Array.from({length:9},(_,i)=>({x:i%3,y:Math.floor(i/3)}));
- return <div className="hyoketsu-burst-preview"><button type="button" onClick={()=>{if(sound){audio.current??=new AudioContext();void audio.current.resume();}setRun(n=>n+1);setPhase('running');}}>▶ 発動アニメを再生（2000ms）</button><label><input type="checkbox" checked={sound} onChange={e=>setSound(e.target.checked)}/> SEを鳴らす（初期OFF）</label><div className="hyoketsu-burst-board" role="img" aria-label="1000msの左回り凍結、400msの斜めライトスイープ、600msの氷の2Dクラッシュ">{points.map((_,i)=><span key={i} className="hyoketsu-burst-cell">{phase!=='done'&&(i===4?<HyoketsumeDice detonating={phase==='running'} paused={paused} cell={{value:3,kind:'bomb',fuse:1}}/>:i===1||i===7?<span className="hyoketsu-burst-enemy">{i===1?'●':'××'}</span>:<span className="hyoketsu-burst-die" style={{background:['#fc6dac','#43ae39','#8b46d2'][i%3]}}><i/><i/><i/></span>)}</span>)}{phase==='running'&&<HyoketsuBurst key={run} paused={paused} cell={64} flashCells={points} onSweep={()=>{if(sound&&audio.current)playIcePing(audio.current,audio.current.destination);}} onEnd={()=>setPhase('done')}/>}</div><small>{phase==='running'?'左回り凍結 → ライトスイープ → 氷のクラッシュ':phase==='done'?'2秒間の氷演出が終了。もう一度再生できます。':'1000ms凍結＋400ms輝き＋600msクラッシュ。実ゲームと共通。'}</small></div>;
+ return <div className="hyoketsu-burst-preview"><button type="button" onClick={()=>{if(sound){audio.current??=new AudioContext();void audio.current.resume();}setLoop(false);setStopped(false);setRun(n=>n+1);setPhase('running');}}>▶ 発動アニメを再生（2000ms）</button><button type="button" onClick={()=>{setLoop(false);setStopped(false);setPhase('idle');}}>▶ アイドリング再生</button><button type="button" aria-pressed={loop} onClick={()=>{if(sound){audio.current??=new AudioContext();void audio.current.resume();}setLoop(true);setStopped(false);setRun(n=>n+1);setPhase('running');}}>↻ 発動ローテーション再生</button><button type="button" aria-pressed={stopped} onClick={()=>setStopped(v=>!v)}>{stopped?'再開':'一時停止'}</button><label><input type="checkbox" checked={sound} onChange={e=>setSound(e.target.checked)}/> SEを鳴らす（初期OFF）</label><div className="hyoketsu-burst-board" role="img" aria-label="1000msの左回り凍結、400msの斜めライトスイープ、600msの氷の2Dクラッシュ">{points.map((_,i)=><span key={i} className="hyoketsu-burst-cell">{phase!=='done'&&(i===4?<HyoketsumeDice detonating={phase==='running'} paused={paused||stopped} cell={{value:3,kind:'bomb',fuse:1}}/>:i===1||i===7?<span className="hyoketsu-burst-enemy">{i===1?'●':'××'}</span>:<span className="hyoketsu-burst-die" style={{background:['#fc6dac','#43ae39','#8b46d2'][i%3]}}><i/><i/><i/></span>)}</span>)}{phase==='running'&&<HyoketsuBurst key={run} paused={paused||stopped} cell={64} flashCells={points} onCrash={()=>{if(sound&&audio.current)playIceCrash(audio.current,audio.current.destination);}} onEnd={()=>setPhase('done')}/>}</div><small>{phase==='running'?'左回り凍結 → ライトスイープ → 氷のクラッシュ':phase==='done'?'2秒間の氷演出が終了。もう一度再生できます。':'1000ms凍結＋400ms輝き＋600msクラッシュ。実ゲームと共通。'}</small></div>;
 }

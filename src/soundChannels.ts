@@ -27,7 +27,8 @@ export const SOUND_CHANNELS: SoundChannel[] = [
     name: '演出',
     route: 'コンプレッサー → 演出ミックス（敵の命中の瞬間だけ少し下がる） → 最終リミッター',
     sounds: [
-      { fn: 'playHyoketsuIceSound', label: 'ヒョーケツボムの斜めスイープ「ぴきーん」' },
+      { fn: 'playHyoketsuFreezeSound', label: 'ヒョーケツボム凍結「シュイシュイ…」' },
+      { fn: 'playHyoketsuCrashSound', label: 'ヒョーケツボム破砕「シャッリィィン」' },
       { fn: 'playLockSound', label: '設置「トッ」（4通りの高さからランダム）' },
       { fn: 'playClearThump', label: '2連鎖以上・ひっさつメの腹に来る「ドン」' },
       { fn: 'playClearSound', label: 'セヴン目・チェインの消去音' },

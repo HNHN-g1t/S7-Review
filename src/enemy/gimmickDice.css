@@ -52,3 +52,8 @@
 
 .hyoketsu-fuse-spark{animation:hyoketsu-fuse-spark .63s ease-out infinite;animation-play-state:var(--fuse-play,running);}
 @keyframes hyoketsu-fuse-spark{0%{transform:translate(0,0) scale(.7);opacity:1;}75%{opacity:.8;}100%{transform:translate(var(--spark-x),var(--spark-y)) scale(.15);opacity:0;}}
+
+/* Body stays centered within its cell; only the fuse extends into the cell above. */
+.gimmick-idle{inset:0;transform-origin:50% 50%;}
+@keyframes hyoketsu-idle{0%,100%{transform:scale(.92);}50%{transform:scale(1);}}
+.board-cell.hyoketsu-layer{z-index:120;overflow:visible;}

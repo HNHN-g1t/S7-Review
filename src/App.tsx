@@ -1,4 +1,4 @@
-import { playIcePing } from './enemy/icePing';
+import { playIceFreeze, playIceCrash } from './enemy/icePing';
 import { HyoketsuBurst } from './enemy/HyoketsuBurst';
 import { HYOKETSU_BURST_MS } from './enemy/hyoketsuFireworks';
 import { HyoketsumeDice } from './enemy/HyoketsumeDice';
@@ -3625,9 +3625,10 @@ const playPaintSplatSound = () => {
 };
 
 // 門のカギが開く音。金属の「カチャ」2打のあと、明るいアルペジオがきらっと上がる
-const playHyoketsuIceSound = () => {
-  const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playIcePing(ctx,bus);
+const playHyoketsuFreezeSound = () => {
+  const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playIceFreeze(ctx,bus);
 };
+const playHyoketsuCrashSound = () => {const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playIceCrash(ctx,bus);};
 const playGateUnlockSound = () => {
   const ctx = getAudioContext();
   const bus = getSfxBus();
@@ -9396,10 +9397,11 @@ export default function App() {
         if(blast.size){
           const bursts=workingBoard.flatMap((row,y)=>row.flatMap((c,x)=>c&&expiredHyoketsu.has(c.id)?[{x:x-1,y:y-1,flashCells:[...blast].map(key=>{const [bx,by]=key.split(',').map(Number);return {x:bx-(x-1),y:by-(y-1)};}).filter(p=>p.x>=0&&p.x<3&&p.y>=0&&p.y<3)}]:[]));
           setHyoketsuBlasts(bursts);
+          if(soundModeRef.current!=='none')playHyoketsuFreezeSound();
           setBoard(workingBoard);setClearingCells(new Set());
           await wait(1000);if(storyRunRef.current!==activeScriptRun)return;
-          if(soundModeRef.current!=='none')playHyoketsuIceSound();
           await wait(400);if(storyRunRef.current!==activeScriptRun)return;
+          if(soundModeRef.current!=='none')playHyoketsuCrashSound();
           shakeBoard('sm');await wait(HYOKETSU_BURST_MS-1400);
           if(storyRunRef.current!==activeScriptRun)return;
           const before=workingBoard;
@@ -13127,7 +13129,7 @@ export default function App() {
             const cell = mergedCells.get(`${x},${y}`);
             return (
               <div
-                className={`board-cell ${grayCells.has(`${x},${y}`) ? 'is-gray' : ''} ${
+                className={`board-cell ${cell?.hyoketsu?'hyoketsu-layer':''} ${grayCells.has(`${x},${y}`) ? 'is-gray' : ''} ${
                   monoCells.has(`${x},${y}`) ? 'is-mono' : ''
                 } ${sanzMode && cell?.id.startsWith('sanz-eject-') ? 'sanz-ejected' : ''} ${demoBlink.has(`${x},${y}`) ? 'is-demo-blink' : ''} ${thunderKeys.has(`${x},${y}`) ? 'is-thunder' : ''} ${you456Keys.has(`${x},${y}`) ? 'is-you456' : ''}`}
                 data-cell={`${x},${y}`}

@@ -9,6 +9,9 @@ assert.equal(hyoketsuIceState(999).phase,'freeze');assert.equal(hyoketsuIceState
 const audioModule={exports:{}};vm.runInNewContext('(function(exports){'+ts.transpileModule(fs.readFileSync(require('path').join(__dirname,'../src/enemy/icePing.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText+'\n})')(audioModule.exports);
 const tones=[];const context={currentTime:10,createGain:()=>({gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}}),createOscillator:()=>{const tone={frequency:{setValueAtTime(v){tone.from=v;},exponentialRampToValueAtTime(v,t){tone.to=v;tone.rise=t;}},connect(){},disconnect(){},start(t){tone.startAt=t;},stop(t){tone.stopAt=t;}};tones.push(tone);return tone;}};
 audioModule.exports.playIcePing(context,{});assert.equal(tones.length,4);for(const tone of tones){assert(tone.to>tone.from);assert(Math.abs(tone.rise-10.035)<1e-6);assert(Math.abs(tone.stopAt-10.42)<1e-6);}
+const noises=[];const fullAudio={...context,sampleRate:24000,createBuffer:(_channels,n)=>({getChannelData:()=>new Float32Array(n)}),createBufferSource:()=>{const n={connect(){},disconnect(){},start(t){n.at=t;},stop(t){n.end=t;}};noises.push(n);return n;},createBiquadFilter:()=>({frequency:{setValueAtTime(){},exponentialRampToValueAtTime(){}},Q:{value:0},connect(){},disconnect(){}})};
+audioModule.exports.playIceFreeze(fullAudio,{});assert.equal(noises.length,8);noises.forEach((n,i)=>{assert(Math.abs(n.at-(10+i*.125))<1e-6);assert(Math.abs(n.end-n.at-.12)<1e-6);});
+const toneCount=tones.length;audioModule.exports.playIceCrash(fullAudio,{});assert.equal(tones.length-toneCount,5);assert.equal(noises.length,9);assert(Math.abs(tones.at(-1).stopAt-10.6)<1e-6);
 (async()=>{
  const h=harness('hyoketsume');await h.boot();await h.until(()=>h.tree.read().status==='playing','startup');
  const points=[];for(let y=11;y<14;y++)for(let x=2;x<5;x++)points.push([x,y,2]);

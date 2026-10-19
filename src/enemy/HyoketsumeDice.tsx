@@ -13,10 +13,9 @@ export function HyoketsumeDice({cell,detonating=false,paused=false}: {cell: Cell
   const metalId = useId();
   const special = !!cell.kind;
   return <span className={`gimmick-die ${cell.kind || ''} ${detonating?'is-detonating':''}`} style={{backgroundColor:special?'transparent':colors[cell.value-1]}}>
-    {special ? <span className="gimmick-idle"><svg className="gimmick-mech" viewBox="0 0 100 100" aria-hidden="true" style={{animationPlayState:paused?'paused':'running'}}>
+    {special ? <span className="gimmick-idle" style={{animationPlayState:paused?'paused':'running'}}><svg className="gimmick-mech" viewBox="0 0 100 100" aria-hidden="true" style={{animationPlayState:paused?'paused':'running'}}>
       <defs><linearGradient id={metalId} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#709caf"/><stop offset=".18" stopColor="#254765"/><stop offset=".43" stopColor="#0c213e"/><stop offset=".55" stopColor="#3a6680"/><stop offset=".64" stopColor="#15314e"/><stop offset="1" stopColor="#071729"/></linearGradient></defs>
-      <path d="M52 23L55 10L69 13L65 26" fill="#434c59" stroke="#99a6b2" strokeWidth="2"/>
-      <path d="M61 12Q62 2 75 8" fill="none" stroke="#d4a75b" strokeWidth="4"/>
+      <g transform="translate(50 50) scale(1.15) translate(-50 -57.5)">
       <path d="M19 21H81L88 28V87L81 94H19L12 87V28Z" fill={`url(#${metalId})`}/>
       <path d="M20 25H79L84 30M16 32V84L21 89M23 91H79L84 86V35" fill="none" stroke="#73b6d3" strokeOpacity=".5" strokeWidth="1.5"/>
       <path d="M18 49H82M20 84H27M73 84H80" fill="none" stroke="#07192e" strokeWidth="2"/>
@@ -24,7 +23,9 @@ export function HyoketsumeDice({cell,detonating=false,paused=false}: {cell: Cell
       <circle cx="50" cy="67" r="22" fill="#0a2038" stroke="#5c8ea7" strokeWidth="3"/>
       <circle cx="50" cy="67" r="18.8" fill="#020b15" stroke="#90c9dd" strokeWidth=".8"/>
       <SevenSegment value={cell.kind==='ice'?null:cell.fuse??6} />
-      {cell.kind==='bomb'&&!detonating&&<g transform="translate(75 8)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
+      </g>
+      <path d="M60 8Q61-16 78-10" fill="none" stroke="#d4a75b" strokeWidth="3"/>
+      {cell.kind==='bomb'&&!detonating&&<g transform="translate(78 -10)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
         <circle r="2" fill="#fff8b0"/>
         {Array.from({length:7},(_,i)=>{const angle=i*Math.PI*2/7;return <circle key={i} className="hyoketsu-fuse-spark" r={i%2?1:1.5} fill={i%2?'#ffe13d':'#fff5a0'} style={{'--spark-x':Math.cos(angle)*12+'px','--spark-y':Math.sin(angle)*12+'px',animationDelay:i*-.09+'s'} as CSSProperties}/>;})}
       </g>}
