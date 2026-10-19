@@ -23,3 +23,7 @@
 .gimmick-die.is-detonating .gimmick-mech .hyoketsu-mouth circle:first-child{fill:#0a2038!important;stroke:#5c8ea7!important;}
 .gimmick-die.is-detonating .gimmick-mech .hyoketsu-mouth circle:nth-child(2){fill:#020b15!important;stroke:#90c9dd!important;}
 .gimmick-die.is-detonating .gimmick-mech .hyoketsu-mouth path{fill:#9eeaff!important;stroke:none!important;}
+
+.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face path.hyoketsu-eye-plus{fill:none!important;stroke:#187bc2!important;}
+.gimmick-die.is-detonating .hyoketsu-count{animation:hyoketsu-count-zero 320ms steps(2,end) infinite;animation-play-state:inherit;}
+@keyframes hyoketsu-count-zero{50%{opacity:.15;}}

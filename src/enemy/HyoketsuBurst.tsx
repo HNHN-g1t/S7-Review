@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { HYOKETSU_BURST_MS, HYOKETSU_RING, hyoketsuIceState } from './hyoketsuFireworks';
 import { HyoketsumeDice } from './HyoketsumeDice';
 import './hyoketsuBurst.css';
-import { ICE_CRACKS, iceCrackPair } from './iceCracks';
+import { ICE_CRACKS, iceCrackPair, iceCrackRibbon } from './iceCracks';
 type Point={x:number;y:number};
 export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onCrash}:{cell:number;flashCells?:Point[];paused?:boolean;onEnd?:()=>void;onSweep?:()=>void;onCrash?:()=>void}) {
  const canvas=useRef<HTMLCanvasElement>(null),latest=useRef({paused,flashCells,onEnd,onSweep,onCrash});latest.current={paused,flashCells,onEnd,onSweep,onCrash};
@@ -29,7 +29,7 @@ export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onC
     // Eight planar facets give the clipped block a dice-like bevel.
     const rim=[[.12,0],[.88,0],[1,.14],[1,.88],[.86,1],[.1,1],[0,.86],[0,.12]];
     rim.forEach((p,i)=>{const q=rim[(i+1)%8];ctx.fillStyle=['#edffff','#c3f6ff','#397da7','#235c8e','#24658f','#74c6df','#c0f5ff','#f4ffff'][i];ctx.beginPath();ctx.moveTo(p[0]*cell,p[1]*cell);ctx.lineTo(q[0]*cell,q[1]*cell);ctx.lineTo((.5+(q[0]-.5)*.82)*cell,(.5+(q[1]-.5)*.82)*cell);ctx.lineTo((.5+(p[0]-.5)*.82)*cell,(.5+(p[1]-.5)*.82)*cell);ctx.closePath();ctx.fill();});
-    iceCrackPair(crackSeed+x*17+y*31).forEach(p=>ICE_CRACKS[p].forEach((line,j)=>{ctx.strokeStyle=j?'#b5f3ff':'#e9ffff';ctx.lineWidth=cell*(j?.009:.022);ctx.beginPath();line.forEach(([px,py],i)=>{if(i)ctx.lineTo(px*cell,py*cell);else ctx.moveTo(px*cell,py*cell);});ctx.stroke();}));
+    iceCrackPair(crackSeed+x*17+y*31).forEach(p=>ICE_CRACKS[p].forEach((line,j)=>{ctx.fillStyle=j?'#b5f3ff':'#e9ffff';ctx.beginPath();iceCrackRibbon(line,crackSeed+x*17+y*31+p*3+j,j).forEach(([px,py],i)=>{if(i)ctx.lineTo(px*cell,py*cell);else ctx.moveTo(px*cell,py*cell);});ctx.closePath();ctx.fill();}));
     if(state.phase==='sweep'){
      const d=(-1+state.progress*5)*cell-(x+y)*cell*.5;
      const shine=ctx.createLinearGradient(d-cell*.28,d-cell*.28,d+cell*.28,d+cell*.28);shine.addColorStop(0,'#ffffff00');shine.addColorStop(.5,'#fff');shine.addColorStop(1,'#ffffff00');ctx.fillStyle=shine;ctx.fillRect(0,0,cell,cell);
