@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
         main: 'index.html',
         hidoime: 'hidoime-preview.html',
         // 図鑑は個人確認用。通常の本番ビルドには含めない。
-        ...(mode === 'gallery' ? { enemies: 'enemies.html', skills: 'skills.html', review: 'review.html', storyProgress: 'story-progress.html', enemyPractice: 'enemy-practice.html', reviewGame: 'review-game.html' } : {}),
+        ...(mode === 'gallery' ? { enemies: 'enemies.html', skills: 'skills.html', sync: 'sync.html', review: 'review.html', storyProgress: 'story-progress.html', enemyPractice: 'enemy-practice.html', reviewGame: 'review-game.html' } : {}),
       },
     },
   },

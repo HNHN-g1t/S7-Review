@@ -1,6 +1,6 @@
 # S7-Reviewへの適用
 
-このチェックアウトの保存先はHNHN-g1t/S7-Review。ゲーム本体SAINOME-SEVENはコピー元であり、このチェックアウトから自動で書き戻さない。公開・デプロイは依頼されていない。
+このチェックアウトの保存先はHNHN-g1t/S7-Review。ゲーム本体SAINOME-SEVENは別管理。通常のレビュー保存はこのリポジトリへpushし https://s7-review.vercel.app/review を更新する。本体反映を指示された時は本体のreview-to-game.ymlまたはdocs/レビューから本体へ反映.mdに従い、共有差分を検証して専用PRへ。配信・認証・運用設定は移植しない。
 
 # SAINOME-SEVEN 共通開発ルール
 
