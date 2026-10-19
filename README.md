@@ -13,7 +13,7 @@ npm run dev -- --host 127.0.0.1
 
 表示されたポートの /review.html を開いてください（通常は http://127.0.0.1:5173/review.html）。最上段のストーリー／スコア／キャラクター図鑑／マップ／ストーリー進行表／ヒッサツメ図鑑を切り替えて確認できます。技図鑑単独は /skills.html、キャラクター図鑑単独は /enemies.html。
 
-確認サイトのビルドは `npm run build:gallery`（出力dist-gallery）。通常の `npm run build` には開発専用ページを含めません。模擬戦はlocalhost/127.0.0.1専用で、初期消音・保存分離。公開サイトへのデプロイはこの作業に含めません。
+確認サイトのビルドは `npm run build:gallery`（出力dist-gallery）。通常の `npm run build` には開発専用ページを含めません。模擬戦はlocalhost/127.0.0.1専用で、初期消音・保存分離。Vercel（プロジェクト s7-review）には vercel.json で `npm run build:gallery`・出力 `dist-gallery` を指定して載せる。Vercel Authentication の鍵つきで、ログインした本人だけが見る（2026-10-19 ユーザー判断）。鍵の効かない本番ドメイン s7-review.vercel.app は使わない。
 
 ## 続きの作業
 
