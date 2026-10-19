@@ -13062,7 +13062,7 @@ export default function App() {
     setShowStages(false);
     if (screen === 'story') {
       const requested = Number(new URLSearchParams(location.search).get('stage') ?? 20);
-      const target = CAMPAIGN_MISSIONS.find(m => m.stage === requested)?.stage ?? 20;
+      const target = requested === 0 ? 0 : CAMPAIGN_MISSIONS.find(m => m.stage === requested)?.stage ?? 20;
       // 前提面の習得状態をメモリー内だけで用意。確認後に通常進捗へ保存しない。
       wallProgressRef.current = { ...wallProgressRef.current, cleared: CAMPAIGN_MISSIONS.filter(m => m.stage < target).map(m => m.stage) };
       startStage(target);
