@@ -13,3 +13,5 @@ starts.length=0;ends.length=0;audio.exports.playEnjoImpact(ctx,{});assert.equal(
 console.log('PASS Enjome audio: short wall fracture, impact + sustained fire, source cleanup');
 
 for(const phase of m.exports.ENJO_STEPS){assert.equal(m.exports.enjoDemoOccupied(4,5,phase),false);assert.equal(m.exports.enjoDemoOccupied(4,6,phase),false);}assert.equal(m.exports.enjoDemoOccupied(4,7,'drop'),false);assert.equal(m.exports.enjoDemoOccupied(3,6,'wall'),true);console.log('PASS Enjome occupies two empty cells; landing cells never overlap dice');
+
+assert.deepEqual(Array.from(m.exports.enjoSteps(2)),Array.from(m.exports.ENJO_STEPS));const three=Array.from(m.exports.enjoSteps(3));assert(three.indexOf('middle')>three.indexOf('breakUpper'));assert(three.indexOf('breakMiddle')<three.indexOf('lower'));assert(three.indexOf('ready')>three.indexOf('breakLower'));for(const phase of three)for(const y of [4,5,6])assert.equal(m.exports.enjoDemoOccupied(4,y,phase,3),false);console.log('PASS three-cell capsule: upper/middle/lower unlock before ready; three empty cells, two-cell flame');
