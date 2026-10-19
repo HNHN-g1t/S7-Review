@@ -21,15 +21,17 @@ export function HyoketsumeDice({cell,detonating=false,paused=false}: {cell: Cell
       <path d="M19 21H81L88 28V87L81 94H19L12 87V28Z" fill={`url(#${metalId})`}/>
       <path d="M20 25H79L84 30M16 32V84L21 89M23 91H79L84 86V35" fill="none" stroke="#73b6d3" strokeOpacity=".5" strokeWidth="1.5"/>
       <path d="M18 49H82M20 84H27M73 84H80" fill="none" stroke="#07192e" strokeWidth="2"/>
-      {[27,73].map(x=><g key={x} transform={`translate(${x} 36)`}><circle r="9" fill="#63869e" stroke="#071a31" strokeWidth="2"/><circle r="6.7" fill="#9bbdcb"/><path d="M-5 0H5" stroke="#112940" strokeWidth="3" strokeLinecap="round"/></g>)}
+      {[27,73].map(x=><g className="hyoketsu-face" key={x} transform={`translate(${x} 36)`}><circle r="9" fill="#63869e" stroke="#071a31" strokeWidth="2"/><circle r="6.7" fill="#9bbdcb"/><path d="M-5 0H5" stroke="#112940" strokeWidth="3" strokeLinecap="round"/></g>)}
+      <g className="hyoketsu-face">
       <circle cx="50" cy="67" r="22" fill="#0a2038" stroke="#5c8ea7" strokeWidth="3"/>
       <circle cx="50" cy="67" r="18.8" fill="#020b15" stroke="#90c9dd" strokeWidth=".8"/>
       <SevenSegment value={cell.kind==='ice'?null:cell.fuse??6} />
       </g>
+      </g>
       <path d="M50 8Q44-14 60-17" fill="none" stroke="#88cce7" strokeWidth="6"/>
-      {cell.kind==='bomb'&&!detonating&&<g transform="translate(60 -17) scale(4)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
+      {cell.kind==='bomb'&&!detonating&&<g transform="translate(60 -17) scale(2.8)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
         <circle r="1.5" fill="#fff" className="hyoketsu-fuse-core"/>
-        {Array.from({length:36},(_,i)=>{const angle=i*137.508*Math.PI/180;const reach=9+i%5*2;return <path key={i} className="hyoketsu-fuse-spark" d={`M${-1-i%3*.35} 0L${1+i%3*.35} 0L0 ${-4-i%4*1.5}Z`} fill={['#298dff','#9eeaff','#ffffff'][i%3]} style={{'--spark-x':Math.cos(angle)*reach+'px','--spark-y':Math.sin(angle)*reach+'px','--spark-angle':(angle*180/Math.PI+90)+'deg',animationDelay:i*-.0185+'s',animationDuration:(.32+i%4*.045)+'s'} as CSSProperties}/>;})}
+        {Array.from({length:48},(_,i)=>{const angle=i*137.508*Math.PI/180;const reach=9+i%5*2;return <path key={i} className="hyoketsu-fuse-spark" d={`M-1 1L1 -2L-.8 -3L1.8 -5L.3 -6L1 -8L-2 -4L-.3 -3L-2 0Z`} fill={['#298dff','#9eeaff','#ffffff'][i%3]} style={{'--spark-x':Math.cos(angle)*reach+'px','--spark-y':Math.sin(angle)*reach+'px','--spark-angle':(angle*180/Math.PI+90)+'deg',animationDelay:i*-.0138+'s',animationDuration:(.32+i%4*.045)+'s'} as CSSProperties}/>;})}
       </g>}
     </svg>{cell.kind==='ice'&&<><span className="gimmick-ice-shell"/><svg className="gimmick-cracks" viewBox="0 0 100 100" aria-hidden="true">{iceCrackPair(crackSeed).flatMap((p,k)=>ICE_CRACKS[p].map((line,j)=><polyline key={`${k}-${j}`} points={line.map(([x,y])=>`${x*100},${y*100}`).join(' ')} fill="none" stroke="#e4ffff" strokeOpacity={j?.65:.9} strokeWidth={j?.65:1.7} strokeLinejoin="round"/>))}</svg></>}</span> : <span className="gimmick-pips">{Array.from({length:9},(_,i)=><i key={i} style={{opacity:pips[cell.value-1].includes(i)?1:0}} />)}</span>}
   </span>;

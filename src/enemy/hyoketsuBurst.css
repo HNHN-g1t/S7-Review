@@ -12,3 +12,8 @@
 .gimmick-die.is-detonating .gimmick-mech{animation:hyoketsu-silhouette 1400ms linear forwards;}
 .gimmick-die.is-detonating .gimmick-mech path,.gimmick-die.is-detonating .gimmick-mech circle,.gimmick-die.is-detonating .gimmick-mech rect{fill:currentColor!important;stroke:currentColor!important;opacity:1;}
 @keyframes hyoketsu-silhouette{0%,20%,40%,60%,80%{color:#2288ed;opacity:1;}7%,27%,47%,67%,87%{color:#27d8c8;opacity:1;}14%,34%,54%,74%,94%,99.9%{color:#f1ffff;opacity:1;}100%{opacity:0;}}
+
+/* Face blinks independently of the icy body color cycle. */
+.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face{animation:hyoketsu-face-blink 230ms steps(2,end) infinite;animation-play-state:inherit;}
+.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face path,.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face circle{fill:#fff!important;stroke:#fff!important;}
+@keyframes hyoketsu-face-blink{0%,100%{opacity:1;}50%{opacity:.12;}}

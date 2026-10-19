@@ -49,10 +49,10 @@ export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onC
     }
     ctx.restore();
    };
-   if(state.phase!=='shatter'){
+   if(state.phase==='freeze'||state.phase==='sweep'){
     HYOKETSU_RING.forEach((p,i)=>{const alpha=Math.max(0,Math.min(1,(elapsed-i*125)/125));if(alpha>0)tile(p.x,p.y,alpha);});
     if(elapsed>=1000)tile(1,1,Math.min(1,(elapsed-1000)/100));
-   }else{
+   }else if(state.phase==='shatter'){
     const progress=state.progress;
     [{x:1,y:1},...HYOKETSU_RING].forEach(({x,y},index)=>{
      ctx.globalAlpha=1;ctx.fillStyle='#232b36';ctx.fillRect(x*cell,y*cell,cell,cell);
@@ -78,6 +78,18 @@ export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onC
      }
     });
    }
+   if(state.phase==='afterglow'){ctx.globalAlpha=1;ctx.fillStyle='#232b36';ctx.fillRect(0,0,size,size);}
+   if(elapsed>=1800){
+    // Detached icy glints outlive the glass by another 600 ms.
+    const fade=elapsed<2000?1:(2600-elapsed)/600;
+    for(let i=0;i<24;i++){
+     const seed=crackSeed+i*97, pulse=Math.pow(Math.max(0,Math.sin(elapsed/80+i*2.4)),3)*fade;
+     if(pulse<.02)continue;
+     const x=(.12+(seed%277)/100)*cell,y=(.1+((seed*13)%278)/100)*cell,r=cell*(.035+.065*pulse);
+     ctx.save();ctx.translate(x,y);ctx.globalAlpha=pulse;ctx.fillStyle=i%3?'#b6f3ff':'#fff';
+     ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(r*.16,-r*.16);ctx.lineTo(r,0);ctx.lineTo(r*.16,r*.16);ctx.lineTo(0,r);ctx.lineTo(-r*.16,r*.16);ctx.lineTo(-r,0);ctx.lineTo(-r*.16,-r*.16);ctx.closePath();ctx.fill();ctx.restore();
+    }
+   }
    ctx.globalAlpha=1;frame=requestAnimationFrame(draw);
   };
   draw(last);return()=>cancelAnimationFrame(frame);
@@ -93,5 +105,5 @@ export function HyoketsuBurstPreview({paused=false}:{paused?:boolean}){
  useEffect(()=>{if(phase==='running'&&sound&&audio.current)playIceFreeze(audio.current,audio.current.destination);},[run,phase]);
  useEffect(()=>{if(!loop||phase!=='done'||paused||stopped)return;const timer=setTimeout(()=>{setRun(n=>n+1);setPhase('running');},650);return()=>clearTimeout(timer);},[loop,phase,paused,stopped]);
  const points=Array.from({length:9},(_,i)=>({x:i%3,y:Math.floor(i/3)}));
- return <div className="hyoketsu-burst-preview"><button type="button" onClick={()=>{if(sound){audio.current??=new AudioContext();void audio.current.resume();}setLoop(false);setStopped(false);setRun(n=>n+1);setPhase('running');}}>▶ 発動アニメを再生（2000ms）</button><button type="button" onClick={()=>{setLoop(false);setStopped(false);setPhase('idle');}}>▶ アイドリング再生</button><button type="button" aria-pressed={loop} onClick={()=>{if(sound){audio.current??=new AudioContext();void audio.current.resume();}setLoop(true);setStopped(false);setRun(n=>n+1);setPhase('running');}}>↻ 発動ローテーション再生</button><button type="button" aria-pressed={stopped} onClick={()=>setStopped(v=>!v)}>{stopped?'再開':'一時停止'}</button><label><input type="checkbox" checked={sound} onChange={e=>setSound(e.target.checked)}/> SEを鳴らす（初期OFF）</label><div className="hyoketsu-burst-board" role="img" aria-label="1000msの左回り凍結、400msの斜めライトスイープ、600msの氷の2Dクラッシュ">{points.map((_,i)=><span key={i} className="hyoketsu-burst-cell">{phase!=='done'&&(i===4?<HyoketsumeDice detonating={phase==='running'} paused={paused||stopped} cell={{value:3,kind:'bomb',fuse:1}}/>:i===1||i===7?<span className="hyoketsu-burst-enemy">{i===1?'●':'××'}</span>:<span className="hyoketsu-burst-die" style={{background:['#fc6dac','#43ae39','#8b46d2'][i%3]}}><i/><i/><i/></span>)}</span>)}{phase==='running'&&<HyoketsuBurst key={run} paused={paused||stopped} cell={64} flashCells={points} onCrash={()=>{if(sound&&audio.current)playIceCrash(audio.current,audio.current.destination);}} onEnd={()=>setPhase('done')}/>}</div><small>{phase==='running'?'左回り凍結 → ライトスイープ → 氷のクラッシュ':phase==='done'?'2秒間の氷演出が終了。もう一度再生できます。':'1000ms凍結＋400ms輝き＋600msクラッシュ。実ゲームと共通。'}</small></div>;
+ return <div className="hyoketsu-burst-preview"><button type="button" onClick={()=>{if(sound){audio.current??=new AudioContext();void audio.current.resume();}setLoop(false);setStopped(false);setRun(n=>n+1);setPhase('running');}}>▶ 発動アニメを再生（2600ms）</button><button type="button" onClick={()=>{setLoop(false);setStopped(false);setPhase('idle');}}>▶ アイドリング再生</button><button type="button" aria-pressed={loop} onClick={()=>{if(sound){audio.current??=new AudioContext();void audio.current.resume();}setLoop(true);setStopped(false);setRun(n=>n+1);setPhase('running');}}>↻ 発動ローテーション再生</button><button type="button" aria-pressed={stopped} onClick={()=>setStopped(v=>!v)}>{stopped?'再開':'一時停止'}</button><label><input type="checkbox" checked={sound} onChange={e=>setSound(e.target.checked)}/> SEを鳴らす（初期OFF）</label><div className="hyoketsu-burst-board" role="img" aria-label="1000msの左回り凍結、400msの斜めライトスイープ、600msの氷の2Dクラッシュ">{points.map((_,i)=><span key={i} className="hyoketsu-burst-cell">{phase!=='done'&&(i===4?<HyoketsumeDice detonating={phase==='running'} paused={paused||stopped} cell={{value:3,kind:'bomb',fuse:1}}/>:i===1||i===7?<span className="hyoketsu-burst-enemy">{i===1?'●':'××'}</span>:<span className="hyoketsu-burst-die" style={{background:['#fc6dac','#43ae39','#8b46d2'][i%3]}}><i/><i/><i/></span>)}</span>)}{phase==='running'&&<HyoketsuBurst key={run} paused={paused||stopped} cell={64} flashCells={points} onCrash={()=>{if(sound&&audio.current)playIceCrash(audio.current,audio.current.destination);}} onEnd={()=>setPhase('done')}/>}</div><small>{phase==='running'?'左回り凍結 → ライトスイープ → 氷のクラッシュ':phase==='done'?'2.6秒間の氷演出が終了。もう一度再生できます。':'1000ms凍結＋400ms輝き＋600msクラッシュ＋600ms残光。実ゲームと共通。'}</small></div>;
 }
