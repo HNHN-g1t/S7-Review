@@ -15,8 +15,12 @@ export function playIcePing(ctx:AudioContext,out:AudioNode){
  [1175,1760,2350,3520].forEach((f,i)=>tone(ctx,out,f*.8,f,ctx.currentTime+i*.018,.32,.045/(i+1)));
 }
 export function playIceFreeze(ctx:AudioContext,out:AudioNode){
- for(let i=0;i<8;i++){const at=ctx.currentTime+i*.125;frost(ctx,out,at,.1,.055,3600,1100);tone(ctx,out,740+i*82,520+i*64,at,.09,.035);}
- tone(ctx,out,110,65,ctx.currentTime,.9,.055,'triangle');
+ // A tense high crystalline snap, no low descending pulses.
+ tone(ctx,out,2350,5600,ctx.currentTime,.44,.055,'triangle');
+ tone(ctx,out,4700,6250,ctx.currentTime+.012,.85,.026);
+ tone(ctx,out,7100,7480,ctx.currentTime+.018,.68,.012);
+ for(let i=0;i<8;i++){const at=ctx.currentTime+i*.125;frost(ctx,out,at,.045,.024,7600,10400);}
+
 }
 const hallImpulses=new WeakMap<AudioContext,AudioBuffer>();
 export function playIceCrash(ctx:AudioContext,out:AudioNode){

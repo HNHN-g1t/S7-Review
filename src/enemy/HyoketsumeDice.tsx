@@ -5,6 +5,13 @@ type Cell = {value:number;kind?:'ice'|'bomb';fuse?:number};
 const colors=['#fc6dac','#8b46d2','#43ae39','#43ae39','#8b46d2','#fc6dac'];
 const pips=[[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
 
+// Preserve an exact 12x face area while varying the sixteen sharp rays.
+const sparkCorePoints=(()=>{
+ const base=Array.from({length:32},(_,i)=>{const a=i*Math.PI/16,r=i%2?1.05:1.85;return [Math.cos(a)*r,Math.sin(a)*r];});
+ const jagged=base.map(([x,y],i)=>{const f=i%2?.9:1+.25*Math.sin(i*2.7);return [x*f,y*f];});
+ const area=(p:number[][])=>Math.abs(p.reduce((n,v,i)=>{const w=p[(i+1)%p.length];return n+v[0]*w[1]-v[1]*w[0];},0))/2;
+ const scale=Math.sqrt(area(base)*12/area(jagged));return jagged.map(([x,y])=>`${x*scale},${y*scale}`).join(' ');
+})();
 const segments: Record<number,string>={0:'abcdef',1:'bc',2:'abdeg',3:'abcdg',4:'bcfg',5:'acdfg',6:'acdefg'};
 function SevenSegment({value}:{value:number|null}) {
  const paths={a:'M42 54H58L56 57H44Z',b:'M58 55V65L55 63V58Z',c:'M58 67V77L55 75V69Z',d:'M42 79H58L56 76H44Z',e:'M40 67V77L43 75V69Z',f:'M40 55V65L43 63V58Z',g:'M43 65H55L57 67L55 69H43L41 67Z'};
@@ -30,7 +37,7 @@ export function HyoketsumeDice({cell,detonating=false,paused=false}: {cell: Cell
       </g>
       <path d="M50 8Q44-14 60-17" fill="none" stroke="#88cce7" strokeWidth="6"/>
       {cell.kind==='bomb'&&!detonating&&<g transform="translate(60 -17) scale(2.772)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
-        <polygon points={Array.from({length:32},(_,i)=>{const a=i*Math.PI/16,r=i%2?1.05:1.85;return `${Math.cos(a)*r},${Math.sin(a)*r}`;}).join(' ')} fill="#fff" className="hyoketsu-fuse-core"/>
+        <g className="hyoketsu-fuse-core"><polygon points={sparkCorePoints} fill="#197bff"/><polygon points={sparkCorePoints} transform="scale(.72)" fill="#68dfff"/><polygon points={sparkCorePoints} transform="scale(.4)" fill="#c9f6ff"/></g>
         {Array.from({length:16},(_,i)=>{const angle=i*137.508*Math.PI/180;const reach=9+i%5*2;return <path key={i} className="hyoketsu-fuse-spark" d={`M-1 1L1 -2L-.8 -3L1.8 -5L.3 -6L1 -8L-2 -4L-.3 -3L-2 0Z`} fill={['#298dff','#9eeaff','#ffffff'][i%3]} style={{'--spark-x':Math.cos(angle)*reach+'px','--spark-y':Math.sin(angle)*reach+'px','--spark-angle':(angle*180/Math.PI+90)+'deg',animationDelay:i*-.0414+'s',animationDuration:(.32+i%4*.045)+'s'} as CSSProperties}/>;})}
       </g>}
     </svg>{cell.kind==='ice'&&<><span className="gimmick-ice-shell"/><svg className="gimmick-cracks" viewBox="0 0 100 100" aria-hidden="true">{iceCrackPair(crackSeed).flatMap((p,k)=>ICE_CRACKS[p].map((line,j)=><polygon key={`${k}-${j}`} points={iceCrackRibbon(line,crackSeed+p*3+j,j).map(([x,y])=>`${x*100},${y*100}`).join(' ')} fill="#e4ffff" opacity={j?.65:.9}/>))}</svg></>}</span> : <span className="gimmick-pips">{Array.from({length:9},(_,i)=><i key={i} style={{opacity:pips[cell.value-1].includes(i)?1:0}} />)}</span>}
