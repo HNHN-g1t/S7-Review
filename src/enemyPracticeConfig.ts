@@ -1,4 +1,5 @@
 export const PRACTICE_ENEMIES = {
+  enjo: { name: 'エンジョーボム', stage: 8 },
   hyoketsume: { name: 'ヒョーケツメ', stage: 8 },
   koitsume: { name: 'コイツメ', stage: 8 },
   dame: { name: 'ダーメ', stage: 8 },

@@ -1,0 +1,3 @@
+export type EnjoWall={part:number;rows:2|3;open:boolean};
+export function enjoPyramid(cols:number,rows:number,center:number,fever:boolean){return (fever?[9,7,5,3,1]:[7,5,3,1]).flatMap((width,dy)=>Array.from({length:width},(_,i)=>({x:center-Math.floor(width/2)+i,y:rows-1-dy}))).filter(p=>p.x>=0&&p.x<cols&&p.y>=0);}
+export function enjoWallHits(board:({enjo?:EnjoWall}|null)[][],clears:{x:number;y:number}[]){const hits=new Set<string>();for(const {x,y} of clears)for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])if(board[y+dy]?.[x+dx]?.enjo&&!board[y+dy]![x+dx]!.enjo!.open)hits.add((x+dx)+','+(y+dy));return hits;}

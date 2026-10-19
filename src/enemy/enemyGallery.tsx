@@ -438,7 +438,7 @@ function Gallery() {
         {practiceButton('sanzapparaname')}
         <SanzapparanamePreview paused={paused || !reviewVisible} hit={hit && damageActive} />
       </section>
-      <section><h2>ヒョーケツメ（ギミック案）</h2>{practiceButton('hyoketsume')}<GimmickDicePreview paused={previewPaused}/></section>
+      <section><h2>エンジョーボム（投下式）</h2>{practiceButton('enjo')}<p>2段/3段・通常/FEVERの切替はヒッサツメ図鑑の模擬戦から確認できます。</p></section><section><h2>ヒョーケツメ（ギミック案）</h2>{practiceButton('hyoketsume')}<GimmickDicePreview paused={previewPaused}/></section>
 
       <section>
         <h2>名前・設定</h2>

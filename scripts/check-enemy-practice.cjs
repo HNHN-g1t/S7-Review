@@ -122,13 +122,13 @@ function harness(enemy = 'koitsume', options = {}) {
       const app = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === 'App');
       const ret = app.body.statements.filter(ts.isReturnStatement).at(-1);
       source = source.slice(0, ret.getStart(ast)) + `return {
-        startStage, setWallProgress, backToTitle, playAgain, togglePause, resume, hardDrop, setBoard, setCurrent, fireThunder, fireYou456,
+        armEnjo, startStage, setWallProgress, backToTitle, playAgain, togglePause, resume, hardDrop, setBoard, setCurrent, fireThunder, fireYou456,
         updateAnchi, updatePaints, growAnchi, landSanzShot, throwAnchiPaint, anchiEyeIn, setStatus, setSoundMode, soundModeRef, updateDetarameById, resetGame, storyRunRef,
         setFever, setScore, setRainbowStock, rainbowStockRef, totalScoreRef,
         emptyBoard, makeSinglePiece, hidoimeHp, hidoimeDefeated, berabouHp,
         berabouDefeated, detaramesRef, detarameDefeated, rainbowAnswer, resetProgress, changeLang,
         read:()=>({story,status,board,score,current,stageIntro,saika,fever,feverActive,feverIgniting,
-          hyoketsuBlasts,clearingCells,soundMode,powers:mapPowers(),missionNow,missionGoal,demo:demoLock.current,
+          enjoFlight,enjoBlast,hyoketsuBlasts,clearingCells,soundMode,powers:mapPowers(),missionNow,missionGoal,demo:demoLock.current,
           thunderOpen,thunderSet,thunderCall,thunderBolt,you456Set,you456Beam,you456Call,you456Busy:you456Busy.current,anchi:anchiRef.current,anchiDefeated:anchiDefeated.current,anchiPaints,absorbCells,
           sanzElapsed,sanzShots,campaignGeneratedEnemies:campaignGeneratedEnemies.current,anchiHit,anchiHitTone,anchiFlash,detarames:detaramesRef.current,detarameHit,
           hidoimeDefeated:hidoimeDefeated.current,berabouHp:berabouHp.current,
@@ -143,7 +143,7 @@ function harness(enemy = 'koitsume', options = {}) {
       if (name === 'react') return hook;
       if (name === 'react/jsx-runtime') return { jsx: () => null, jsxs: () => null };
       if (name === './haptics') return { haptics: new Proxy({}, { get: () => () => {} }) };
-      if (/characterNames|wall1|objectives|hidoimeFx|Detarame|enemyPracticeConfig|hidoimeCrushAudio|thunder|anchiEye|hyoketsuFireworks|you456|useYou456Gesture/.test(name)) {
+      if (/characterNames|wall1|objectives|hidoimeFx|Detarame|enemyPracticeConfig|hidoimeCrushAudio|thunder|anchiEye|hyoketsuFireworks|enjoRuntime|you456|useYou456Gesture/.test(name)) {
         const base = path.posix.normalize(path.posix.join(path.posix.dirname(file), name));
         const resolved = ['.ts', '.tsx'].map(ext => base + ext).find(candidate => fs.existsSync(path.join(root, candidate)));
         if (resolved) return load(resolved);
@@ -322,7 +322,7 @@ async function checkGallery() {
   const buttons = () => g.nodes('button');
   const openers = () => buttons().filter(node => node.props.className === 'gallery-practice-button');
   const byText = text => buttons().find(node => node.props.children === text);
-  assert.equal(openers().length, 8, 'gallery offers every implemented enemy');
+  assert.equal(openers().length, 9, 'gallery offers every implemented enemy');
   assert.equal(g.nodes('iframe').length, 0, 'practice is initially closed');
   assert.equal(g.listenerCount, 1);
   for (const [enemy, config] of Object.entries(g.config.PRACTICE_ENEMIES)) {
@@ -341,7 +341,7 @@ async function checkGallery() {
   openers()[0].props.onClick(); await g.flush();
   let beforeKey = g.nodes('iframe')[0].key;
   const select = g.nodes('select').find(node => node.props['aria-label'] === '模擬戦の相手');
-  assert.equal(g.nodes('option').length, 8);
+  assert.equal(g.nodes('option').length, 9);
   select.props.onChange({ target: { value: 'anchikushoume' } }); await g.flush();
   assert.notEqual(g.nodes('iframe')[0].key, beforeKey, 'enemy switch changes iframe key');
   assert.equal(g.nodes('iframe')[0].props.src, '/enemy-practice.html?enemy=anchikushoume');

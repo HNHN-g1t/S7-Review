@@ -1,3 +1,7 @@
+import { EnjomeBomb, EnjoBlast } from './skills/EnjomePreview';
+import { enjoPyramid, enjoWallHits, type EnjoWall } from './skills/enjoRuntime';
+import { enjoRange } from './skills/enjomeModel';
+import { playEnjoWallBreak, playEnjoImpact } from './skills/enjomeAudio';
 import { playIceFreeze, playIceCrash } from './enemy/icePing';
 import { HyoketsuBurst } from './enemy/HyoketsuBurst';
 import { HYOKETSU_BURST_MS } from './enemy/hyoketsuFireworks';
@@ -459,6 +463,7 @@ const fallStepMs = (step: number) =>
   Math.max(FALL_MIN_MS, Math.round(FALL_START_MS * FALL_ACCEL ** step));
 
 type Cell = {
+  enjo?: EnjoWall;
   hyoketsu?: 'frozen' | 'active';
   fuse?: number;
   id: string;
@@ -940,19 +945,19 @@ const findSevenMatches = (board: Board): Set<string> => {
   for (let y = 0; y < ROWS; y += 1) {
     for (let x = 0; x < COLS; x += 1) {
       const cell = board[y][x];
-      if (!cell || cell.hyoketsu) {
+      if (!cell || cell.hyoketsu || cell.enjo) {
         continue;
       }
 
       // 右隣と下隣だけを見れば、盤面上の全ペアを重複なく走査できる
       const right = x + 1 < COLS ? board[y][x + 1] : null;
-      if (right && !right.hyoketsu && cell.value + right.value === 7) {
+      if (right && !right.enjo && !right.hyoketsu && cell.value + right.value === 7) {
         clear.add(`${x},${y}`);
         clear.add(`${x + 1},${y}`);
       }
 
       const below = y + 1 < ROWS ? board[y + 1][x] : null;
-      if (below && !below.hyoketsu && cell.value + below.value === 7) {
+      if (below && !below.enjo && !below.hyoketsu && cell.value + below.value === 7) {
         clear.add(`${x},${y}`);
         clear.add(`${x},${y + 1}`);
       }
@@ -5784,6 +5789,9 @@ for (const mission of ALL_MISSIONS) { // 表もウラも、面ごとの台本（
 // This module instance belongs to an isolated, gallery-only practice iframe.
 const enemyPractice = getEnemyPractice();
 const you456Practice = !!enemyPractice && new URLSearchParams(location.search).get('skill') === 'you456';
+const enjoPractice = enemyPractice?.enemy === 'enjo';
+const enjoRows:2|3 = new URLSearchParams(location.search).get('walls')==='3'?3:2;
+const enjoPracticeFever = enjoPractice && new URLSearchParams(location.search).get('fever')==='1';
 const hyoketsuPractice = enemyPractice?.enemy === 'hyoketsume';
 const sanzPractice = enemyPractice?.enemy === 'sanzapparaname';
 if (enemyPractice && enemyPractice.stage === 8) {
@@ -6957,7 +6965,7 @@ const countEnemies = (board: Board) => {
   let dame = 0;
   board.forEach((row) =>
     row.forEach((cell) => {
-      if (cell?.hyoketsu || cell?.value === KOITSUME) koitsume += 1;
+      if (cell?.enjo || cell?.hyoketsu || cell?.value === KOITSUME) koitsume += 1;
       if (cell?.value === DAME) dame += 1;
     }),
   );
@@ -6976,7 +6984,7 @@ const findEnemyHits = (board: Board, cells: Position[], direct: Position[] = [])
   direct.forEach(({ x, y }) => {
     const key = `${x},${y}`;
     const cell = board[y]?.[x];
-    if (!cell || !isEnemy(cell.value) || cell.value === ANCHI || cell.hyoketsu || seen.has(key)) return;
+    if (!cell || !isEnemy(cell.value) || cell.value === ANCHI || cell.hyoketsu || cell.enjo || seen.has(key)) return;
     seen.add(key);
     if (cell.value === HIDOIME) {
       hidoime.add(cell.group);
@@ -7003,7 +7011,7 @@ const findEnemyHits = (board: Board, cells: Position[], direct: Position[] = [])
       const y = point.y + dy;
       const key = `${x},${y}`;
       const cell = board[y]?.[x];
-      if (!cell || !isEnemy(cell.value) || cell.value === ANCHI || cell.hyoketsu || seen.has(key)) {
+      if (!cell || !isEnemy(cell.value) || cell.value === ANCHI || cell.hyoketsu || cell.enjo || seen.has(key)) {
         return;
       }
       seen.add(key);
@@ -7893,6 +7901,11 @@ export default function App() {
   const [bombBanner, setBombBanner] = useState<{ label: string; kind: string } | null>(null);
   // リスタートを跨いで古いバナーが出てこないようにするための世代番号
   const bannerToken = useRef(0);
+  const [enjoBreaking,setEnjoBreaking]=useState<'top'|'middle'|'bottom'|undefined>();
+  const [enjoFlight,setEnjoFlight]=useState<{x:number;phase:'hover'|'drop'}|null>(null);
+  const enjoArmed=useRef<number|null>(null);
+  const [enjoBlast,setEnjoBlast]=useState<boolean|null>(null);
+  const armEnjo=()=>{if(statusNow.current!=='playing')return false;const parts=board.flatMap((row,y)=>row.flatMap((c,x)=>c?.enjo?[{c,x,y}]:[]));if(parts.length!==enjoRows||parts.some(p=>!p.c.enjo!.open))return false;const x=parts[0].x;enjoArmed.current=x;setEnjoFlight({x,phase:'hover'});setBoard(b=>b.map(row=>row.map(c=>c?.enjo?null:c)));return true;};
   const [hyoketsuBlasts,setHyoketsuBlasts]=useState<Array<{x:number;y:number;flashCells:Position[]}>>([]);
   const [clearingCells, setClearingCells] = useState<Set<string>>(() => new Set());
   const [bestScores, setBestScores] = useState<number[]>(() => loadBestScores());
@@ -8537,6 +8550,8 @@ export default function App() {
 
       isResolving.current = true;
       setStatus('clearing');
+      const enjoLaunch = !traceStrike ? enjoArmed.current : null;
+      if(enjoLaunch!==null)enjoArmed.current=null;
 
       // 待つたびに、予定よりどれだけ遅れて戻ってきたかを控える。
       // 消去の効果音はこの直後に鳴らすので、遅れすぎていれば鳴らさない。
@@ -8788,6 +8803,7 @@ export default function App() {
         }
 
         // ヒョーケツメは凍結・起動後ともひっさつメの消去対象外。
+        cells=cells.filter(p=>!workingBoard[p.y]?.[p.x]?.enjo);
         if (kind !== 'seven') cells = cells.filter(point => !workingBoard[point.y]?.[point.x]?.hyoketsu);
         if (cells.length === 0) {
           break;
@@ -9143,6 +9159,7 @@ export default function App() {
           workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>c&&thawKeys.has(x+','+y)?{...c,value:-7,hyoketsu:'active' as const,fuse:6}:c));
           if(thawKeys.size){setBoard(workingBoard);setSaika({text:'ヒョーケツメが解凍！ あと6手！',mood:'praise'});}
         }
+        if(enjoPractice&&!isBomb){const hits=enjoWallHits(workingBoard,cells);if(hits.size){const key=[...hits][0].split(',').map(Number),part=workingBoard[key[1]][key[0]]!.enjo!;setEnjoBreaking(part.part===0?'top':part.part===part.rows-1?'bottom':'middle');runTimeout(()=>setEnjoBreaking(undefined),660);workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>c?.enjo&&hits.has(x+','+y)?{...c,enjo:{...c.enjo,open:true}}:c));setBoard(workingBoard);if(soundModeRef.current!=='none'){const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playEnjoWallBreak(ctx,bus);}setSaika({text:'壁を解除！ 全段開いたら炎をタップ！',mood:'praise'});}}
         // 消去に巻き込まれたブロックを控えておく。
         // 残ったメはこのあとバラバラになり、1マスずつ独立して落ちる。
         const affected = new Set<number>();
@@ -9384,6 +9401,13 @@ export default function App() {
         workingBoard = await settle(workingBoard, true);
       }
 
+      if(enjoPractice&&enjoLaunch!==null){
+        setEnjoFlight({x:enjoLaunch,phase:'drop'});await wait(350);if(storyRunRef.current!==activeScriptRun)return;
+        const hot=enjoPracticeFever||feverActiveRef.current,area=enjoPyramid(COLS,ROWS,enjoLaunch,hot),keys=new Set(area.map(p=>p.x+','+p.y));
+        setEnjoFlight(null);setEnjoBlast(hot);setClearingCells(keys);if(soundModeRef.current!=='none'){const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playEnjoImpact(ctx,bus);}shakeBoard('lg');
+        await wait(1700);if(storyRunRef.current!==activeScriptRun)return;
+        const before=workingBoard;workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>keys.has(x+','+y)?null:c));setEnjoBlast(null);setClearingCells(new Set());setBoard(workingBoard);workingBoard=await settle(dissolveShrunkGroups(before,workingBoard),true);
+      }
       if (hyoketsuPractice && !traceStrike) {
         const blast = new Set<string>();
         const expiredHyoketsu = new Set<string>();
@@ -10446,7 +10470,7 @@ export default function App() {
     setBombBanner(null);
     setNicoCharge(null);
     setSaika({ text: pickFrom(SAIKA_HELLO_LINES[langRef.current]), mood: 'hello' });
-    setHyoketsuBlasts([]);setClearingCells(new Set());
+    enjoArmed.current=null;setEnjoBreaking(undefined);setEnjoFlight(null);setEnjoBlast(null);setHyoketsuBlasts([]);setClearingCells(new Set());
     setBurstCells(new Map());
     setMonoDice(false);
     setRainbowSparksOn(false);
@@ -10826,6 +10850,12 @@ export default function App() {
           const y = enemy.y ?? Math.max(0, (occupied < 0 ? ROWS : occupied) - 1);
           initialBoard[y][enemy.x] = { id: `campaign-enemy-${index}`, value: enemy.kind === 'dame' ? DAME : KOITSUME, group: -1800 - index };
         });
+      }
+      if(enjoPractice){
+        initialBoard.forEach((row,y)=>row.forEach((_,x)=>{row[x]=y>=ROWS-2?{id:'enjo-floor-'+x+'-'+y,value:2,group:-6200-y*7-x}:null;}));
+        for(let part=0;part<enjoRows;part++)initialBoard[ROWS-2-enjoRows+part][3]={id:'enjo-part-'+part,value:-8,group:-6400,enjo:{part,rows:enjoRows,open:false}};
+        for(let part=0;part<enjoRows;part++)initialBoard[ROWS-2-enjoRows+part][2]={id:'enjo-unlock-one-'+part,value:1,group:-6450};
+        initialBoard[ROWS-3][1]={id:'enjo-koi',value:KOITSUME,group:-6401};initialBoard[ROWS-3][5]={id:'enjo-dame',value:DAME,group:-6402};initialBoard[ROWS-1][0]={id:'enjo-test-bomb',value:-7,hyoketsu:'frozen',group:-6403};if(enjoPracticeFever)setFever(100);
       }
       if (hyoketsuPractice) {
         initialBoard.forEach((row,y)=>row.forEach((_,x)=>{row[x]=y>=ROWS-2?{id:'hyoketsu-floor-'+x+'-'+y,value:2,group:-4200-y*7-x}:null;}));
@@ -13112,6 +13142,7 @@ export default function App() {
         </button>
       </aside>
 
+      {enjoPractice&&<div className="enjo-live-tools"><button disabled={status!=='playing'} onClick={()=>setCurrent(makeSinglePiece(Date.now(),6,2))}>解除練習：6を用意</button><span>左の1の上に6を落とす → 各段を解除 → 炎をタップ。{enjoPracticeFever?'FEVER：盤外を除く23セル':'通常：16セル'}</span></div>}
       <section
         className={`board-panel ${feverActive ? 'is-fever' : ''}`}
         aria-label={text.boardLabel}
@@ -13151,7 +13182,7 @@ export default function App() {
                   <CellGlow info={glowCells.get(`${x},${y}`) as GlowInfo} />
                 ) : null}
                 {cell?.hyoketsu ? <HyoketsumeDice paused={status==='paused'} detonating={hyoketsuBlasts.some(b=>b.x+1===x&&b.y+1===y)} cell={{value:3,kind:cell.hyoketsu==='frozen'?'ice':'bomb',fuse:cell.fuse}}/> : null}
-                {cell && !cell.hyoketsu && cell.value !== HIDOIME && cell.value !== BERABOU && cell.value !== DETARAME && cell.value !== ANCHI ? (
+                {cell && !cell.enjo && !cell.hyoketsu && cell.value !== HIDOIME && cell.value !== BERABOU && cell.value !== DETARAME && cell.value !== ANCHI ? (
                   <Die
                     blast={blastCells.has(`${x},${y}`)}
                     burst={burstCells.get(`${x},${y}`)?.dir}
@@ -13269,6 +13300,9 @@ export default function App() {
               </div>
             );
           })}
+          {enjoPractice&&(()=>{const parts=board.flatMap((row,y)=>row.flatMap((c,x)=>c?.enjo?[{c,x,y}]:[])).sort((a,b)=>a.c.enjo!.part-b.c.enjo!.part);const first=parts[0];return first?<button className="enjo-game-capsule" style={{left:first.x*cellPx,top:first.y*cellPx,width:cellPx,height:enjoRows*cellPx}} disabled={status!=='playing'||parts.some(p=>!p.c.enjo!.open)} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();armEnjo();}} aria-label="全段の壁を解除したエンジョーボムをタップ"><EnjomeBomb rows={enjoRows} breaking={enjoBreaking} wallMask={parts.map(p=>p.c.enjo!.open)} paused={status==='paused'}/></button>:null;})()}
+          {enjoFlight&&<div className={'enjo-game-flight '+(enjoFlight.phase==='drop'?'is-dropping':'')} style={{left:enjoFlight.x*cellPx,width:cellPx,height:cellPx*2,'--enjo-floor':(ROWS-2)*cellPx+'px',animationPlayState:status==='paused'?'paused':'running'} as React.CSSProperties}><EnjomeBomb walls={0} paused={status==='paused'}/></div>}
+          {enjoBlast!==null&&<div className="enjo-game-blast" style={{left:-cellPx,bottom:0,width:9*cellPx,height:9*cellPx}}><EnjoBlast range={enjoRange(enjoBlast)} paused={status==='paused'}/></div>}
           {hyoketsuBlasts.map((burst,i)=><div key={i} aria-hidden style={{position:'absolute',left:cellPx*burst.x,top:cellPx*burst.y,width:cellPx*3,height:cellPx*3,zIndex:160,pointerEvents:'none'}}><HyoketsuBurst cell={cellPx} flashCells={burst.flashCells} paused={status==='paused'}/></div>)}
           {/* ベラボウメ。3×3マスの上に重ねて描く（見た目は src/enemy/Beraboume.tsx）。
               目は BERABOU_EYE_ORDER の順に、HPが減るたびに1つずつ消える */}
