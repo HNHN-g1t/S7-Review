@@ -9,11 +9,11 @@ function SevenSegment({value}:{value:number|null}) {
  const paths={a:'M42 54H58L56 57H44Z',b:'M58 55V65L55 63V58Z',c:'M58 67V77L55 75V69Z',d:'M42 79H58L56 76H44Z',e:'M40 67V77L43 75V69Z',f:'M40 55V65L43 63V58Z',g:'M43 65H55L57 67L55 69H43L41 67Z'};
  return <g fill={value!==null&&value<=2?'#ff5648':'#ffcb57'}>{Object.entries(paths).map(([key,d])=><path key={key} d={d} opacity={value===null?key==='g'?.4:.08:segments[value]?.includes(key)?1:.08}/>)}</g>;
 }
-export function HyoketsumeDice({cell}: {cell: Cell}) {
+export function HyoketsumeDice({cell,detonating=false,paused=false}: {cell: Cell;detonating?:boolean;paused?:boolean}) {
   const metalId = useId();
   const special = !!cell.kind;
-  return <span className={`gimmick-die ${cell.kind || ''}`} style={{backgroundColor:special?'transparent':colors[cell.value-1]}}>
-    {special ? <span className="gimmick-idle"><svg className="gimmick-mech" viewBox="0 0 100 100" aria-hidden="true">
+  return <span className={`gimmick-die ${cell.kind || ''} ${detonating?'is-detonating':''}`} style={{backgroundColor:special?'transparent':colors[cell.value-1]}}>
+    {special ? <span className="gimmick-idle"><svg className="gimmick-mech" viewBox="0 0 100 100" aria-hidden="true" style={{animationPlayState:paused?'paused':'running'}}>
       <defs><radialGradient id={metalId} cx="32%" cy="25%"><stop stopColor="#65707b"/><stop offset=".4" stopColor="#252b34"/><stop offset="1" stopColor="#06080d"/></radialGradient></defs>
       <path d="M52 23L55 10L69 13L65 26" fill="#434c59" stroke="#99a6b2" strokeWidth="2"/>
       <path d="M61 12Q62 2 75 8" fill="none" stroke="#d4a75b" strokeWidth="4"/>

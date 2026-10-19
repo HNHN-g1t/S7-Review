@@ -1,4 +1,4 @@
-.hyoketsu-fireworks{position:absolute;inset:0;pointer-events:none;z-index:160;display:block;mix-blend-mode:plus-lighter;}
+.hyoketsu-fireworks{position:absolute;inset:0;pointer-events:none;z-index:160;display:block;}
 .hyoketsu-burst-preview{margin:12px 0 18px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;}
 .hyoketsu-burst-preview>button{font:inherit;min-height:44px;padding:8px 14px;color:#fff;background:#34404e;border:1px solid #7d90a3;border-radius:8px;cursor:pointer;}
 .hyoketsu-burst-board{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(3,64px);width:192px;height:192px;position:relative;background:#232b36;isolation:isolate;}
@@ -7,3 +7,8 @@
 .hyoketsu-burst-die i{width:9px;height:9px;background:white;border-radius:50%;}
 .hyoketsu-burst-enemy{display:grid;place-items:center;width:100%;height:100%;border-radius:20%;background:#2c3446;color:#fff;font-size:23px;box-shadow:inset 0 0 0 2px #b6c3d5;}
 .hyoketsu-burst-preview>small{font-size:12px;color:#b5c7d8;}
+
+.gimmick-die.is-detonating .gimmick-idle{animation:none;}
+.gimmick-die.is-detonating .gimmick-mech{animation:hyoketsu-silhouette 1400ms linear forwards;}
+.gimmick-die.is-detonating .gimmick-mech path,.gimmick-die.is-detonating .gimmick-mech circle,.gimmick-die.is-detonating .gimmick-mech rect{fill:currentColor!important;stroke:currentColor!important;opacity:1;}
+@keyframes hyoketsu-silhouette{0%,20%,40%,60%,80%{color:#2288ed;opacity:1;}7%,27%,47%,67%,87%{color:#27d8c8;opacity:1;}14%,34%,54%,74%,94%,99.9%{color:#f1ffff;opacity:1;}100%{opacity:0;}}

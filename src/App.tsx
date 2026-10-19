@@ -1,3 +1,4 @@
+import { playIcePing } from './enemy/icePing';
 import { HyoketsuBurst } from './enemy/HyoketsuBurst';
 import { HYOKETSU_BURST_MS } from './enemy/hyoketsuFireworks';
 import { HyoketsumeDice } from './enemy/HyoketsumeDice';
@@ -3624,6 +3625,9 @@ const playPaintSplatSound = () => {
 };
 
 // 門のカギが開く音。金属の「カチャ」2打のあと、明るいアルペジオがきらっと上がる
+const playHyoketsuIceSound = () => {
+  const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playIcePing(ctx,bus);
+};
 const playGateUnlockSound = () => {
   const ctx = getAudioContext();
   const bus = getSfxBus();
@@ -9392,7 +9396,11 @@ export default function App() {
         if(blast.size){
           const bursts=workingBoard.flatMap((row,y)=>row.flatMap((c,x)=>c&&expiredHyoketsu.has(c.id)?[{x:x-1,y:y-1,flashCells:[...blast].map(key=>{const [bx,by]=key.split(',').map(Number);return {x:bx-(x-1),y:by-(y-1)};}).filter(p=>p.x>=0&&p.x<3&&p.y>=0&&p.y<3)}]:[]));
           setHyoketsuBlasts(bursts);
-          setBoard(workingBoard);setClearingCells(blast);shakeBoard('lg');await wait(HYOKETSU_BURST_MS);
+          setBoard(workingBoard);setClearingCells(new Set());
+          await wait(1000);if(storyRunRef.current!==activeScriptRun)return;
+          if(soundModeRef.current!=='none')playHyoketsuIceSound();
+          await wait(400);if(storyRunRef.current!==activeScriptRun)return;
+          shakeBoard('sm');await wait(HYOKETSU_BURST_MS-1400);
           if(storyRunRef.current!==activeScriptRun)return;
           const before=workingBoard;
           workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>blast.has(x+','+y)&&(!c?.hyoketsu||expiredHyoketsu.has(c.id))?null:c));
@@ -13140,7 +13148,7 @@ export default function App() {
                 {glowCells.has(`${x},${y}`) ? (
                   <CellGlow info={glowCells.get(`${x},${y}`) as GlowInfo} />
                 ) : null}
-                {cell?.hyoketsu ? <HyoketsumeDice cell={{value:3,kind:cell.hyoketsu==='frozen'?'ice':'bomb',fuse:cell.fuse}}/> : null}
+                {cell?.hyoketsu ? <HyoketsumeDice paused={status==='paused'} detonating={hyoketsuBlasts.some(b=>b.x+1===x&&b.y+1===y)} cell={{value:3,kind:cell.hyoketsu==='frozen'?'ice':'bomb',fuse:cell.fuse}}/> : null}
                 {cell && !cell.hyoketsu && cell.value !== HIDOIME && cell.value !== BERABOU && cell.value !== DETARAME && cell.value !== ANCHI ? (
                   <Die
                     blast={blastCells.has(`${x},${y}`)}
