@@ -1,4 +1,4 @@
-import { CAMPAIGN_MISSIONS, WALL_SAVE_KEY } from './story/wall1';
+import { ALL_MISSIONS, CAMPAIGN_MISSIONS, CAMPAIGN_WALLS, URA_WALLS, WALL_SAVE_KEY } from './story/wall1';
 
 // Review games must not read or write real progress, scores, stock, or settings.
 export function prepareReviewGameStorage(target: Window = window): void {
@@ -21,6 +21,16 @@ export function prepareReviewGameStorage(target: Window = window): void {
     const selected = CAMPAIGN_MISSIONS.find(mission => mission.stage === requested)?.stage ?? 20;
     // Seed before App state initializes, rather than only changing a transient ref.
     memory.setItem(WALL_SAVE_KEY, JSON.stringify({ cleared: CAMPAIGN_MISSIONS.filter(mission => mission.stage < selected).map(mission => mission.stage), gateReached: false }));
+  }
+  if (screen === 'map') {
+    // 2026-10-19：マップのレビューは「見る」のが目的。全ステージをクリア済み、全ウォールの門に到達済み、
+    // エンディング視聴済み（ウラへの入口も出る）にして、ロックを1つも出さない。
+    memory.setItem(WALL_SAVE_KEY, JSON.stringify({
+      cleared: [0, ...ALL_MISSIONS.map(mission => mission.stage)],
+      gateReached: true,
+      reachedWalls: [...CAMPAIGN_WALLS, ...URA_WALLS].map(wall => wall.wall),
+    }));
+    memory.setItem('sainome-ending-seen-v1', '1');
   }
   Object.defineProperty(target, 'localStorage', { value: memory, configurable: false });
   if (target.localStorage !== memory) throw new Error('保存データを分離できないため確認ゲームを開始しません。');
