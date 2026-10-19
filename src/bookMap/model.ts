@@ -1,7 +1,8 @@
 import {CAMPAIGN_MISSIONS,wallUnlocked,wallUnlockHint} from '../story/wall1';
 export type Position={x:number;y:number};
 export type Layout=Record<number,Position>;
-export const DEFAULT_LAYOUT:Layout={0:{x:14.6,y:82.6},20:{x:36.1,y:76.8},21:{x:16.2,y:53.5},22:{x:60.8,y:64.9},23:{x:36.3,y:53.5},24:{x:16.1,y:37.7},25:{x:88,y:48.2},26:{x:32.3,y:16.7},27:{x:87.7,y:78.3}};
+export {WALL_ONE_LAYOUT as DEFAULT_LAYOUT} from '../story/wallOneLayout';
+import {WALL_ONE_LAYOUT as DEFAULT_LAYOUT} from '../story/wallOneLayout';
 export const MAP_STAGES=[{stage:0,number:'0',title:'はじまりの練習',theme:'となり合うサイで7を作ろう',context:'サイカといっしょに、最初の一歩。',kind:'lesson',optional:false},...CAMPAIGN_MISSIONS.filter(m=>m.wall===1)];
 export function mapState(stage:number,cleared:number[],allOpen:boolean){return cleared.includes(stage)?'cleared':allOpen||wallUnlocked(stage,cleared)?'open':'locked';}
 export function unlockText(stage:number,cleared:number[]){return wallUnlockHint(stage,cleared);}

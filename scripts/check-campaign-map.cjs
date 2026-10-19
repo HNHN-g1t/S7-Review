@@ -9,6 +9,8 @@ const data = {exports:{}};
 vm.runInNewContext(compile(root + '/src/story/wall1.ts'), {exports:data.exports, module:data, require, console, localStorage:{getItem:()=>null,setItem:()=>{}}});
 const terrain = {exports:{}};
 vm.runInNewContext(compile(root + '/src/story/wallTerrain.ts'), {exports:terrain.exports, module:terrain, require, console});
+const layout={exports:{}};
+vm.runInNewContext(compile(root + '/src/story/wallOneLayout.ts'), {exports:layout.exports,module:layout});
 function createHarness(progress, initialStage) {
   let cells = [], index = 0, queue = [], tree, started = [], gates = [];
   const hooks = {
@@ -18,7 +20,7 @@ function createHarness(progress, initialStage) {
   };
   const jsx = (type, props) => ({type, props});
   const module = {exports:{}};
-  vm.runInNewContext(compile(root + '/src/story/WallMap.tsx'), {exports:module.exports,module,require:name=>name==='react'?hooks:name==='react/jsx-runtime'?{jsx,jsxs:jsx}:name==='./wall1'?data.exports:name==='./wallTerrain'?terrain.exports:{},console,window:{matchMedia:()=>({matches:true})},setTimeout:fn=>{queue.push(fn);return queue.length;},clearTimeout:()=>{}});
+  vm.runInNewContext(compile(root + '/src/story/WallMap.tsx'), {exports:module.exports,module,require:name=>name==='react'?hooks:name==='react/jsx-runtime'?{jsx,jsxs:jsx}:name==='./wall1'?data.exports:name==='./wallTerrain'?terrain.exports:name==='./wallOneLayout'?layout.exports:{},console,window:{matchMedia:()=>({matches:true})},setTimeout:fn=>{queue.push(fn);return queue.length;},clearTimeout:()=>{}});
   const render = () => { index=0; tree=module.exports.WallMap({progress,initialStage,onStart:stage=>started.push(stage),onGate:wall=>{gates.push(wall); progress={...progress,gateReached:progress.gateReached||wall===1,reachedWalls:[...new Set([...(progress.reachedWalls||[]),wall])]};},onLegacy:()=>{},onClose:()=>{}}); return tree; };
   const descend = (node, found=[]) => { if (Array.isArray(node)) node.forEach(child=>descend(child,found)); else if(node && typeof node==='object') {found.push(node); descend(node.props?.children,found);} return found; };
   const nodes = () => descend(tree);
@@ -61,11 +63,11 @@ const full=createHarness({cleared:all,gateReached:true,reachedWalls:[1,2,3,4,5]}
 assert.equal(full.traveler().props.children.props.src,'/images/saika-01.png','Saika face traveler remains');
 assert.equal(full.text(full.heading()),'ウォール1');
 full.click(full.byLabel('ウォール1の門'));full.flush();assert.equal(full.gates.at(-1),1);
-full.click(full.buttonText('次のウォールへ →'));
+
 assert.equal(full.text(full.heading()),'ウォール2');
 full.click(full.byLabel('ウォール1 '));
 full.click(full.byLabel('ウォール1-8'));full.flush();
-assert(full.text(full.detail()).includes('任意'));
+assert(!full.text(full.detail()).includes('任意'),'Wall 1 optional label is omitted');
 full.click(full.buttonText('再トライ'));assert.equal(full.started.at(-1),27);
 // 2026-10-05：ウォールの移動は前後だけ（▲ 次・▼ 前）。目的のウォールまで1つずつ進む
 const stepTo=(h,wall)=>{let guard=10;while(h.text(h.heading())!==`ウォール${wall}`){assert(guard--,'reach wall');const now=Number(h.text(h.heading()).replace('ウォール',''));h.click(h.byLabel(`ウォール${now+(wall>now?1:-1)} `));}};
@@ -124,3 +126,13 @@ for (const first of [69,70]) for (const second of [72,73]) {
   for(const stage of [69,70,72,73,75])assert(d.wallUnlocked(stage,cleared),'unselected branches remain replayable');
 }
 console.log('PASS: all four Wall 7 five-clear routes, optional replay, rendered roads, meadow fallback, and gate visit');
+
+const imageMap=createHarness({cleared:[],gateReached:false},20);
+assert(imageMap.nodes().some(n=>n.type==='img'&&n.props.src==='/maps/wall1.png'));
+assert.equal(imageMap.byLabel('ウォール1-1').props.style.left,'36.1%');
+assert.equal(imageMap.byLabel('ウォール1-8').props.style.top,'78.3%');
+assert.equal(imageMap.nodes().filter(n=>n.type==='svg'&&n.props.className==='wall-roads').length,0);
+const oldMap=createHarness({cleared:all,gateReached:true},28);
+assert(!oldMap.nodes().some(n=>n.type==='img'&&n.props.src==='/maps/wall1.png'));
+assert(oldMap.nodes().some(n=>n.type==='svg'&&n.props.className==='wall-roads'));
+console.log('PASS illustrated Wall 1 only: confirmed positions, 9 missions plus gate, original Wall 2 terrain retained');

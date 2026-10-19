@@ -5,6 +5,8 @@ import {
   wallTitle, wallUnlocked, wallUnlockHint, type WallProgress,
 } from './wall1';
 import './wall-map.css';
+import './wall-one-map.css';
+import {WALL_ONE_LAYOUT} from './wallOneLayout';
 import { zoromeFaceFor } from './zoromeFace';
 import { gateLinks, roadBends, smoothPath, terrainFor, type Pt, type TerrainFeature } from './wallTerrain';
 
@@ -56,6 +58,9 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => { alive.current = true; return () => { alive.current = false; clearTimeout(timer.current); }; }, []);
 
+  const screen = useRef<HTMLElement>(null);
+  useEffect(()=>{if(wall === 1)screen.current?.querySelector('.wall-node.selected')?.scrollIntoView({block:'center'});},[wall]);
+
   const area = ALL_WALLS.find(area => area.wall === wall)!;
   // ウラメン（黒い世界）は表とつながらない。ウラ9 → ウラ1 と下へ進む
   const isUra = !!area.ura;
@@ -69,9 +74,9 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
   // Gates have UI-only negative IDs; positive IDs are exclusively game missions.
   const gateId = -wall;
   const terrain = area.implemented ? terrainFor(wall) : undefined;
-  const gatePoint = terrain?.gate ?? (isUra ? [50, 97] : [50, 1]);
+  const gatePoint = wall === 1 ? [17, 5.5] : terrain?.gate ?? (isUra ? [50, 97] : [50, 1]);
   const targets: MapPoint[] = area.implemented
-    ? [...(wall === 1 ? [{ stage: 0, x: 12, y: 90 }] : []), ...missions, { stage: gateId, x: gatePoint[0], y: gatePoint[1] }]
+    ? [...(wall === 1 ? [{ stage: 0, ...WALL_ONE_LAYOUT[0] }] : []), ...missions.map(m => wall === 1 ? {...m,...WALL_ONE_LAYOUT[m.stage]} : m), { stage: gateId, x: gatePoint[0], y: gatePoint[1] }]
     : future;
   // 道は面と面を、地形の曲がり角を通ってつなぐ
   const roadPoints = (a: number, b: number): Pt[] | null => {
@@ -103,6 +108,19 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
     if (walking.current || !area.implemented) return;
     setNotice('');
     if (!canGo(stage)) { setSelected(stage); return; }
+    if (wall === 1) {
+      const destination = targets.find(target => target.stage === stage);
+      if (!destination) return;
+      setSelected(stage); setPoint({x:destination.x,y:destination.y}); location.current=stage;
+      if (stage === gateId) {
+        onGate(1);
+        if(nextArea?.implemented){
+          walking.current=true;setMoving(true);
+          timer.current=setTimeout(()=>{if(!alive.current)return;walking.current=false;setMoving(false);changeWall(2);},450);
+        }
+      }
+      return;
+    }
     // Inspecting a locked node does not move the traveler or change the route origin.
     const origin = location.current;
     const queue: number[][] = [[origin]], seen = new Set([origin]);
@@ -159,9 +177,9 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
     : '';
 
   const wallName = isUra ? area.title : `ウォール${wall}`;
-  return <section className={`wall-map-screen wall-area-${wall} ${isUra ? 'wall-ura' : ''}`} aria-label={`${wallName} ステージマップ`}>
+  return <section ref={screen} className={`wall-map-screen wall-area-${wall} ${isUra ? 'wall-ura' : ''} ${wall === 1 ? 'wall-illustrated' : ''}`} aria-label={`${wallName} ステージマップ`}>
     <div className="wall-map-shell">
-      <header><div><small>{isUra ? area.subtitle : area.title}</small><h1>{wallName}</h1></div><button onClick={onClose} aria-label="タイトルへ戻る">✕</button></header>
+      <header><div><small>{wall === 1 ? 'ハジメマ草原' : isUra ? area.subtitle : area.title}</small><h1>{wallName}</h1></div><button onClick={onClose} aria-label="タイトルへ戻る">✕</button></header>
       <div className="wall-powers">
         <div className="wall-abilities" aria-label={abilities.length ? `習得済み：${abilities.map(ability => abilityNames[ability]).join('、')}` : 'ひっさつメ未習得'}>
           {abilities.length ? abilities.map(ability => <span key={ability} title={abilityNames[ability]} aria-hidden>{abilityMarks[ability]}</span>) : <span aria-hidden>—</span>}
@@ -184,16 +202,16 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
         </button>
       ) : <button className="wall-step is-up" disabled aria-label="この先のウォールはまだない">▲</button>}
       <div className={`wall-land ${!area.implemented ? 'future' : ''}`}>
-        {terrain ? <TerrainLayer land={terrain.land} features={terrain.features}/> : <div className="wall-meadow"/>}
-        {wall === 1 && <div className="wall-tutorial-island"/>}
-        <svg className="wall-roads" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+        {wall === 1 ? <img className="wall-one-art" src="/maps/wall1.png" width="1024" height="1536" alt="ハジメマ草原。草原の広場と門をつなぐ道" draggable={false}/> : terrain ? <TerrainLayer land={terrain.land} features={terrain.features}/> : <div className="wall-meadow"/>}
+
+        {wall !== 1 && <svg className="wall-roads" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
           {wall === 1 && missions[0] && <line className="tutorial-link" x1={12} y1={90} x2={missions[0].x} y2={missions[0].y} vectorEffect="non-scaling-stroke" />}
           {links.map(([a, b]) => {
             const points = roadPoints(a, b);
             return points ? <polyline key={`${a}-${b}`} className={canGo(a) && canGo(b) ? '' : 'locked'}
               points={points.map(([x, y]) => `${x},${y}`).join(' ')} vectorEffect="non-scaling-stroke"/> : null;
           })}
-        </svg>
+        </svg>}
         {targets.map(target => {
           if (!area.implemented) return <div key={target.stage} className="wall-node future" style={{ left: `${target.x}%`, top: `${target.y}%` }}
             aria-label={`${future.find(slot => slot.stage === target.stage)?.number} 準備中`}><span aria-hidden>…</span><small>{future.find(slot => slot.stage === target.stage)?.number}</small></div>;
@@ -208,11 +226,11 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
             aria-label={`${name}${nodeMission?.optional ? '・任意' : ''}${done ? '・クリア済み' : !unlocked ? '・未解放。条件を見る' : ''}`} aria-pressed={selected === target.stage}>
             <span>{!unlocked ? <i className="wall-lock-icon" aria-hidden/> : gate ? <i className="wall-gate-icon" aria-hidden/>
               : isTutorial ? '0' : nodeMission?.kind === 'lesson' ? <ZoromeSage/> : nodeMission?.number.split('-')[1]}</span>
-            {nodeMission?.optional && <i className="wall-optional-mark" aria-hidden>＋</i>}
-            <small>{isTutorial ? 'チュートリアル草原' : gate ? (lastWall ? (isUra ? 'ウラの底' : '王座') : '門') : nodeMission?.number}{done ? ' ✓' : ''}</small>
+            {wall !== 1 && nodeMission?.optional && <i className="wall-optional-mark" aria-hidden>＋</i>}
+            <small>{isTutorial ? (wall === 1 ? '0' : 'チュートリアル草原') : gate ? (lastWall ? (isUra ? 'ウラの底' : '王座') : '門') : nodeMission?.number}{done ? ' ✓' : ''}</small>
           </button>;
         })}
-        {area.implemented && open && <div className={`wall-traveler ${moving ? 'walking' : ''}`} style={{ left: `${point.x}%`, top: `${point.y}%` }} aria-hidden><img src={TRAVELER_FACE} alt=""/></div>}
+        {area.implemented && open && <div className={`wall-traveler ${moving ? 'walking' : ''}`} style={{ left: `${wall === 1 ? targets.find(t=>t.stage===location.current)?.x ?? point.x : point.x}%`, top: `${wall === 1 ? targets.find(t=>t.stage===location.current)?.y ?? point.y : point.y}%` }} aria-hidden><img src={TRAVELER_FACE} alt=""/></div>}
       </div>
       {isUra ? (nextArea && nextOpen ? (
         <button className="wall-step is-down" disabled={moving} onClick={() => changeWall(wall + 1)} aria-label={`${nextArea.title}へ`}>
@@ -229,7 +247,7 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
         </button>
       ) : <button className="wall-step is-down" disabled aria-label="これより前のウォールはない">▼</button>}
       <div className="wall-detail" aria-live="polite" aria-busy={moving}>
-        <small>{notice || (moving ? '移動中…' : !area.implemented ? `ウォール${wall}` : atGate ? '⚑ 門' : tutorial ? '0メン' : `${mission?.number}${mission?.optional ? ' · 任意' : mission?.kind === 'shortcut' ? ' · 近道' : mission?.kind === 'lesson' ? ' · 仙人' : ''}`)}</small>
+        <small>{notice || (moving ? '移動中…' : !area.implemented ? `ウォール${wall}` : atGate ? '⚑ 門' : tutorial ? '0メン' : `${mission?.number}${wall !== 1 && mission?.optional ? ' · 任意' : mission?.kind === 'shortcut' ? ' · 近道' : mission?.kind === 'lesson' ? ' · 仙人' : ''}`)}</small>
         <h2>{detailTitle}</h2>{detailText && <p className="wall-objective">{detailText}</p>}
         {lockedHint && <p className="wall-unlock-hint">🔒 {lockedHint}</p>}
         {!area.implemented ? <button onClick={() => changeWall(latestOpenWall(progress))}>冒険にもどる</button>

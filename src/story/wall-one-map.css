@@ -1,0 +1,29 @@
+
+/* Only Wall 1 uses the approved illustration. Other wall rules stay untouched. */
+.wall-map-screen.wall-illustrated{background:#d8eff3;color:#203d35;scroll-padding-top:110px;scroll-padding-bottom:170px}
+.wall-illustrated .wall-map-shell{width:min(100%,680px);padding:0 0 max(160px,calc(150px + env(safe-area-inset-bottom)))}
+.wall-illustrated .wall-map-shell>header{position:sticky;top:0;z-index:12;min-height:64px;padding:10px 16px;background:#1c302e;color:#fff9e9;box-shadow:0 3px 12px #102b3b22}
+.wall-illustrated .wall-map-shell>header>div{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.wall-illustrated .wall-map-shell>header h1{order:-1;font-size:16px;margin:0;white-space:nowrap}
+.wall-illustrated .wall-map-shell>header small{color:#ffe1a1;font-size:18px;font-weight:700}
+.wall-illustrated .wall-powers{padding:8px 16px;margin:0;background:#f6f8ef}
+.wall-illustrated .wall-step.is-up{margin:0;border-radius:0;min-height:44px;background:#e9f3e9}
+.wall-illustrated .wall-step.is-down{display:none}
+.wall-illustrated .wall-land{width:100%;height:auto;aspect-ratio:2/3;margin:0;isolation:isolate;background:#a4dcf1}
+.wall-illustrated .wall-one-art{display:block;width:100%;height:auto;pointer-events:none;user-select:none}
+.wall-illustrated .wall-node{width:44px;height:44px;min-height:44px;border:2px solid #e8f1dc;box-shadow:0 2px 4px #132d3d66;background:#fdf8e8;color:#274937;z-index:3}
+.wall-illustrated .wall-node>span{display:none}
+.wall-illustrated .wall-node>small{position:static;display:flex;align-items:center;justify-content:center;width:auto;min-height:40px;margin:0;padding:0;font-size:12px;line-height:1.1;white-space:nowrap;color:inherit;text-shadow:none;font-weight:800;transform:none}
+.wall-illustrated .wall-node.done{background:#33784c;color:white}
+.wall-illustrated .wall-node.locked{background:#64766a;color:#edf3ec}
+.wall-illustrated .wall-node.selected{background:#ffe5a4;color:#4c3b14;border-color:#fffdf0;outline:3px solid #bf963e;outline-offset:2px;z-index:5}
+.wall-illustrated .wall-node.gate{width:48px;height:44px;border-radius:12px;background:#fff6d9;color:#483e20}
+.wall-illustrated .wall-node.gate.locked{background:#64766a;color:#fff}
+.wall-illustrated .wall-traveler{width:30px;height:30px;padding:2px;margin:-27px 0 0 22px;z-index:6;transition:none}
+.wall-illustrated .wall-detail{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:14;width:min(100%,680px);box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,35%);column-gap:12px;align-items:center;padding:12px 16px max(12px,env(safe-area-inset-bottom));border-radius:18px 18px 0 0;box-shadow:0 -4px 20px #173b3929;background:#fffdf1}
+.wall-illustrated .wall-detail>small{grid-column:1;font-size:13px;font-weight:800;color:#776126}
+.wall-illustrated .wall-detail h2{grid-column:1;font-size:15px;line-height:1.4;margin:4px 0;min-width:0}
+.wall-illustrated .wall-detail>button{grid-column:2;grid-row:1/4;min-height:52px;margin:0;background:#1f493b;font-size:14px}
+.wall-illustrated .wall-detail .wall-unlock-hint,.wall-illustrated .wall-detail .wall-objective{grid-column:1;font-size:11px;margin:3px 0;padding:0;border:0;min-height:0}
+.wall-illustrated .wall-map-shell>footer{padding:8px 16px;background:#f5f8ec}
+@media(max-width:350px){.wall-illustrated .wall-map-shell>header small{font-size:15px}.wall-illustrated .wall-map-shell>header>div{gap:6px}.wall-illustrated .wall-detail{padding-left:10px;padding-right:10px;column-gap:8px}}
