@@ -55,5 +55,5 @@
 
 /* Body stays centered within its cell; only the fuse extends into the cell above. */
 .gimmick-idle{inset:0;transform-origin:50% 50%;}
-@keyframes hyoketsu-idle{0%,100%{transform:scale(.92);}50%{transform:scale(1);}}
+@keyframes hyoketsu-idle{0%,100%{transform:scale(.92);}50%{transform:scale(1.25);}}
 .board-cell.hyoketsu-layer{z-index:120;overflow:visible;}
