@@ -1,6 +1,7 @@
-import {useEffect,useState,useId,type CSSProperties} from 'react';
+import {useEffect,useState,useId,useRef,type CSSProperties} from 'react';
 import {enjoRange,ENJO_STEPS,ENJO_LABELS,type EnjoPhase} from './enjomeModel';
 import './enjome.css';
+import {playEnjoWallBreak,playEnjoImpact} from './enjomeAudio';
 // 2026-10-19 Claude：一つ目の炎の幽霊が、上下二段の黒い外壁に閉じ込められている姿に描き直し。
 // 幽霊は下の段に目、炎の先は中央の留め具を越えて上の段まで伸びる（出たがっている）。
 export function EnjomeBomb({walls=2,breaking}:{walls?:0|1|2;breaking?:'top'|'bottom'}){const id=useId().replace(/:/g,'');const g=(n:string)=>'url(#'+id+n+')';return <svg className={'enjo-capsule'+(breaking?' enjo-breaking':'')} viewBox="0 0 100 200" role="img" aria-label="縦2セルの炎の投下ボム・エンジョーメ">
@@ -28,10 +29,10 @@ export function EnjomeBomb({walls=2,breaking}:{walls?:0|1|2;breaking?:'top'|'bot
   {Array.from({length:8},(_,i)=><circle key={i} className="enjo-spark" cx={30+i*17%43} cy={148+i*13%20} r={i%3===0?2.4:1.3} fill={i%2?'#ffc74a':'#fff0bd'} style={{animationDelay:-i*.19+'s','--enjo-drift':(i%2?1:-1)*(5+i*2)+'px'} as CSSProperties}/>)}
  </g>
  {/* Black capsule walls are removed independently, top first. */}
- {walls===2&&<g className="enjo-shell enjo-shell-top"><path d="M17 99V49Q17 16 50 16Q83 16 83 49V99" fill="none" stroke="#03050a" strokeWidth="12"/><path d="M24 27Q50 9 76 27" fill="none" stroke="#181c25" strokeWidth="2"/></g>}
- {walls>=1&&<g className="enjo-shell enjo-shell-bottom"><path d="M17 101V151Q17 184 50 184Q83 184 83 151V101" fill="none" stroke="#03050a" strokeWidth="12"/><path d="M24 174Q50 191 76 174" fill="none" stroke="#181c25" strokeWidth="2"/></g>}
- {breaking&&<g className="enjo-shell-fragments" key={breaking} aria-hidden="true">{[[17,99],[17,70],[17,49],[20,30],[32,19],[50,16],[68,19],[80,30],[83,49],[83,70],[83,99]].slice(0,-1).map((p,i)=>{
- const line=[[17,99],[17,70],[17,49],[20,30],[32,19],[50,16],[68,19],[80,30],[83,49],[83,70],[83,99]];
+ {walls===2&&<g className="enjo-shell enjo-shell-top"><path d="M17 90V49Q17 16 50 16Q83 16 83 49V90" fill="none" stroke="#03050a" strokeWidth="12" strokeLinecap="round"/><path d="M24 27Q50 9 76 27" fill="none" stroke="#181c25" strokeWidth="2"/></g>}
+ {walls>=1&&<g className="enjo-shell enjo-shell-bottom"><path d="M17 110V151Q17 184 50 184Q83 184 83 151V110" fill="none" stroke="#03050a" strokeWidth="12" strokeLinecap="round"/><path d="M24 174Q50 191 76 174" fill="none" stroke="#181c25" strokeWidth="2"/></g>}
+ {breaking&&<g className="enjo-shell-fragments" key={breaking} aria-hidden="true">{[[17,90],[17,70],[17,49],[20,30],[32,19],[50,16],[68,19],[80,30],[83,49],[83,70],[83,90]].slice(0,-1).map((p,i)=>{
+ const line=[[17,90],[17,70],[17,49],[20,30],[32,19],[50,16],[68,19],[80,30],[83,49],[83,70],[83,90]];
  const q=line[i+1],flip=(y:number)=>breaking==='bottom'?200-y:y;
  const dx=q[0]-p[0],dy=flip(q[1])-flip(p[1]),len=Math.hypot(dx,dy),nx=-dy/len*6,ny=dx/len*6;
  const cx=(p[0]+q[0])/2,cy=(flip(p[1])+flip(q[1]))/2;
@@ -52,10 +53,14 @@ function EnjoBlast({range}:{range:{x:number;y:number}[]}){
 }
 export function EnjomePreview({paused=false}:{paused?:boolean}){
  const [phase,setPhase]=useState<EnjoPhase>('wall'),[fever,setFever]=useState(false),[auto,setAuto]=useState(false);
+ const [sound,setSound]=useState(false);const audio=useRef<AudioContext|null>(null);
+ useEffect(()=>()=>{void audio.current?.close();},[]);
+ useEffect(()=>{if(!audio.current)return;if(paused||!sound)void audio.current.suspend();else void audio.current.resume();},[paused,sound]);
+ useEffect(()=>{const ctx=audio.current;if(!ctx||!sound)return;const bus=ctx.createGain();bus.gain.value=.65;bus.connect(ctx.destination);if(phase==='breakUpper'||phase==='breakLower')playEnjoWallBreak(ctx,bus);if(phase==='blast')playEnjoImpact(ctx,bus);return()=>bus.disconnect();},[phase,sound]);
  const range=enjoRange(fever),keys=new Set(range.map(p=>p.x+','+p.y));
  useEffect(()=>{if(paused)return;if(!auto&&phase!=='breakUpper'&&phase!=='breakLower'&&phase!=='drop'&&phase!=='blast')return;const times={wall:1000,breakUpper:660,lower:1000,breakLower:660,ready:900,hover:1100,drop:450,blast:1700,done:0};if(phase==='done'){setAuto(false);return;}const timer=setTimeout(()=>setPhase(ENJO_STEPS[ENJO_STEPS.indexOf(phase)+1]),times[phase]);return()=>clearTimeout(timer);},[phase,auto,paused]);
  // 2026-10-19：盤面のクラスは enjo-phase-○○。以前の「enjo-wall」は壁の飾りと同じ名前で、最初の段階だけ盤面が浮いて表示されていた
- return <section className="enjo-preview" data-paused={paused}><div className="enjo-tools"><button onClick={()=>{setAuto(true);setPhase('wall');}}>▶ 一連のデモを再生</button><button aria-pressed={fever} onClick={()=>{setFever(v=>!v);setAuto(false);setPhase('wall');}}>{fever?'FEVER：9・7・5・3・1':'通常：7・5・3・1'}</button><button onClick={()=>{setAuto(false);setPhase('wall');}}>リセット</button></div>
+ return <section className="enjo-preview" data-paused={paused}><div className="enjo-tools"><button onClick={()=>{setAuto(true);setPhase('wall');}}>▶ 一連のデモを再生</button><button aria-pressed={fever} onClick={()=>{setFever(v=>!v);setAuto(false);setPhase('wall');}}>{fever?'FEVER：9・7・5・3・1':'通常：7・5・3・1'}</button><button onClick={()=>{setAuto(false);setPhase('wall');}}>リセット</button><label><input type="checkbox" checked={sound} onChange={e=>{if(e.target.checked){audio.current??=new AudioContext();void audio.current.resume();}setSound(e.target.checked);}}/> SEを鳴らす（初期OFF）</label></div>
  <p className="enjo-status" aria-live="polite">{ENJO_LABELS[phase]}</p><div className={'enjo-board enjo-phase-'+phase}>
  {Array.from({length:81},(_,i)=>{const x=i%9,y=Math.floor(i/9),hit=keys.has(x+','+y),occupied=y>=4;return <span key={i} className={'enjo-cell '+(hit?'enjo-target ':'')+(phase==='blast'&&hit?'enjo-hit ':'')+(phase==='done'&&hit?'enjo-cleared':'')} style={{'--enjo-delay':Math.abs(x-4)*.07+(8-y)*.09+'s'} as CSSProperties}>{occupied&&!(phase==='done'&&hit)&&(i%11===0?<span className="enjo-obstacle">💣</span>:i%5===0?<span className="enjo-obstacle enjo-enemy">× ×</span>:<span className={'enjo-die enjo-die-'+i%3}><i/><i/><i/></span>)}</span>;})}
  {phase==='blast'&&<EnjoBlast range={range}/>}

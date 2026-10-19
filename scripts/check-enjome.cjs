@@ -3,3 +3,11 @@ const m={exports:{}};vm.runInNewContext('(function(exports){'+ts.transpileModule
 for(const fever of [false,true]){const r=m.exports.enjoRange(fever);assert.equal(r.length,fever?25:16);assert.equal(new Set(r.map(p=>p.x+','+p.y)).size,r.length);(fever?[9,7,5,3,1]:[7,5,3,1]).forEach((width,row)=>{const cells=r.filter(p=>p.y===8-row);assert.equal(cells.length,width);assert.equal(cells.reduce((sum,p)=>sum+p.x,0)/width,4);});}
 assert.deepEqual(Array.from(m.exports.ENJO_STEPS),['wall','breakUpper','lower','breakLower','ready','hover','drop','blast','done']);
 console.log('PASS Enjome design: upper wall→lower wall→tap→sky→next drop→blast; normal 16 / FEVER 25 symmetric pyramid cells');
+
+const audio={exports:{}};vm.runInNewContext('(function(exports){'+ts.transpileModule(fs.readFileSync('src/skills/enjomeAudio.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText+'\n})')(audio.exports);
+const starts=[],ends=[],nodes=[];const param=()=>({value:0,setValueAtTime(){},exponentialRampToValueAtTime(){}});
+const node=()=>{const n={connect(){},disconnect(){},start(t){starts.push(t)},stop(t){ends.push(t)},gain:param(),frequency:param(),Q:param()};nodes.push(n);return n;};
+const ctx={currentTime:10,sampleRate:8000,createGain:node,createOscillator:node,createBiquadFilter:node,createBufferSource:node,createBuffer:(_,n)=>({getChannelData:()=>new Float32Array(n)})};
+audio.exports.playEnjoWallBreak(ctx,{});assert.equal(starts.length,7);assert(Math.max(...ends)<10.66);
+starts.length=0;ends.length=0;audio.exports.playEnjoImpact(ctx,{});assert.equal(starts.length,9);assert(Math.max(...ends)>11.4);nodes.forEach(n=>n.onended?.());
+console.log('PASS Enjome audio: short wall fracture, impact + sustained fire, source cleanup');
