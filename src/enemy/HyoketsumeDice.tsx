@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, type CSSProperties } from 'react';
 import './gimmickDice.css';
 type Cell = {value:number;kind?:'ice'|'bomb';fuse?:number};
 const colors=['#fc6dac','#8b46d2','#43ae39','#43ae39','#8b46d2','#fc6dac'];
@@ -14,16 +14,20 @@ export function HyoketsumeDice({cell,detonating=false,paused=false}: {cell: Cell
   const special = !!cell.kind;
   return <span className={`gimmick-die ${cell.kind || ''} ${detonating?'is-detonating':''}`} style={{backgroundColor:special?'transparent':colors[cell.value-1]}}>
     {special ? <span className="gimmick-idle"><svg className="gimmick-mech" viewBox="0 0 100 100" aria-hidden="true" style={{animationPlayState:paused?'paused':'running'}}>
-      <defs><radialGradient id={metalId} cx="32%" cy="25%"><stop stopColor="#65707b"/><stop offset=".4" stopColor="#252b34"/><stop offset="1" stopColor="#06080d"/></radialGradient></defs>
+      <defs><linearGradient id={metalId} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#709caf"/><stop offset=".18" stopColor="#254765"/><stop offset=".43" stopColor="#0c213e"/><stop offset=".55" stopColor="#3a6680"/><stop offset=".64" stopColor="#15314e"/><stop offset="1" stopColor="#071729"/></linearGradient></defs>
       <path d="M52 23L55 10L69 13L65 26" fill="#434c59" stroke="#99a6b2" strokeWidth="2"/>
       <path d="M61 12Q62 2 75 8" fill="none" stroke="#d4a75b" strokeWidth="4"/>
-      <circle cx="50" cy="56" r="36" fill={`url(#${metalId})`}/>
-      <path d="M20 46Q50 62 82 45M31 26Q19 57 36 87M68 26Q83 58 65 88" fill="none" stroke="#606c79" strokeWidth="2"/>
-      {[[-1,0],[1,0],[0,-1],[0,1]].map(([x,y],i)=><g key={i} transform={`translate(${50+x*29} ${56+y*29})`}><circle r="4" fill="#a5aeb6"/><path d="M-2 0H2" stroke="#202732" strokeWidth="1.5"/></g>)}
-      <g transform="translate(35 38)"><circle r="8" fill="#aab5be" stroke="#303b45" strokeWidth="2"/><path d="M-5 0H5M0-5V5" stroke="#26303c" strokeWidth="3"/></g>
-      <g transform="translate(65 38)"><circle r="8" fill="#aab5be" stroke="#303b45" strokeWidth="2"/><path d="M-5 0H5" stroke="#26303c" strokeWidth="3"/></g>
-      <rect x="25" y="51" width="50" height="31" rx="2" fill="#020508" stroke="#7d8b97" strokeWidth="3"/>
+      <path d="M19 21H81L88 28V87L81 94H19L12 87V28Z" fill={`url(#${metalId})`}/>
+      <path d="M20 25H79L84 30M16 32V84L21 89M23 91H79L84 86V35" fill="none" stroke="#73b6d3" strokeOpacity=".5" strokeWidth="1.5"/>
+      <path d="M18 49H82M20 84H27M73 84H80" fill="none" stroke="#07192e" strokeWidth="2"/>
+      {[27,73].map(x=><g key={x} transform={`translate(${x} 36)`}><circle r="9" fill="#63869e" stroke="#071a31" strokeWidth="2"/><circle r="6.7" fill="#9bbdcb"/><path d="M-5 0H5" stroke="#112940" strokeWidth="3" strokeLinecap="round"/></g>)}
+      <circle cx="50" cy="67" r="22" fill="#0a2038" stroke="#5c8ea7" strokeWidth="3"/>
+      <circle cx="50" cy="67" r="18.8" fill="#020b15" stroke="#90c9dd" strokeWidth=".8"/>
       <SevenSegment value={cell.kind==='ice'?null:cell.fuse??6} />
+      {cell.kind==='bomb'&&!detonating&&<g transform="translate(75 8)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
+        <circle r="2" fill="#fff8b0"/>
+        {Array.from({length:7},(_,i)=>{const angle=i*Math.PI*2/7;return <circle key={i} className="hyoketsu-fuse-spark" r={i%2?1:1.5} fill={i%2?'#ffe13d':'#fff5a0'} style={{'--spark-x':Math.cos(angle)*12+'px','--spark-y':Math.sin(angle)*12+'px',animationDelay:i*-.09+'s'} as CSSProperties}/>;})}
+      </g>}
     </svg>{cell.kind==='ice'&&<><span className="gimmick-ice-shell"/><span className="gimmick-crack"/></>}</span> : <span className="gimmick-pips">{Array.from({length:9},(_,i)=><i key={i} style={{opacity:pips[cell.value-1].includes(i)?1:0}} />)}</span>}
   </span>;
 }

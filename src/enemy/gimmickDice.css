@@ -49,3 +49,6 @@
 .gimmick-die.ice .gimmick-ice-shell:before {content:"✦";position:absolute;left:8%;top:5%;color:#fff;font-size:22px;line-height:1;text-shadow:18px 25px #e5fcff;animation:hyoketsu-sparkle 2s ease-in-out infinite;}
 @keyframes hyoketsu-ice-glint {0%,100%{filter:brightness(1);}45%{filter:brightness(1);}55%{filter:brightness(1.65);}70%{filter:brightness(1);}}
 @keyframes hyoketsu-sparkle {0%,40%,80%,100%{opacity:0;}55%{opacity:1;}65%{opacity:.4;}}
+
+.hyoketsu-fuse-spark{animation:hyoketsu-fuse-spark .63s ease-out infinite;animation-play-state:var(--fuse-play,running);}
+@keyframes hyoketsu-fuse-spark{0%{transform:translate(0,0) scale(.7);opacity:1;}75%{opacity:.8;}100%{transform:translate(var(--spark-x),var(--spark-y)) scale(.15);opacity:0;}}
