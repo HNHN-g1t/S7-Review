@@ -14,19 +14,21 @@
 @keyframes hyoketsu-silhouette{0%,20%,40%,60%,80%{color:#2288ed;opacity:1;}7%,27%,47%,67%,87%{color:#27d8c8;opacity:1;}14%,34%,54%,74%,94%,99.9%{color:#f1ffff;opacity:1;}100%{opacity:0;}}
 
 /* Face blinks independently of the icy body color cycle. */
-.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face{animation:hyoketsu-face-blink 230ms steps(2,end) infinite;animation-play-state:inherit;}
-.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face path,.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face circle{fill:#fff!important;stroke:#fff!important;}
 @keyframes hyoketsu-face-blink{0%,100%{opacity:1;}50%{opacity:.12;}}
 
 /* Keep the mouth steady; only screw eyes blink white with a blue cross. */
-.gimmick-die.is-detonating .gimmick-mech .hyoketsu-eye-plus{fill:none!important;stroke:#187bc2!important;}
 .gimmick-die.is-detonating .gimmick-mech .hyoketsu-mouth circle:first-child{fill:#0a2038!important;stroke:#5c8ea7!important;}
 .gimmick-die.is-detonating .gimmick-mech .hyoketsu-mouth circle:nth-child(2){fill:#020b15!important;stroke:#90c9dd!important;}
 .gimmick-die.is-detonating .gimmick-mech .hyoketsu-mouth path{fill:#9eeaff!important;stroke:none!important;}
 
-.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face path.hyoketsu-eye-plus{fill:none!important;stroke:#187bc2!important;}
 .gimmick-die.is-detonating .hyoketsu-count{animation:hyoketsu-count-zero 320ms steps(2,end) infinite;animation-play-state:inherit;}
 @keyframes hyoketsu-count-zero{50%{opacity:.15;}}
 
 .gimmick-die.is-detonating .hyoketsu-body-bevel polygon{fill:currentColor!important;}
 .gimmick-die.is-detonating .gimmick-mech .hyoketsu-mouth circle.hyoketsu-timer-well{fill:#071e32!important;stroke:none!important;}
+
+/* Recessed eye displays stay black; only the luminous plus signs blink. */
+.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face{animation-play-state:inherit;}
+.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face circle.hyoketsu-eye-display{fill:#071e32!important;stroke:none!important;}
+.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face path.hyoketsu-eye-plus{fill:none!important;stroke:#168eff!important;animation:hyoketsu-face-blink 230ms steps(2,end) infinite;animation-play-state:inherit;}
+.gimmick-die.is-detonating .gimmick-mech .hyoketsu-face path.hyoketsu-eye-light{stroke:#b3f5ff!important;}
