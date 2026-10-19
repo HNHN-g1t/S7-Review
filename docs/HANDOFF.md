@@ -3,7 +3,7 @@
 - 瞳/黒目を矩形クリップで2回開閉、円自体は固定。火の粉8→48個/高速明滅。内炎も外炎と同じ2.6秒周期の輪郭モーフへ。
 - Practice敵enjoを追加、実Appの落下/回転/セヴン消去に接続。各セルのenjoメタデータが壁解除状態を保持、通常攻撃で消えず隣接セヴンで該当段を解除。全段開いた後のみタップで上空待機、次設置時に350ms投下→1700ms炎→範囲消去。壁破砕/噴炎SEはeffectチャネル。通常16セル、FEVERは9-7-5-3-1を7列盤で切り捨て23セル。範囲外は維持。
 - 技図鑑の模擬戦で壁2/3・通常/FEVERを切替、 iframe再作成/初期消音/保存分離。左に1を積み「解除練習：6を用意」で合法な7消去を試せる。敵/氷結ボムを配置。キャラ図鑑にも起動ボタン。停止/再開/再戦・初期化に対応。本編リポジトリへの反映は未実施。
-- 検証：build:gallery、check-enjo-practice（4条件の実resolver・段解除・タップ拒否・次落下・16/23範囲・氷ボム消去・範囲外生存・停止再開・再戦・保存分離）、check-enemy-practice、check-enjome、check-hyoketsume、check-hyoketsu-fireworks、check-skill-catalogue成功。公開表示はpush後確認予定。
+- 検証：build:gallery、check-enjo-practice（4条件の実resolver・段解除・タップ拒否・次落下・16/23範囲・氷ボム消去・範囲外生存・停止再開・再戦・保存分離）、check-enemy-practice、check-enjome、check-hyoketsume、check-hyoketsu-fireworks、check-skill-catalogue成功。VercelのDeployment has completedを確認。正式サイトの技図鑑から実プレイiframeを起動し、壁2段/FEVER切替・6用意ボタン・実盤面を目視確認。実際に6を落とし残り壁1段/タップ不可と火の粉48個を公開DOMで確認。4条件の全行程は実resolverテストで確認。
 
 ## 2026-10-19 エンジョーボムの正式名・3段壁・炎の質感
 - ユーザー指定：ヒョーケツボム/エンジョーボムを名称定義。エンジョーは2/3セルの壁、3段時は上中下全解除必須。炎は2セル、黒丸の中に白丸1つ、輪郭先端を揺らめかせ、R255寄りの赤とグロー。噴炎はトゲでなく本体同様の滑らかな形で左右をつなぐ。
