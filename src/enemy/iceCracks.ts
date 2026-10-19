@@ -16,3 +16,18 @@ export function iceCrackRibbon(line:number[][],seed:number,branch:number){
  left.push([x-dy/len*half,y+dx/len*half]);right.push([x+dy/len*half,y-dx/len*half]);});
  return [...left,...right.reverse()];
 }
+
+// Five fracture axes: three taken directly from visible cracks, two secondary breaks.
+export function iceShardPolygons(seed:number){
+ const pair=iceCrackPair(seed),a=ICE_CRACKS[pair[0]][0],b=ICE_CRACKS[pair[1]][0];
+ const cuts=[[a[0],a[1]],[a[1],a[2]],[b[1],b[2]],[[0,.18+(seed%37)/100],[1,.62]],[[.18,1],[.73,0]]];
+ let pieces:number[][][]=[[[0,0],[1,0],[1,1],[0,1]]];
+ for(const [p,q] of cuts){
+  const side=(v:number[]) => (q[0]-p[0])*(v[1]-p[1])-(q[1]-p[1])*(v[0]-p[0]);
+  pieces=pieces.flatMap(poly=>[1,-1].map(sign=>{const clipped:number[][]=[];
+   poly.forEach((v,i)=>{const w=poly[(i+1)%poly.length],sv=side(v)*sign,sw=side(w)*sign;
+    if(sv>=-1e-9)clipped.push(v);if((sv>0&&sw<0)||(sv<0&&sw>0)){const t=sv/(sv-sw);clipped.push([v[0]+(w[0]-v[0])*t,v[1]+(w[1]-v[1])*t]);}});return clipped;
+  }).filter(poly=>poly.length>=3));
+ }
+ return pieces;
+}

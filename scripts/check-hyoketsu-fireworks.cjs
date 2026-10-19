@@ -6,12 +6,18 @@ assert.equal(HYOKETSU_BURST_MS,2600);assert.equal(HYOKETSU_RING.length,8);assert
 assert.deepEqual(Array.from(HYOKETSU_RING,p=>p.x+','+p.y),['1,0','0,0','0,1','0,2','1,2','2,2','2,1','2,0']);
 for(let i=0;i<=8;i++)assert.equal(hyoketsuIceState(i*125).frozen,i);
 assert.equal(hyoketsuIceState(999).phase,'freeze');assert.equal(hyoketsuIceState(1000).phase,'sweep');assert.equal(hyoketsuIceState(1399).phase,'sweep');assert.equal(hyoketsuIceState(1400).phase,'shatter');assert.equal(hyoketsuIceState(1999).phase,'shatter');assert.equal(hyoketsuIceState(2000).phase,'afterglow');assert.equal(hyoketsuIceState(2599).phase,'afterglow');assert.equal(hyoketsuIceState(2600).phase,'done');
+const cracks={exports:{}};vm.runInNewContext('(function(exports){'+ts.transpileModule(fs.readFileSync('src/enemy/iceCracks.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText+'\n})')(cracks.exports);
+for(let seed=0;seed<100;seed++){
+ const pieces=cracks.exports.iceShardPolygons(seed);
+ const area=pieces.reduce((total,poly)=>total+Math.abs(poly.reduce((sum,v,i)=>{const w=poly[(i+1)%poly.length];return sum+v[0]*w[1]-v[1]*w[0];},0))/2,0);
+ assert(Math.abs(area-1)<1e-8,'crack-aligned pieces cover ice without overlaps or gaps');
+}
 const audioModule={exports:{}};vm.runInNewContext('(function(exports){'+ts.transpileModule(fs.readFileSync(require('path').join(__dirname,'../src/enemy/icePing.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText+'\n})')(audioModule.exports);
 const tones=[];const context={currentTime:10,createGain:()=>({gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}}),createOscillator:()=>{const tone={frequency:{setValueAtTime(v){tone.from=v;},exponentialRampToValueAtTime(v,t){tone.to=v;tone.rise=t;}},connect(){},disconnect(){},start(t){tone.startAt=t;},stop(t){tone.stopAt=t;}};tones.push(tone);return tone;}};
 audioModule.exports.playIcePing(context,{});assert.equal(tones.length,4);for(const tone of tones){assert(tone.to>tone.from);assert(tone.stopAt>10.3&&tone.stopAt<10.5);}
-const noises=[];const fullAudio={...context,sampleRate:24000,createBuffer:(_channels,n)=>({getChannelData:()=>new Float32Array(n)}),createBufferSource:()=>{const n={connect(){},disconnect(){},start(t){n.at=t;},stop(t){n.end=t;}};noises.push(n);return n;},createBiquadFilter:()=>({frequency:{setValueAtTime(){},exponentialRampToValueAtTime(){}},Q:{value:0},connect(){},disconnect(){}})};
+const noises=[];const fullAudio={...context,sampleRate:24000,createBuffer:(_channels,n)=>({getChannelData:()=>new Float32Array(n)}),createBufferSource:()=>{const n={connect(){},disconnect(){},start(t){n.at=t;},stop(t){n.end=t;}};noises.push(n);return n;},createConvolver:()=>({buffer:null,connect(){},disconnect(){}}),createBiquadFilter:()=>({frequency:{setValueAtTime(){},exponentialRampToValueAtTime(){}},Q:{value:0},connect(){},disconnect(){}})};
 audioModule.exports.playIceFreeze(fullAudio,{});assert.equal(noises.length,8);noises.forEach((n,i)=>{assert(Math.abs(n.at-(10+i*.125))<1e-6);assert(Math.abs(n.end-n.at-.1)<1e-6);});
-const toneCount=tones.length;audioModule.exports.playIceCrash(fullAudio,{});assert.equal(tones.length-toneCount,9);assert.equal(noises.length,9);assert(tones.at(-1).stopAt>11,'glass tail extends through afterglow');
+const toneCount=tones.length;audioModule.exports.playIceCrash(fullAudio,{});assert.equal(tones.length-toneCount,7);assert.equal(noises.length,9);assert(tones.at(-2).stopAt>12,'sustained glass modes');assert(tones.at(-1).stopAt>15,'reverb cleanup uses audio clock');
 (async()=>{
  const h=harness('hyoketsume');await h.boot();await h.until(()=>h.tree.read().status==='playing','startup');
  const points=[];for(let y=11;y<14;y++)for(let x=2;x<5;x++)points.push([x,y,2]);

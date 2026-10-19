@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { HYOKETSU_BURST_MS, HYOKETSU_RING, hyoketsuIceState } from './hyoketsuFireworks';
 import { HyoketsumeDice } from './HyoketsumeDice';
 import './hyoketsuBurst.css';
-import { ICE_CRACKS, iceCrackPair, iceCrackRibbon } from './iceCracks';
+import { ICE_CRACKS, iceCrackPair, iceCrackRibbon, iceShardPolygons } from './iceCracks';
 type Point={x:number;y:number};
 export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onCrash}:{cell:number;flashCells?:Point[];paused?:boolean;onEnd?:()=>void;onSweep?:()=>void;onCrash?:()=>void}) {
  const canvas=useRef<HTMLCanvasElement>(null),latest=useRef({paused,flashCells,onEnd,onSweep,onCrash});latest.current={paused,flashCells,onEnd,onSweep,onCrash};
@@ -29,7 +29,7 @@ export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onC
     // Eight planar facets give the clipped block a dice-like bevel.
     const rim=[[.12,0],[.88,0],[1,.14],[1,.88],[.86,1],[.1,1],[0,.86],[0,.12]];
     rim.forEach((p,i)=>{const q=rim[(i+1)%8];ctx.fillStyle=['#edffff','#c3f6ff','#397da7','#235c8e','#24658f','#74c6df','#c0f5ff','#f4ffff'][i];ctx.beginPath();ctx.moveTo(p[0]*cell,p[1]*cell);ctx.lineTo(q[0]*cell,q[1]*cell);ctx.lineTo((.5+(q[0]-.5)*.82)*cell,(.5+(q[1]-.5)*.82)*cell);ctx.lineTo((.5+(p[0]-.5)*.82)*cell,(.5+(p[1]-.5)*.82)*cell);ctx.closePath();ctx.fill();});
-    iceCrackPair(crackSeed+x*17+y*31).forEach(p=>ICE_CRACKS[p].forEach((line,j)=>{ctx.fillStyle=j?'#b5f3ff':'#e9ffff';ctx.beginPath();iceCrackRibbon(line,crackSeed+x*17+y*31+p*3+j,j).forEach(([px,py],i)=>{if(i)ctx.lineTo(px*cell,py*cell);else ctx.moveTo(px*cell,py*cell);});ctx.closePath();ctx.fill();}));
+    if(state.phase!=='shatter')iceCrackPair(crackSeed+x*17+y*31).forEach(p=>ICE_CRACKS[p].forEach((line,j)=>{ctx.fillStyle=j?'#b5f3ff':'#e9ffff';ctx.beginPath();iceCrackRibbon(line,crackSeed+x*17+y*31+p*3+j,j).forEach(([px,py],i)=>{if(i)ctx.lineTo(px*cell,py*cell);else ctx.moveTo(px*cell,py*cell);});ctx.closePath();ctx.fill();}));
     if(state.phase==='sweep'){
      const d=(-1+state.progress*5)*cell-(x+y)*cell*.5;
      const shine=ctx.createLinearGradient(d-cell*.28,d-cell*.28,d+cell*.28,d+cell*.28);shine.addColorStop(0,'#ffffff00');shine.addColorStop(.5,'#fff');shine.addColorStop(1,'#ffffff00');ctx.fillStyle=shine;ctx.fillRect(0,0,cell,cell);
@@ -54,25 +54,23 @@ export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onC
     if(elapsed>=1000)tile(1,1,Math.min(1,(elapsed-1000)/100));
    }else if(state.phase==='shatter'){
     const progress=state.progress;
-    [{x:1,y:1},...HYOKETSU_RING].forEach(({x,y},index)=>{
+    [{x:1,y:1},...HYOKETSU_RING].forEach(({x,y})=>{
      ctx.globalAlpha=1;ctx.fillStyle='#232b36';ctx.fillRect(x*cell,y*cell,cell,cell);
-     const rim=[[.12,0],[.88,0],[1,.14],[1,.88],[.86,1],[.1,1],[0,.86],[0,.12]];
-     const seed=crackSeed+index*31;
-     const hub=[.34+(seed%29)/100,.34+((seed*7)%29)/100];
-     for(let j=0;j<8;j++){
-      const p=rim[j],q=rim[(j+1)%8];
-      const center=[(hub[0]+p[0]+q[0])/3,(hub[1]+p[1]+q[1])/3];
+     const seed=crackSeed+x*17+y*31;
+     const pieces=iceShardPolygons(seed);
+     for(let j=0;j<pieces.length;j++){
+      const vertices=pieces[j];
+      const center=vertices.reduce((c,v)=>[c[0]+v[0]/vertices.length,c[1]+v[1]/vertices.length],[0,0]);
       const dx=center[0]-.5,dy=center[1]-.5;
       const travel=progress*progress;
       ctx.save();ctx.translate((x+center[0])*cell+dx*cell*travel*1.5,(y+center[1])*cell+dy*cell*travel*1.5+travel*cell*.25);
       ctx.rotate((j%2?1:-1)*progress*(.18+(seed%5)*.04));ctx.translate(-center[0]*cell,-center[1]*cell);
       // Clip the original ice face so the gradient, rim and cracks survive the break.
-      ctx.save();ctx.beginPath();ctx.moveTo(hub[0]*cell,hub[1]*cell);ctx.lineTo(p[0]*cell,p[1]*cell);ctx.lineTo(q[0]*cell,q[1]*cell);ctx.closePath();ctx.clip();
+      ctx.save();ctx.beginPath();vertices.forEach((v,i)=>{if(i)ctx.lineTo(v[0]*cell,v[1]*cell);else ctx.moveTo(v[0]*cell,v[1]*cell);});ctx.closePath();ctx.clip();
       ctx.translate(-x*cell,-y*cell);tile(x,y,1-progress);ctx.restore();
       // Narrow facets on fresh cut edges, with asymmetric light and dark faces.
-      const vertices=[hub,p,q];
-      vertices.forEach((v,k)=>{const w=vertices[(k+1)%3];const inset=(point:number[])=>[point[0]*.94+center[0]*.06,point[1]*.94+center[1]*.06];const vi=inset(v),wi=inset(w);
-       ctx.globalAlpha=(1-progress)*.95;ctx.fillStyle=(j+k)%3===0?'#347ca8':(j+k)%3===1?'#e4ffff':'#83dcf6';
+      vertices.forEach((v,k)=>{const w=vertices[(k+1)%vertices.length];const inset=(point:number[])=>[point[0]*.94+center[0]*.06,point[1]*.94+center[1]*.06];const vi=inset(v),wi=inset(w);
+       ctx.globalAlpha=(1-progress)*.95;ctx.fillStyle=(j+k)%3===0?'#347ca8':(j+k)%3===1?'#9acfe3':'#68b5d2';
        ctx.beginPath();ctx.moveTo(v[0]*cell,v[1]*cell);ctx.lineTo(w[0]*cell,w[1]*cell);ctx.lineTo(wi[0]*cell,wi[1]*cell);ctx.lineTo(vi[0]*cell,vi[1]*cell);ctx.closePath();ctx.fill();
       });ctx.restore();
      }
