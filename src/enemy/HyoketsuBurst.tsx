@@ -33,7 +33,21 @@ export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onC
     if(state.phase==='sweep'){
      const d=(-1+state.progress*5)*cell-(x+y)*cell*.5;
      const shine=ctx.createLinearGradient(d-cell*.28,d-cell*.28,d+cell*.28,d+cell*.28);shine.addColorStop(0,'#ffffff00');shine.addColorStop(.5,'#fff');shine.addColorStop(1,'#ffffff00');ctx.fillStyle=shine;ctx.fillRect(0,0,cell,cell);
-    }ctx.restore();
+    }
+    // Two crisp four-point glints per frozen tile. The same glints travel with shards.
+    const frozenAt=x===1&&y===1?1100:(HYOKETSU_RING.findIndex(p=>p.x===x&&p.y===y)+1)*125;
+    if(elapsed>=frozenAt){
+     for(let k=0;k<2;k++){
+      const seed=crackSeed+x*17+y*31+k*43;
+      const pulse=Math.pow(Math.max(0,Math.sin((elapsed-frozenAt)/95+seed)),5);
+      if(pulse<.02)continue;
+      const gx=(.2+(seed%57)/100)*cell,gy=(.18+((seed*7)%61)/100)*cell,r=cell*(.07+.07*pulse);
+      ctx.save();ctx.globalAlpha=alpha*pulse;ctx.translate(gx,gy);
+      ctx.fillStyle='#a7edff';ctx.beginPath();ctx.moveTo(0,-r*1.4);ctx.lineTo(r*.17,-r*.17);ctx.lineTo(r,0);ctx.lineTo(r*.17,r*.17);ctx.lineTo(0,r*1.4);ctx.lineTo(-r*.17,r*.17);ctx.lineTo(-r,0);ctx.lineTo(-r*.17,-r*.17);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#fff';ctx.fillRect(-r*.08,-r*.65,r*.16,r*1.3);ctx.fillRect(-r*.5,-r*.08,r,r*.16);ctx.restore();
+     }
+    }
+    ctx.restore();
    };
    if(state.phase!=='shatter'){
     HYOKETSU_RING.forEach((p,i)=>{const alpha=Math.max(0,Math.min(1,(elapsed-i*125)/125));if(alpha>0)tile(p.x,p.y,alpha);});
@@ -42,12 +56,25 @@ export function HyoketsuBurst({cell,flashCells=[],paused=false,onEnd,onSweep,onC
     const progress=state.progress;
     [{x:1,y:1},...HYOKETSU_RING].forEach(({x,y},index)=>{
      ctx.globalAlpha=1;ctx.fillStyle='#232b36';ctx.fillRect(x*cell,y*cell,cell,cell);
-     const corners=[[0,0],[1,0],[1,1],[0,1]];
-     for(let j=0;j<4;j++){
-      const p=corners[j],q=corners[(j+1)%4];ctx.save();const cx=(x+.5)*cell,cy=(y+.5)*cell;
-      ctx.translate(cx+(x-1+(p[0]+q[0]-1)*.5)*cell*progress*.6,cy+(y-1+(p[1]+q[1]-1)*.5)*cell*progress*.6+progress*progress*cell*.35);ctx.rotate((j%2?1:-1)*progress*.35);
-      ctx.globalAlpha=1-progress;ctx.fillStyle=['#278fe7','#55dad8','#cdfaff','#68bff1'][(j+index)%4];ctx.strokeStyle='#e3ffff';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo((p[0]-.5)*cell,(p[1]-.5)*cell);ctx.lineTo((q[0]-.5)*cell,(q[1]-.5)*cell);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+     const rim=[[.12,0],[.88,0],[1,.14],[1,.88],[.86,1],[.1,1],[0,.86],[0,.12]];
+     const seed=crackSeed+index*31;
+     const hub=[.34+(seed%29)/100,.34+((seed*7)%29)/100];
+     for(let j=0;j<8;j++){
+      const p=rim[j],q=rim[(j+1)%8];
+      const center=[(hub[0]+p[0]+q[0])/3,(hub[1]+p[1]+q[1])/3];
+      const dx=center[0]-.5,dy=center[1]-.5;
+      const travel=progress*progress;
+      ctx.save();ctx.translate((x+center[0])*cell+dx*cell*travel*1.5,(y+center[1])*cell+dy*cell*travel*1.5+travel*cell*.25);
+      ctx.rotate((j%2?1:-1)*progress*(.18+(seed%5)*.04));ctx.translate(-center[0]*cell,-center[1]*cell);
+      // Clip the original ice face so the gradient, rim and cracks survive the break.
+      ctx.save();ctx.beginPath();ctx.moveTo(hub[0]*cell,hub[1]*cell);ctx.lineTo(p[0]*cell,p[1]*cell);ctx.lineTo(q[0]*cell,q[1]*cell);ctx.closePath();ctx.clip();
+      ctx.translate(-x*cell,-y*cell);tile(x,y,1-progress);ctx.restore();
+      // Narrow facets on fresh cut edges, with asymmetric light and dark faces.
+      const vertices=[hub,p,q];
+      vertices.forEach((v,k)=>{const w=vertices[(k+1)%3];const inset=(point:number[])=>[point[0]*.94+center[0]*.06,point[1]*.94+center[1]*.06];const vi=inset(v),wi=inset(w);
+       ctx.globalAlpha=(1-progress)*.95;ctx.fillStyle=(j+k)%3===0?'#347ca8':(j+k)%3===1?'#e4ffff':'#83dcf6';
+       ctx.beginPath();ctx.moveTo(v[0]*cell,v[1]*cell);ctx.lineTo(w[0]*cell,w[1]*cell);ctx.lineTo(wi[0]*cell,wi[1]*cell);ctx.lineTo(vi[0]*cell,vi[1]*cell);ctx.closePath();ctx.fill();
+      });ctx.restore();
      }
     });
    }
