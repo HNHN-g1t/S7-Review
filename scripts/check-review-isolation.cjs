@@ -58,15 +58,20 @@ vm.runInNewContext(compile('src/review.ts'), {
 // 図鑑→技図鑑→マップ→進行表→反映。マップのみ非表示時に破棄。
 assert.equal(frames.length, 5);
 assert.equal(frames[0].src, '/enemies.html');
-nav.children[1].onclick(); assert.equal(frames[1].src, '/skills.html');
-nav.children[2].onclick(); assert.match(frames[2].src, /review-game.html\?story=map&review=map/);
-nav.children[3].onclick(); assert.equal(frames[2].src, 'about:blank'); assert.equal(frames[3].src, '/story-progress.html');
-nav.children[4].onclick(); assert.equal(frames[4].src, '/sync.html');
-nav.children[2].onclick(); assert.match(frames[2].src, /review-game.html\?story=map&review=map/);
-nav.children[0].onclick(); assert.equal(frames[2].src, 'about:blank');
+const workshop = nav.children[0];
+assert.equal(workshop.tag, 'a'); assert.equal(workshop.href, '/pixel-prompts.html');
+assert.equal(workshop.textContent, 'ドット絵プロンプト工房'); assert.equal(workshop.target, undefined);
+nav.children[2].onclick(); assert.equal(frames[1].src, '/skills.html');
+assert.equal(nav.children[2].attrs['aria-selected'], 'true'); assert.equal(nav.children[1].attrs['aria-selected'], 'false');
+nav.children[3].onclick(); assert.match(frames[2].src, /review-game.html\?story=map&review=map/);
+nav.children[4].onclick(); assert.equal(frames[2].src, 'about:blank'); assert.equal(frames[3].src, '/story-progress.html');
+nav.children[5].onclick(); assert.equal(frames[4].src, '/sync.html');
+nav.children[3].onclick(); assert.match(frames[2].src, /review-game.html\?story=map&review=map/);
+nav.children[1].onclick(); assert.equal(frames[2].src, 'about:blank');
+assert.equal(nav.children[1].attrs['aria-selected'], 'true'); assert.equal(nav.children[2].attrs['aria-selected'], 'false');
 assert.equal(frames[3].src, '/story-progress.html');
 assert.equal(frames[1].src, '/skills.html');
 assert(notices.some(n => n.data.type === 'sainome-review-visible' && n.data.visible === false));
-const link = nav.children[5];
+const link = nav.children[6];
 assert.equal(link.tag, 'a'); assert.equal(link.href, 'https://sainome-seven.vercel.app/'); assert.equal(link.target, '_blank');
-console.log('PASS: review game memory isolation/fail-closed bootstrap; hidden map disposal; visible restart; feedback/gallery retention; public game link.');
+console.log('PASS: first workshop link; existing tab selection; review game memory isolation/fail-closed bootstrap; hidden map disposal; visible restart; feedback/gallery retention; public game link.');
