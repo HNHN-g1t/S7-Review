@@ -128,7 +128,7 @@ function harness(enemy = 'koitsume', options = {}) {
         emptyBoard, makeSinglePiece, hidoimeHp, hidoimeDefeated, berabouHp,
         berabouDefeated, detaramesRef, detarameDefeated, rainbowAnswer, resetProgress, changeLang,
         read:()=>({story,status,board,score,current,stageIntro,saika,fever,feverActive,feverIgniting,
-          soundMode,powers:mapPowers(),missionNow,missionGoal,demo:demoLock.current,
+          hyoketsuBlasts,clearingCells,soundMode,powers:mapPowers(),missionNow,missionGoal,demo:demoLock.current,
           thunderOpen,thunderSet,thunderCall,thunderBolt,you456Set,you456Beam,you456Call,you456Busy:you456Busy.current,anchi:anchiRef.current,anchiDefeated:anchiDefeated.current,anchiPaints,absorbCells,
           sanzElapsed,sanzShots,campaignGeneratedEnemies:campaignGeneratedEnemies.current,anchiHit,anchiHitTone,anchiFlash,detarames:detaramesRef.current,detarameHit,
           hidoimeDefeated:hidoimeDefeated.current,berabouHp:berabouHp.current,
@@ -143,7 +143,7 @@ function harness(enemy = 'koitsume', options = {}) {
       if (name === 'react') return hook;
       if (name === 'react/jsx-runtime') return { jsx: () => null, jsxs: () => null };
       if (name === './haptics') return { haptics: new Proxy({}, { get: () => () => {} }) };
-      if (/characterNames|wall1|objectives|hidoimeFx|Detarame|enemyPracticeConfig|hidoimeCrushAudio|thunder|anchiEye|you456|useYou456Gesture/.test(name)) {
+      if (/characterNames|wall1|objectives|hidoimeFx|Detarame|enemyPracticeConfig|hidoimeCrushAudio|thunder|anchiEye|hyoketsuFireworks|you456|useYou456Gesture/.test(name)) {
         const base = path.posix.normalize(path.posix.join(path.posix.dirname(file), name));
         const resolved = ['.ts', '.tsx'].map(ext => base + ext).find(candidate => fs.existsSync(path.join(root, candidate)));
         if (resolved) return load(resolved);

@@ -1,3 +1,5 @@
+import { HyoketsuBurst } from './enemy/HyoketsuBurst';
+import { HYOKETSU_BURST_MS } from './enemy/hyoketsuFireworks';
 import { HyoketsumeDice } from './enemy/HyoketsumeDice';
 import { SlimeBurst } from './enemy/SlimeBurst';
 import { whenIntroAudioRunning } from './introAudio';
@@ -7886,6 +7888,7 @@ export default function App() {
   const [bombBanner, setBombBanner] = useState<{ label: string; kind: string } | null>(null);
   // リスタートを跨いで古いバナーが出てこないようにするための世代番号
   const bannerToken = useRef(0);
+  const [hyoketsuBlasts,setHyoketsuBlasts]=useState<Array<{x:number;y:number;flashCells:Position[]}>>([]);
   const [clearingCells, setClearingCells] = useState<Set<string>>(() => new Set());
   const [bestScores, setBestScores] = useState<number[]>(() => loadBestScores());
   const [soundMode, setSoundMode] = useState<SoundMode>(() => enemyPractice || new URLSearchParams(location.search).has('review') ? 'none' : 'all');
@@ -9387,11 +9390,13 @@ export default function App() {
           return {...c,fuse};
         }));
         if(blast.size){
-          setBoard(workingBoard);setClearingCells(blast);shakeBoard('lg');await wait(FLASH_MS);
+          const bursts=workingBoard.flatMap((row,y)=>row.flatMap((c,x)=>c&&expiredHyoketsu.has(c.id)?[{x:x-1,y:y-1,flashCells:[...blast].map(key=>{const [bx,by]=key.split(',').map(Number);return {x:bx-(x-1),y:by-(y-1)};}).filter(p=>p.x>=0&&p.x<3&&p.y>=0&&p.y<3)}]:[]));
+          setHyoketsuBlasts(bursts);
+          setBoard(workingBoard);setClearingCells(blast);shakeBoard('lg');await wait(HYOKETSU_BURST_MS);
           if(storyRunRef.current!==activeScriptRun)return;
           const before=workingBoard;
           workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>blast.has(x+','+y)&&(!c?.hyoketsu||expiredHyoketsu.has(c.id))?null:c));
-          setClearingCells(new Set());setBoard(workingBoard);
+          setHyoketsuBlasts([]);setClearingCells(new Set());setBoard(workingBoard);
           workingBoard=await settle(dissolveShrunkGroups(before,workingBoard),true);
         }else setBoard(workingBoard);
       }
@@ -10431,7 +10436,7 @@ export default function App() {
     setBombBanner(null);
     setNicoCharge(null);
     setSaika({ text: pickFrom(SAIKA_HELLO_LINES[langRef.current]), mood: 'hello' });
-    setClearingCells(new Set());
+    setHyoketsuBlasts([]);setClearingCells(new Set());
     setBurstCells(new Map());
     setMonoDice(false);
     setRainbowSparksOn(false);
@@ -13254,6 +13259,7 @@ export default function App() {
               </div>
             );
           })}
+          {hyoketsuBlasts.map((burst,i)=><div key={i} aria-hidden style={{position:'absolute',left:cellPx*burst.x,top:cellPx*burst.y,width:cellPx*3,height:cellPx*3,zIndex:160,pointerEvents:'none'}}><HyoketsuBurst cell={cellPx} flashCells={burst.flashCells} paused={status==='paused'}/></div>)}
           {/* ベラボウメ。3×3マスの上に重ねて描く（見た目は src/enemy/Beraboume.tsx）。
               目は BERABOU_EYE_ORDER の順に、HPが減るたびに1つずつ消える */}
           {(() => {

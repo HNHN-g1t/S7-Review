@@ -438,7 +438,7 @@ function Gallery() {
         {practiceButton('sanzapparaname')}
         <SanzapparanamePreview paused={paused || !reviewVisible} hit={hit && damageActive} />
       </section>
-      <section><h2>ヒョーケツメ（ギミック案）</h2>{practiceButton('hyoketsume')}<GimmickDicePreview /></section>
+      <section><h2>ヒョーケツメ（ギミック案）</h2>{practiceButton('hyoketsume')}<GimmickDicePreview paused={previewPaused}/></section>
 
       <section>
         <h2>名前・設定</h2>
