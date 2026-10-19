@@ -1,5 +1,6 @@
 import { useId, type CSSProperties } from 'react';
 import './gimmickDice.css';
+import { ICE_CRACKS, iceCrackPair } from './iceCracks';
 type Cell = {value:number;kind?:'ice'|'bomb';fuse?:number};
 const colors=['#fc6dac','#8b46d2','#43ae39','#43ae39','#8b46d2','#fc6dac'];
 const pips=[[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
@@ -12,6 +13,7 @@ function SevenSegment({value}:{value:number|null}) {
 export function HyoketsumeDice({cell,detonating=false,paused=false}: {cell: Cell;detonating?:boolean;paused?:boolean}) {
   const metalId = useId();
   const special = !!cell.kind;
+  const crackSeed = Array.from(metalId).reduce((n,c)=>n*31+c.charCodeAt(0),0)>>>0;
   return <span className={`gimmick-die ${cell.kind || ''} ${detonating?'is-detonating':''}`} style={{backgroundColor:special?'transparent':colors[cell.value-1]}}>
     {special ? <span className="gimmick-idle" style={{animationPlayState:paused?'paused':'running'}}><svg className="gimmick-mech" viewBox="0 0 100 100" aria-hidden="true" style={{animationPlayState:paused?'paused':'running'}}>
       <defs><linearGradient id={metalId} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#d0f5ff"/><stop offset=".18" stopColor="#64b9df"/><stop offset=".43" stopColor="#2876ad"/><stop offset=".55" stopColor="#a3e6fa"/><stop offset=".64" stopColor="#408db9"/><stop offset="1" stopColor="#174f82"/></linearGradient></defs>
@@ -24,11 +26,11 @@ export function HyoketsumeDice({cell,detonating=false,paused=false}: {cell: Cell
       <circle cx="50" cy="67" r="18.8" fill="#020b15" stroke="#90c9dd" strokeWidth=".8"/>
       <SevenSegment value={cell.kind==='ice'?null:cell.fuse??6} />
       </g>
-      <path d="M60 8Q61-16 78-10" fill="none" stroke="#88cce7" strokeWidth="6"/>
-      {cell.kind==='bomb'&&!detonating&&<g transform="translate(78 -10) scale(4)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
+      <path d="M50 8Q44-14 60-17" fill="none" stroke="#88cce7" strokeWidth="6"/>
+      {cell.kind==='bomb'&&!detonating&&<g transform="translate(60 -17) scale(4)" className="hyoketsu-fuse-sparks" style={{'--fuse-play':paused?'paused':'running'} as CSSProperties}>
         <circle r="1.5" fill="#fff" className="hyoketsu-fuse-core"/>
-        {Array.from({length:18},(_,i)=>{const angle=i*137.508*Math.PI/180;const reach=9+i%5*2;return <path key={i} className="hyoketsu-fuse-spark" d={`M${-1-i%3*.35} 0L${1+i%3*.35} 0L0 ${-4-i%4*1.5}Z`} fill={['#298dff','#9eeaff','#ffffff'][i%3]} style={{'--spark-x':Math.cos(angle)*reach+'px','--spark-y':Math.sin(angle)*reach+'px','--spark-angle':(angle*180/Math.PI+90)+'deg',animationDelay:i*-.037+'s',animationDuration:(.32+i%4*.045)+'s'} as CSSProperties}/>;})}
+        {Array.from({length:36},(_,i)=>{const angle=i*137.508*Math.PI/180;const reach=9+i%5*2;return <path key={i} className="hyoketsu-fuse-spark" d={`M${-1-i%3*.35} 0L${1+i%3*.35} 0L0 ${-4-i%4*1.5}Z`} fill={['#298dff','#9eeaff','#ffffff'][i%3]} style={{'--spark-x':Math.cos(angle)*reach+'px','--spark-y':Math.sin(angle)*reach+'px','--spark-angle':(angle*180/Math.PI+90)+'deg',animationDelay:i*-.0185+'s',animationDuration:(.32+i%4*.045)+'s'} as CSSProperties}/>;})}
       </g>}
-    </svg>{cell.kind==='ice'&&<><span className="gimmick-ice-shell"/><span className="gimmick-crack"/></>}</span> : <span className="gimmick-pips">{Array.from({length:9},(_,i)=><i key={i} style={{opacity:pips[cell.value-1].includes(i)?1:0}} />)}</span>}
+    </svg>{cell.kind==='ice'&&<><span className="gimmick-ice-shell"/><svg className="gimmick-cracks" viewBox="0 0 100 100" aria-hidden="true">{iceCrackPair(crackSeed).flatMap((p,k)=>ICE_CRACKS[p].map((line,j)=><polyline key={`${k}-${j}`} points={line.map(([x,y])=>`${x*100},${y*100}`).join(' ')} fill="none" stroke="#e4ffff" strokeOpacity={j?.65:.9} strokeWidth={j?.65:1.7} strokeLinejoin="round"/>))}</svg></>}</span> : <span className="gimmick-pips">{Array.from({length:9},(_,i)=><i key={i} style={{opacity:pips[cell.value-1].includes(i)?1:0}} />)}</span>}
   </span>;
 }

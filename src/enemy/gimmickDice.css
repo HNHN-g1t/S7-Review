@@ -59,3 +59,7 @@
 .gimmick-idle{inset:0;transform-origin:50% 50%;}
 @keyframes hyoketsu-idle{0%,100%{transform:scale(1);animation-timing-function:cubic-bezier(.15,.8,.25,1);}10%{transform:scale(1.25);animation-timing-function:cubic-bezier(.4,0,.2,1);}34%{transform:scale(1.2);animation-timing-function:cubic-bezier(.7,0,.8,.2);}43%{transform:scale(.96);animation-timing-function:ease-out;}67%{transform:scale(1);}}
 .board-cell.hyoketsu-layer{z-index:120;overflow:visible;}
+
+/* Faceted ice rim: bright upper/left bevel and deep lower/right bevel. */
+.gimmick-ice-shell{border:0;box-shadow:inset 4px 4px 0 #e0fbffbb,inset -4px -4px 0 #17679ba0,inset 7px 7px 0 #a4e8ff55,inset -7px -7px 0 #438cbd55;}
+.gimmick-cracks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;clip-path:polygon(15% 0,86% 0,100% 16%,95% 82%,80% 100%,12% 94%,0 77%,3% 14%);}
