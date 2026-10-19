@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { defaults, exportText, generatePrompts, presets, validate } from './model';
+import { backgrounds, defaults, exportText, fidelityFields, fidelityLevels, generatePrompts, presets, validate } from './model';
 import type { PromptPair, Settings } from './model';
 import './styles.css';
 
@@ -131,20 +131,39 @@ function App() {
             <div className="presets">{presets.map(p => <label className={`preset ${settings.selected.includes(p.id) ? 'selected' : ''}`} key={p.id}><div className="preset-top"><span>{p.label}</span><input type="checkbox" checked={settings.selected.includes(p.id)} onChange={() => toggle('selected', p.id)} /></div><strong>{p.name}</strong><p>{p.description}</p><small>{p.colors}色 / {p.size}×{p.size}px / 陰影{p.shades}段</small></label>)}</div>
             <p className="bit-note"><b>8bit / 16bit / 32bit はハード世代のイメージです。</b>色数や画素サイズとは別の指定です。ファミコン風を含め、実機制約の厳密な再現ではありません。</p>
           </section>
+          <section className="panel fidelity-panel">
+            <div className="section-title"><span className="step">03</span><h2>顔まわりの忠実度</h2><span className="optional">項目ごとに1つ選択</span></div>
+            <div className="fidelity-grid">{fidelityFields.map(field => <fieldset className="fidelity-control" key={field.key}>
+              <legend>{field.label}</legend>
+              <div className="strength-tabs">{fidelityLevels.map(level => <label key={level.id}>
+                <input className="visually-hidden" type="radio" name={field.key} value={level.id} checked={settings[field.key] === level.id} onChange={() => update(field.key, level.id)} />
+                <span>{level.label}</span>
+              </label>)}</div>
+            </fieldset>)}</div>
+            <p className="hint">弱：特徴を保って簡略化 ／ 中：主要な特徴・印象を優先 ／ 強：省略を最小限に。どの強度も指定色数・寸法の範囲内で適用します。</p>
+          </section>
           <section className="panel">
-            <div className="section-title"><span className="step">03</span><h2>ドットの条件</h2><span className="optional">空欄・自動は画風の推奨値</span></div>
+            <div className="section-title"><span className="step">04</span><h2>ドットの条件</h2><span className="optional">空欄・自動は画風の推奨値</span></div>
             <div className="fields-grid">
               <label className="field">最大色数 <span>透明は別枠 / 2〜256色</span><input type="number" min="2" max="256" step="1" placeholder="画風に合わせる" value={settings.colors} onChange={e => update('colors', e.target.value)} /></label>
               <div className="field"><span className="field-label">基準ピクセル寸法 <span>各16〜512px</span></span><div className="dimensions"><input aria-label="基準幅" type="number" min="16" max="512" placeholder="幅：自動" value={settings.width} onChange={e => update('width', e.target.value)} /><span>×</span><input aria-label="基準高さ" type="number" min="16" max="512" placeholder="高さ：自動" value={settings.height} onChange={e => update('height', e.target.value)} /></div></div>
               <label className="field">陰影段数 <span>基本色を含む / 1〜8段</span><input type="number" min="1" max="8" placeholder="画風に合わせる" value={settings.shades} onChange={e => update('shades', e.target.value)} /></label>
               <label className="field">輪郭<select aria-label="輪郭" value={settings.outline} onChange={e => update('outline', e.target.value)}><option value="">自動：画風に合わせる</option><option>暗色の1px輪郭</option><option>部位の色に合わせた1px輪郭</option><option>輪郭線なし（色面で形を分ける）</option></select></label>
               <label className="field">ディザリング<select aria-label="ディザリング" value={settings.dither} onChange={e => update('dither', e.target.value)}><option value="">自動：画風に合わせる</option><option value="使わない">なし</option><option value="陰影境界に限定した規則的なディザリング">控えめな規則的パターン</option></select></label>
-              <label className="check-field"><input type="checkbox" checked={settings.transparent} onChange={e => update('transparent', e.target.checked)} /><span>背景を透明にする<small>OFFなら単色の白背景</small></span></label>
             </div>
             <p className="hint">上書きした値は、選んだ全画風に共通で反映します。色数は輪郭・陰影を含む全体の上限です。</p>
+            <fieldset className="background-fieldset">
+              <legend>背景色</legend>
+              <div className="background-options">{backgrounds.map(background => <label className="background-choice" key={background.id}>
+                <input className="visually-hidden" type="radio" name="background" value={background.id} checked={settings.background === background.id} onChange={() => update('background', background.id)} />
+                <span className={`color-swatch ${background.hex === null ? 'transparent-swatch' : ''}`} style={background.hex ? { backgroundColor: background.hex } : undefined} aria-hidden="true" />
+                <span><strong>{background.label}</strong><code>{background.hex || 'アルファ透明'}</code></span>
+              </label>)}</div>
+              <p className="hint">白が初期値。単色は背景用に1色を確保します。色指定は指示文に反映し、参照画像は未加工で表示します。</p>
+            </fieldset>
           </section>
           <section className="panel animation-panel">
-            <div className="section-title"><span className="step">04</span><h2>アニメの条件</h2></div>
+            <div className="section-title"><span className="step">05</span><h2>アニメの条件</h2></div>
             <div className="animation-fields"><label className="field">動作<select aria-label="動作" value={settings.action} onChange={e => changeAction(e.target.value)}>{Object.keys(motionSuggestions).map(a => <option key={a}>{a}</option>)}</select></label><label className="field">コマ数<input type="number" min="2" max="32" value={settings.frames} onChange={e => update('frames', e.target.value)} /></label><label className="field">FPS<input type="number" min="1" max="30" value={settings.fps} onChange={e => update('fps', e.target.value)} /></label><label className="check-field"><input type="checkbox" checked={settings.loop} onChange={e => update('loop', e.target.checked)} />ループ</label></div>
             <label className="field motion-field">動きの詳細<input maxLength={1000} value={settings.motion} placeholder="例：その場で歩く。腕と脚を交互に動かす。" onChange={e => update('motion', e.target.value)} /></label>
           </section>
