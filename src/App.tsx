@@ -1,7 +1,7 @@
 import { EnjomeBomb, EnjoBlast } from './skills/EnjomePreview';
 import { enjoPyramid, enjoWallHits, type EnjoWall } from './skills/enjoRuntime';
 import { enjoRange } from './skills/enjomeModel';
-import { playEnjoWallBreak, playEnjoImpact } from './skills/enjomeAudio';
+import { playEnjoWallBreak, playEnjoImpact, playEnjoRise, playEnjoDive } from './skills/enjomeAudio';
 import { playIceFreeze, playIceCrash } from './enemy/icePing';
 import { HyoketsuBurst } from './enemy/HyoketsuBurst';
 import { HYOKETSU_BURST_MS } from './enemy/hyoketsuFireworks';
@@ -7905,7 +7905,7 @@ export default function App() {
   const [enjoFlight,setEnjoFlight]=useState<{x:number;phase:'hover'|'drop'}|null>(null);
   const enjoArmed=useRef<number|null>(null);
   const [enjoBlast,setEnjoBlast]=useState<boolean|null>(null);
-  const armEnjo=()=>{if(statusNow.current!=='playing')return false;const parts=board.flatMap((row,y)=>row.flatMap((c,x)=>c?.enjo?[{c,x,y}]:[]));if(parts.length!==enjoRows||parts.some(p=>!p.c.enjo!.open))return false;const x=parts[0].x;enjoArmed.current=x;setEnjoFlight({x,phase:'hover'});setBoard(b=>b.map(row=>row.map(c=>c?.enjo?null:c)));return true;};
+  const armEnjo=()=>{if(statusNow.current!=='playing')return false;const parts=board.flatMap((row,y)=>row.flatMap((c,x)=>c?.enjo?[{c,x,y}]:[]));if(parts.length!==enjoRows||parts.some(p=>!p.c.enjo!.open))return false;const x=parts[0].x;enjoArmed.current=x;setEnjoFlight({x,phase:'hover'});if(soundModeRef.current!=='none'){const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playEnjoRise(ctx,bus);}setBoard(b=>b.map(row=>row.map(c=>c?.enjo?null:c)));return true;};
   const [hyoketsuBlasts,setHyoketsuBlasts]=useState<Array<{x:number;y:number;flashCells:Position[]}>>([]);
   const [clearingCells, setClearingCells] = useState<Set<string>>(() => new Set());
   const [bestScores, setBestScores] = useState<number[]>(() => loadBestScores());
@@ -9402,7 +9402,7 @@ export default function App() {
       }
 
       if(enjoPractice&&enjoLaunch!==null){
-        setEnjoFlight({x:enjoLaunch,phase:'drop'});await wait(350);if(storyRunRef.current!==activeScriptRun)return;
+        setEnjoFlight({x:enjoLaunch,phase:'drop'});if(soundModeRef.current!=='none'){const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playEnjoDive(ctx,bus);}await wait(350);if(storyRunRef.current!==activeScriptRun)return;
         const hot=enjoPracticeFever||feverActiveRef.current,area=enjoPyramid(COLS,ROWS,enjoLaunch,hot),keys=new Set(area.map(p=>p.x+','+p.y));
         setEnjoFlight(null);setEnjoBlast(hot);setClearingCells(keys);if(soundModeRef.current!=='none'){const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playEnjoImpact(ctx,bus);}shakeBoard('lg');
         await wait(1700);if(storyRunRef.current!==activeScriptRun)return;

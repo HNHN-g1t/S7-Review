@@ -1,7 +1,7 @@
 import {useEffect,useState,useId,useRef,type CSSProperties} from 'react';
 import {enjoRange,enjoDemoOccupied,enjoSteps,ENJO_LABELS,type EnjoPhase} from './enjomeModel';
 import './enjome.css';
-import {playEnjoWallBreak,playEnjoImpact} from './enjomeAudio';
+import {playEnjoWallBreak,playEnjoImpact,playEnjoRise,playEnjoDive} from './enjomeAudio';
 // 2026-10-19 Claude：一つ目の炎の幽霊が、上下二段の黒い外壁に閉じ込められている姿に描き直し。
 // 炎は縦2セルの輪郭、目と口は揺らぐボディとは別の固定座標で描く。
 // Matching cubic segments let the tips grow/retract without snapping the round base.
@@ -66,6 +66,7 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
  </svg>;}
 // Abstract heat burst: pooled oval light, dense rising rays and a single hot sweep.
 export function EnjoBlast({range,paused=false}:{range:{x:number;y:number}[];paused?:boolean}){
+ const [seed]=useState(()=>Math.random()*10000);const random=(n:number)=>{const v=Math.sin(seed+n*12.9898)*43758.5453;return v-Math.floor(v);};
  const id=useId().replace(/:/g,'');const columns=new Map<number,number>();range.forEach(p=>columns.set(p.x,(columns.get(p.x)??0)+1));const xs=[...columns.keys()].sort((a,b)=>a-b);
  return <div className="enjo-blast enjo-abstract-burst" data-enjo-paused={paused} aria-hidden="true"><svg className="enjo-abstract-field" viewBox="0 0 9 9"><defs>
  <radialGradient id={id+'oval'}><stop stopColor="#fff8cf"/><stop offset=".25" stopColor="#ffe479" stopOpacity=".95"/><stop offset=".6" stopColor="#ff711e" stopOpacity=".6"/><stop offset="1" stopColor="#ff2709" stopOpacity="0"/></radialGradient>
@@ -75,8 +76,8 @@ export function EnjoBlast({range,paused=false}:{range:{x:number;y:number}[];paus
  {xs.map(x=>{const h=columns.get(x)!,lag=Math.abs(x-4)*.035;return <g key={x} transform={'translate('+(x+.5)+' 9)'}>
   <g className="enjo-energy-column" style={{'--burst-lag':lag+'s'} as CSSProperties}>
    <ellipse className="enjo-heat-cloud" cx="0" cy={-h*.42} rx=".76" ry={h*.6} fill={'url(#'+id+'oval)'}/>
-   {Array.from({length:7},(_,i)=><rect key={'r'+i} className="enjo-energy-ray" x={-.44+i*.145} y={-h*(.55+(i*3%5)*.1)} width={i%3===0?.045:.018} height={h*(.55+(i*3%5)*.1)} rx=".02" fill={'url(#'+id+'ray)'} style={{'--ray-delay':(lag+i*.018)+'s'} as CSSProperties}/>)}
-   {Array.from({length:10},(_,i)=><ellipse key={'p'+i} className="enjo-energy-oval" cx={-.48+(i*7%11)*.096} cy={-.08-i%3*.07} rx={.09+i%4*.045} ry={.16+i%3*.09} fill={'url(#'+id+'oval)'} style={{'--particle-delay':(lag+.07+(i*7%10)*.047)+'s','--particle-rise':(-h*(.38+(i*3%7)*.09))+'px','--particle-drift':((i%2?1:-1)*(.06+i%3*.04))+'px'} as CSSProperties}/>)}
+   {Array.from({length:7},(_,i)=>{const n=x*101+i*11,len=h*(.22+random(n+1)*.93);return <rect key={'r'+i} className="enjo-energy-ray" x={-.48+random(n+2)*.96} y={-len} width={.009+Math.pow(random(n+3),2)*.1} height={len} rx=".015" fill={'url(#'+id+'ray)'} style={{'--ray-delay':(lag+random(n+4)*.34)+'s','--ray-life':(.45+random(n+5)*.65)+'s'} as CSSProperties}/>;})}
+   {Array.from({length:10},(_,i)=>{const n=x*173+i*17,scale=.18+Math.pow(random(n+6),2)*1.8;return <ellipse key={'p'+i} className="enjo-energy-oval" cx={-.65+random(n+7)*1.3} cy={-.03-random(n+8)*.28} rx={.2*scale} ry={(.18+random(n+9)*.17)*scale} fill={'url(#'+id+'oval)'} style={{'--particle-delay':(lag+.04+random(n+10)*.48)+'s','--particle-life':(.5+random(n+11)*.5)+'s','--particle-rise':(-h*(.25+random(n+12)*.85))+'px','--particle-drift':(-.22+random(n+13)*.44)+'px'} as CSSProperties}/>;})}
    <ellipse className="enjo-hot-sweep" cx="0" cy="0" rx=".63" ry=".15" fill={'url(#'+id+'oval)'} style={{'--sweep-rise':-h+'px','--sweep-delay':(.17+lag)+'s'} as CSSProperties}/>
   </g>
  </g>;})}
@@ -89,7 +90,7 @@ export function EnjomePreview({paused=false}:{paused?:boolean}){
  const [sound,setSound]=useState(false);const audio=useRef<AudioContext|null>(null);
  useEffect(()=>()=>{void audio.current?.close();},[]);
  useEffect(()=>{if(!audio.current)return;if(paused||!sound)void audio.current.suspend();else void audio.current.resume();},[paused,sound]);
- useEffect(()=>{const ctx=audio.current;if(!ctx||!sound)return;const bus=ctx.createGain();bus.gain.value=.65;bus.connect(ctx.destination);if(phase==='breakUpper'||phase==='breakMiddle'||phase==='breakLower')playEnjoWallBreak(ctx,bus);if(phase==='blast')playEnjoImpact(ctx,bus);return()=>bus.disconnect();},[phase,sound]);
+ useEffect(()=>{const ctx=audio.current;if(!ctx||!sound)return;const bus=ctx.createGain();bus.gain.value=.65;bus.connect(ctx.destination);if(phase==='breakUpper'||phase==='breakMiddle'||phase==='breakLower')playEnjoWallBreak(ctx,bus);if(phase==='hover')playEnjoRise(ctx,bus);if(phase==='drop')playEnjoDive(ctx,bus);if(phase==='blast')playEnjoImpact(ctx,bus);return()=>bus.disconnect();},[phase,sound]);
  const range=enjoRange(fever),keys=new Set(range.map(p=>p.x+','+p.y));
  useEffect(()=>{if(paused)return;if(!auto&&phase!=='breakUpper'&&phase!=='breakMiddle'&&phase!=='breakLower'&&phase!=='drop'&&phase!=='blast')return;const times={wall:1000,breakUpper:660,middle:1000,breakMiddle:660,lower:1000,breakLower:660,ready:900,hover:1100,drop:450,blast:1700,done:0};if(phase==='done'){setAuto(false);return;}const timer=setTimeout(()=>setPhase(steps[steps.indexOf(phase)+1]),times[phase]);return()=>clearTimeout(timer);},[phase,auto,paused,rows]);
  // 2026-10-19：盤面のクラスは enjo-phase-○○。以前の「enjo-wall」は壁の飾りと同じ名前で、最初の段階だけ盤面が浮いて表示されていた
