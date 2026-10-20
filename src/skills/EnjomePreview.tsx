@@ -5,16 +5,20 @@ import {playEnjoWallBreak,playEnjoImpact} from './enjomeAudio';
 // 2026-10-19 Claude：一つ目の炎の幽霊が、上下二段の黒い外壁に閉じ込められている姿に描き直し。
 // 炎は縦2セルの輪郭、目と口は揺らぐボディとは別の固定座標で描く。
 // Matching cubic segments let the tips grow/retract without snapping the round base.
-function enjoFlameShape(mask:number,lean:number,top:number){
- const x=50+lean,cy=mask&2?top:103,ry=mask&4?44+lean:116,ly=mask&1?48-lean:112;
- return 'M'+x+' '+cy+'C'+(x-2)+' '+(cy+16)+' 58 82 62 99'+
- 'C69 105 71 '+(ry+15)+' 77 '+ry+'C83 '+(ry+17)+' 79 105 81 122'+
+function enjoFlameShape(phase:number){
+ // Phase lag across x carries each crest from left to centre to right.
+ const crest=(lag:number)=>Math.max(0,Math.min(1,.5+.42*Math.sin(phase*3-lag)+.12*Math.sin(phase*7-lag*1.7)));
+ const l=crest(0),c=crest(1.6),r=crest(3.2);
+ const wind=4+3*Math.sin(phase*2),x=48+wind+3*Math.sin(phase*5);
+ const cy=18+(1-c)*65,ly=37+(1-l)*77,ry=30+(1-r)*86;
+ return 'M'+x+' '+cy+'C'+(x-2)+' '+(cy+16)+' '+(58+wind)+' 82 62 99'+
+ 'C69 105 '+(71+wind)+' '+(ry+15)+' '+(77+wind*.4)+' '+ry+'C'+(83+wind*.3)+' '+(ry+17)+' 79 105 81 122'+
  'C85 143 80 167 69 179C59 191 40 190 29 179C18 167 15 145 20 124'+
- 'C24 106 20 '+(ly+14)+' 24 '+ly+'C32 '+(ly+17)+' 29 106 38 104'+
+ 'C24 106 '+(20+wind)+' '+(ly+14)+' '+(24+wind*.5)+' '+ly+'C'+(32+wind)+' '+(ly+17)+' 29 106 38 104'+
  'C46 106 '+(x-10)+' '+(cy+24)+' '+x+' '+cy+'Z';
 }
-// Bit masks: left=1, centre=2, right=4. Short uneven beats exchange the lead tip.
-const ENJO_FLAME_SHAPES=[[2,0,16],[3,-4,24],[1,-7,20],[5,3,15],[4,6,22],[6,4,12],[2,-3,26],[7,-5,18],[3,2,12],[6,6,25],[4,2,18],[5,-4,22],[1,-6,15],[3,-2,24],[2,0,16]].map(([mask,x,y])=>enjoFlameShape(mask,x,y));
+// A sampled travelling wave, rather than a sequence of on/off tip combinations.
+const ENJO_FLAME_SHAPES=Array.from({length:40},(_,i)=>enjoFlameShape(i/40*Math.PI*2));
 export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wallMask?:boolean[];paused?:boolean;walls?:0|1|2|3;rows?:2|3;breaking?:'top'|'middle'|'bottom'}){const svg=useRef<SVGSVGElement|null>(null);useEffect(()=>{if(paused)svg.current?.pauseAnimations();else svg.current?.unpauseAnimations();},[paused]);const id=useId().replace(/:/g,'');const g=(n:string)=>'url(#'+id+n+')';return <svg ref={svg} className={'enjo-capsule'+(breaking?' enjo-breaking':'')} viewBox={'0 0 100 '+rows*100} role="img" aria-label="縦2セルのエンジョーボム（炎本体2セル）">
  <defs>
   <radialGradient id={id+'heat'}><stop stopColor="#ffda65" stopOpacity=".9"/><stop offset=".42" stopColor="#ffad35" stopOpacity=".6"/><stop offset="1" stopColor="#ff771c" stopOpacity="0"/></radialGradient>
@@ -33,7 +37,7 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
  <g className="enjo-inner" transform={'translate(0 '+(rows===3?50:0)+')'}>
   <rect x="0" y="0" width="100" height="200" fill={g('glow')}/>
   <g className="enjo-ghost">
-   <path id={id+'flame-shape'} className="enjo-ghost-body" d={ENJO_FLAME_SHAPES[0]} fill={g('body')}><animate attributeName="d" values={ENJO_FLAME_SHAPES.join(';')} keyTimes="0;.055;.12;.19;.25;.31;.38;.44;.51;.60;.67;.73;.82;.91;1" dur="1.9s" repeatCount="indefinite"/></path>
+   <path id={id+'flame-shape'} className="enjo-ghost-body" d={ENJO_FLAME_SHAPES[0]} fill={g('body')}><animate attributeName="d" values={ENJO_FLAME_SHAPES.join(';')} calcMode="discrete" dur="2.4s" repeatCount="indefinite"/></path>
    <g className="enjo-core-clip" clipPath={g('flame-clip')}><g className="enjo-core-motion">
    <path className="enjo-ghost-core" d="M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z" fill={g('core')}><animate attributeName="d" values="M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z;M51 58C56 76 47 93 61 106C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 51 58Z;M38 69C56 76 47 93 54 111C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 38 69Z;M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z" dur="2.6s" repeatCount="indefinite"/></path>
    </g></g>
