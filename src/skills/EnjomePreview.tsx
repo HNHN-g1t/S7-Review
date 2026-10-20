@@ -37,7 +37,7 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
  <g className="enjo-inner" transform={'translate(0 '+(rows===3?50:0)+')'}>
   <rect x="0" y="0" width="100" height="200" fill={g('glow')}/>
   <g className="enjo-ghost">
-   <path id={id+'flame-shape'} className="enjo-ghost-body" d={ENJO_FLAME_SHAPES[0]} fill={g('body')}><animate attributeName="d" values={ENJO_FLAME_SHAPES.join(';')} calcMode="discrete" dur="2.4s" repeatCount="indefinite"/></path>
+   <path id={id+'flame-shape'} className="enjo-ghost-body" d={ENJO_FLAME_SHAPES[0]} fill={g('body')}><animate attributeName="d" values={ENJO_FLAME_SHAPES.join(';')} calcMode="discrete" dur="1.2s" repeatCount="indefinite"/></path>
    <g className="enjo-core-clip" clipPath={g('flame-clip')}><g className="enjo-core-motion">
    <path className="enjo-ghost-core" d="M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z" fill={g('core')}><animate attributeName="d" values="M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z;M51 58C56 76 47 93 61 106C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 51 58Z;M38 69C56 76 47 93 54 111C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 38 69Z;M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z" dur="2.6s" repeatCount="indefinite"/></path>
    </g></g>
