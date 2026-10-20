@@ -5,15 +5,16 @@ import {playEnjoWallBreak,playEnjoImpact} from './enjomeAudio';
 // 2026-10-19 Claude：一つ目の炎の幽霊が、上下二段の黒い外壁に閉じ込められている姿に描き直し。
 // 炎は縦2セルの輪郭、目と口は揺らぐボディとは別の固定座標で描く。
 // Matching cubic segments let the tips grow/retract without snapping the round base.
-function enjoFlameShape(tips:number,lean:number,top:number){
- const x=35+lean;
- return 'M'+x+' '+top+'C29 40 42 47 51 59'+
- (tips>=2?'C62 74 59 94 67 98C75 101 73 80 75 70C83 84 79 105 81 122':'C62 92 65 110 71 115C75 116 76 115 77 114C83 121 79 118 81 122')+
+function enjoFlameShape(mask:number,lean:number,top:number){
+ const x=50+lean,cy=mask&2?top:103,ry=mask&4?44+lean:116,ly=mask&1?48-lean:112;
+ return 'M'+x+' '+cy+'C'+(x-2)+' '+(cy+16)+' 58 82 62 99'+
+ 'C69 105 71 '+(ry+15)+' 77 '+ry+'C83 '+(ry+17)+' 79 105 81 122'+
  'C85 143 80 167 69 179C59 191 40 190 29 179C18 167 15 145 20 124'+
- (tips===3?'C24 106 22 91 23 81C31 86 29 106 38 104':'C24 112 22 109 23 109C31 110 29 110 38 104')+
- 'C49 101 45 83 39 73C29 57 26 35 '+x+' '+top+'Z';
+ 'C24 106 20 '+(ly+14)+' 24 '+ly+'C32 '+(ly+17)+' 29 106 38 104'+
+ 'C46 106 '+(x-10)+' '+(cy+24)+' '+x+' '+cy+'Z';
 }
-const ENJO_FLAME_SHAPES=[[1,0,17],[3,9,12],[2,-8,24],[1,4,15],[2,-3,21],[3,-6,14],[1,0,17]].map(([n,x,y])=>enjoFlameShape(n,x,y));
+// Bit masks: left=1, centre=2, right=4. Short uneven beats exchange the lead tip.
+const ENJO_FLAME_SHAPES=[[2,0,16],[3,-4,24],[1,-7,20],[5,3,15],[4,6,22],[6,4,12],[2,-3,26],[7,-5,18],[3,2,12],[6,6,25],[4,2,18],[5,-4,22],[1,-6,15],[3,-2,24],[2,0,16]].map(([mask,x,y])=>enjoFlameShape(mask,x,y));
 export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wallMask?:boolean[];paused?:boolean;walls?:0|1|2|3;rows?:2|3;breaking?:'top'|'middle'|'bottom'}){const svg=useRef<SVGSVGElement|null>(null);useEffect(()=>{if(paused)svg.current?.pauseAnimations();else svg.current?.unpauseAnimations();},[paused]);const id=useId().replace(/:/g,'');const g=(n:string)=>'url(#'+id+n+')';return <svg ref={svg} className={'enjo-capsule'+(breaking?' enjo-breaking':'')} viewBox={'0 0 100 '+rows*100} role="img" aria-label="縦2セルのエンジョーボム（炎本体2セル）">
  <defs>
   <radialGradient id={id+'heat'}><stop stopColor="#ffda65" stopOpacity=".9"/><stop offset=".42" stopColor="#ffad35" stopOpacity=".6"/><stop offset="1" stopColor="#ff771c" stopOpacity="0"/></radialGradient>
@@ -32,7 +33,7 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
  <g className="enjo-inner" transform={'translate(0 '+(rows===3?50:0)+')'}>
   <rect x="0" y="0" width="100" height="200" fill={g('glow')}/>
   <g className="enjo-ghost">
-   <path id={id+'flame-shape'} className="enjo-ghost-body" d={ENJO_FLAME_SHAPES[0]} fill={g('body')}><animate attributeName="d" values={ENJO_FLAME_SHAPES.join(';')} keyTimes="0;.09;.31;.43;.69;.82;1" dur="7.3s" repeatCount="indefinite"/></path>
+   <path id={id+'flame-shape'} className="enjo-ghost-body" d={ENJO_FLAME_SHAPES[0]} fill={g('body')}><animate attributeName="d" values={ENJO_FLAME_SHAPES.join(';')} keyTimes="0;.055;.12;.19;.25;.31;.38;.44;.51;.60;.67;.73;.82;.91;1" dur="1.9s" repeatCount="indefinite"/></path>
    <g className="enjo-core-clip" clipPath={g('flame-clip')}><g className="enjo-core-motion">
    <path className="enjo-ghost-core" d="M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z" fill={g('core')}><animate attributeName="d" values="M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z;M51 58C56 76 47 93 61 106C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 51 58Z;M38 69C56 76 47 93 54 111C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 38 69Z;M44 63C56 76 47 93 58 108C66 118 73 132 71 148C70 168 61 177 49 177C34 177 25 165 26 148C27 132 36 121 38 108C40 94 44 85 44 63Z" dur="2.6s" repeatCount="indefinite"/></path>
    </g></g>
