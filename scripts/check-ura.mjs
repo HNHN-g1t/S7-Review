@@ -1,7 +1,7 @@
 /** ウラメン（2026-10-14）のデータ確認。Run: node scripts/check-ura.mjs
  * ・ウラ9（内部11）→ ウラ1（内部19）の9ウォール×3面＝27面、ID 100〜126
  * ・最初の面は表の最後（9-3）のクリアが条件。あとは1本道で順に開く
- * ・各ウォールにボスが1つ。難易度（敵の合計）はウラ9からウラ1へ上がっていく
+ * ・各ウォールにボスが1つ。習得面3つとテスト用の敵数半減を確認
  * ・保存を読み直してもウラの進み具合が消えない
  */
 import assert from 'node:assert/strict';
@@ -40,7 +40,18 @@ for (const m of URA_MISSIONS) {
 // 難易度：敵の合計がウラ9からウラ1へ増えていく
 const size = m => m.enemies.length + (m.reinforceKoitsume ?? 0) + (m.detarameTotal ?? 0) + (m.anchikushoume || m.sanzapparaname ? 1 : 0);
 const perWall = URA_WALLS.map(a => URA_MISSIONS.filter(m => m.wall === a.wall).reduce((t, m) => t + size(m), 0));
-for (let i = 1; i < perWall.length; i++) assert(perWall[i] >= perWall[i - 1], `ura difficulty never drops (${perWall.join(',')})`);
+// Lessons replace entrance battles, so per-wall totals need not be monotonic.
+for(const [stage,ability] of [[100,'you456'],[109,'hyoketsu'],[121,'enjo']]) {
+ const m=wallMission(stage);assert.equal(m.kind,'lesson');assert.equal(m.learns,ability);assert.equal(m.skillTarget.count,1);assert.equal(m.enemies.length,0);
+ assert(!w.wallAbilities([]).includes(ability));assert(w.wallAbilities(cleared).includes(ability));
+}
+for(const m of URA_MISSIONS.filter(m=>m.kind!=='lesson')){
+ const i=m.wall-11,part=(m.stage-100)%3,small=Math.min(7,4+Math.floor(i/2));
+ assert.equal(m.enemies.length,Math.ceil((part===1?Math.max(2,small-2):part===2?Math.min(7,small+1):small)/2));
+ assert.equal(m.reinforceKoitsume,Math.ceil(Math.min(7,(part===2?5:4)+i)/2));
+ if(m.sanzVolley)assert.equal(m.sanzVolley,Math.ceil(Math.min(5,2+Math.floor(i/2))/2));
+ if(m.detarameTotal)assert.equal(m.detarameTotal,Math.ceil((part===2?2+Math.floor(i/2):1+Math.floor(i/2))/2));
+}
 assert(perWall[8] > perWall[0], 'ura gets harder');
 
 // 保存の読み直し

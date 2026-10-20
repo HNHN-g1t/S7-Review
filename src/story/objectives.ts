@@ -1,5 +1,5 @@
 import type { WallMission } from './wall1';
-export const emptyWallCounts = () => ({ sevens: 0, superOnes: 0, nico: 0, thunder: 0, enemyKills: 0, bombs: { spa1: 0, sla3: 0, squ4: 0, str6: 0 } });
+export const emptyWallCounts = () => ({ sevens: 0, superOnes: 0, nico: 0, thunder: 0, you456: 0, hyoketsu: 0, enjo: 0, enemyKills: 0, bombs: { spa1: 0, sla3: 0, squ4: 0, str6: 0 } });
 export type WallCounts = ReturnType<typeof emptyWallCounts>;
 export type StoryGoal =
   | { type: 'wall'; mission: WallMission }
@@ -25,6 +25,7 @@ export const STORY_GOALS: StoryGoal[] = [
 ];
 export const missionGoalFor = (mission: WallMission): StoryGoal => mission.sourceStage !== undefined
   ? STORY_GOALS[mission.sourceStage] : { type: 'wall', mission };
+const extraNames = {you456:'シゴロッキュー',hyoketsu:'ヒョーケツボム',enjo:'エンジョーボム'};
 const powerNames = { spa1: 'スーパー1', sla3: 'スラッシュ3', squ4: 'スクウェア4', str6: 'ストレイト6', nico: 'ニコニコボム' };
 export type ObjectivePart = { label: string; now: number; target: number };
 export function wallObjectiveParts(mission: WallMission, counts: WallCounts, score: number, chains: number, enemiesLeft: number): ObjectivePart[] {
@@ -36,6 +37,7 @@ export function wallObjectiveParts(mission: WallMission, counts: WallCounts, sco
   }
   const parts: ObjectivePart[] = [];
   const add = (label: string, now: number, target: number) => { if (target > 0) parts.push({ label, now: Math.min(now, target), target }); };
+  if(mission.skillTarget) add(extraNames[mission.skillTarget.kind],counts[mission.skillTarget.kind],mission.skillTarget.count);
   add('セヴン目', counts.sevens, mission.sevens);
   add('2チェイン以上', chains, mission.chainTarget ?? 0);
   add('得点', score, mission.scoreTarget ?? 0);
@@ -58,6 +60,7 @@ export function storyObjectiveText(goal: StoryGoal, mission?: WallMission): stri
   if (goal.type === 'wall') {
     const m = goal.mission;
     const parts: string[] = [];
+    if(m.skillTarget) parts.push(`${extraNames[m.skillTarget.kind]}を${m.skillTarget.count}回発動`);
     if (m.sevens) parts.push(`セヴン目を${m.sevens}回`);
     if (m.chainTarget) parts.push(`2チェイン以上を${m.chainTarget}回`);
     if (m.scoreTarget) parts.push(`${m.scoreTarget.toLocaleString('ja-JP')}点`);
