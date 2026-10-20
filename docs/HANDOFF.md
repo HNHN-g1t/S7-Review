@@ -1,3 +1,8 @@
+## 2026-10-20 ヒッサツメの和英併記
+- 456You!を日本語シゴロッキュー/英語45RockYouに改名、技図鑑のサンダー直後へ移動。目次/一覧/模擬戦選択は同一配列順。レビュー内の発動コール/セリフ/模擬戦名も言語別に対応。
+- 各項目にenglishNameを追加し、日本語見出しの下へ表示。従来の英語名を流用、サンダー/氷/炎はIchi-Nino Thunder/Hyoketsu Bomb/Enjo Bombを案として併記。FEVERは日本語フィーバー/英語FEVER。
+- build:gallery/check-skill-catalogue/check-you456（通常/FEVER/実resolver）成功。レビューのみ、本編は別途反映。
+
 ## 2026-10-20 セル外1pxの籠/炎120％/粒調整
 - 指定に合わせ籠をセル境界のrectに変更。vectorEffect non-scaling-strokeの2px線で外縁1px外側。段クリップを外へ広げ、網だけ丸角の内側へクリップ。
 - 炎/顔/光を専用gで120％、粒は拡大グループ外。粒48→32、半径2倍、寿命半分、明滅強化。

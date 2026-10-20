@@ -2429,8 +2429,8 @@ const BOMB_CALLS: Record<
   },
   you456: {
     banner: '',
-    saika: { ja: '456You!', en: '456You!' },
-    fever: { ja: '456You!', en: '456You!' },
+    saika: { ja: 'シゴロッキュー', en: '45RockYou' },
+    fever: { ja: 'シゴロッキュー', en: '45RockYou' },
   },
 };
 
@@ -5796,7 +5796,7 @@ const hyoketsuPractice = enemyPractice?.enemy === 'hyoketsume';
 const sanzPractice = enemyPractice?.enemy === 'sanzapparaname';
 if (enemyPractice && enemyPractice.stage === 8) {
   STORY_STAGES[8] = {
-    name: { ja: you456Practice ? '456You!' : enemyPractice.name, en: you456Practice ? '456You!' : enemyPractice.enemy },
+    name: { ja: you456Practice ? 'シゴロッキュー' : enemyPractice.name, en: you456Practice ? '45RockYou' : enemyPractice.enemy },
     goal: { type: 'defeat' },
     enemies: you456Practice ? [{x:2,y:9,value:KOITSUME},{x:6,y:11,value:DAME}] : hyoketsuPractice ? [{x:1,y:ROWS-3,value:KOITSUME},{x:5,y:ROWS-3,value:DAME},{x:3,y:ROWS-3,value:-7}] : [{ x: 3, y: ROWS - 2, value: enemyPractice.enemy === 'dame' ? DAME : KOITSUME }],
   };
@@ -13376,7 +13376,7 @@ export default function App() {
               <circle cx={you456Beam.used[0].x + .5} cy={you456Beam.used[0].y + .5} r=".18" />
             </svg>
           ) : null}
-          {you456Call ? <div aria-hidden className="you456-call">456You!</div> : null}
+          {you456Call ? <div aria-hidden className="you456-call">{lang==='ja'?'シゴロッキュー':'45RockYou'}</div> : null}
           {/* 指の白い軌跡。サイや敵の上に置き、離す・中断するたびに消す。 */}
           {status === 'playing' && thunderTrail.length > 0 ? (
             <svg aria-hidden className="thunder-pointer-trail" viewBox={`0 0 ${COLS} ${ROWS}`}>
