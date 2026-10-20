@@ -33,7 +33,7 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
    <path className="enjo-mouth" d="M42 152C44 150 45 155 50 155C55 155 56 150 58 152C60 155 56 164 50 164C44 164 40 155 42 152Z" fill={g('mouth')}/>
   </g>
   {/* 幽霊からのぼる火の粉 */}
-  {Array.from({length:48},(_,i)=><circle key={i} className="enjo-spark" cx={30+i*17%43} cy={148+i*13%20} r={i%9===0?2.2:.6+i%3*.3} fill={i%2?'#ffc74a':'#fff0bd'} style={{animationDelay:-i*.061+'s','--enjo-drift':(i%2?1:-1)*(5+i*2)+'px'} as CSSProperties}/>)}
+  {Array.from({length:48},(_,i)=><circle key={i} className="enjo-spark" cx={24+i*17%53} cy={96+i*13%25} r={i%9===0?2.2:.6+i%3*.3} fill={i%2?'#ffc74a':'#fff0bd'} style={{animationDelay:-((i*37%48)/48)*(1.8+i%7*.13)+'s','--enjo-spark-duration':(1.8+i%7*.13)+'s','--enjo-drift':(i%2?1:-1)*(5+i%9)+'px'} as CSSProperties}/>)}
  </g>
  <g className="enjo-cage" clipPath={g('cage-clip')} aria-hidden="true">
  {Array.from({length:rows},(_,row)=>{if(wallMask?wallMask[row]:row<rows-walls)return null;return <g key={row} className="enjo-cage-row" clipPath={g('cage-row-'+row)} data-cage-row={row}>

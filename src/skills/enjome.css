@@ -9,7 +9,7 @@
 @keyframes enjo-ghost-flicker{0%,100%{transform:scale(.98,1) skewX(-2deg)}24%{transform:scale(.92,1.07) skewX(4deg)}58%{transform:scale(1.05,.96) skewX(-4deg)}82%{transform:scale(.96,1.04) skewX(2deg)}}
 @keyframes enjo-core-flicker{from{transform:scale(1,1);opacity:.75}to{transform:scale(.92,1.06);opacity:.95}}
 @keyframes enjo-blink{0%,92%,100%{opacity:1}94%,96%{opacity:.12}}
-@keyframes enjo-spark{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-110px);opacity:0}}
+
 
 /* 着弾：地面が一瞬白く走り、各列の地面から炎の柱が下から吹き上がる */
 .enjo-hit{animation:enjo-ignite 1.2s ease-out both;animation-delay:var(--enjo-delay)}
@@ -35,7 +35,7 @@
 .enjo-pillar-inner{background:linear-gradient(to top,#fff9df,#fff2a1 32%,#ffd145 70%,#ffd14500)}
 .enjo-ember{left:calc(12% + var(--enjo-ember)*23%);width:8%;border-radius:15%;background:linear-gradient(#fff7c2,#ff9e23);box-shadow:none;animation:enjo-rich-ember 1.1s ease-out both;animation-delay:calc(var(--enjo-lag) + .12s + var(--enjo-ember)*.09s)}
 @keyframes enjo-rich-ember{0%{transform:translate(0,0) scale(.3) rotate(0);opacity:0}12%{opacity:1}60%{opacity:1}100%{transform:translate(var(--enjo-drift),-90px) scale(.15) rotate(170deg);opacity:0}}
-@keyframes enjo-spark{0%{transform:translate(0,0) scale(.4);opacity:0}15%,50%{opacity:1}100%{transform:translate(var(--enjo-drift,0px),-110px) scale(.2);opacity:0}}
+
 
 /* Independent wall fragments; the capsule has no central crossbar. */
 .enjo-shell-fragment{transform-box:fill-box;transform-origin:center;animation:enjo-shell-shatter .62s cubic-bezier(.12,.7,.25,1) both}
@@ -57,7 +57,7 @@
 @keyframes enjo-sheet-rise{0%{transform:scaleY(.02);opacity:0}12%{opacity:1}30%{transform:scaleY(1.08)}55%{transform:scaleY(.96);opacity:1}75%{transform:scaleY(1.02);opacity:.85}100%{transform:scaleY(.3);opacity:0}}
 
 .enjo-capsule .enjo-eye{animation:none}
-.enjo-spark{animation:enjo-spark 1.5s ease-out infinite,enjo-spark-pop .13s steps(1,end) infinite!important}
+.enjo-capsule .enjo-spark{animation:enjo-spark var(--enjo-spark-duration,2.2s) linear infinite!important}
 @keyframes enjo-spark-pop{0%,48%,80%,100%{opacity:1}25%,65%{opacity:.08}}
 
 .enjo-game-capsule{position:absolute;z-index:150;border:0;background:transparent!important;padding:0;min-height:0;overflow:visible}.enjo-game-capsule:disabled{opacity:1;cursor:default}.enjo-game-capsule svg,.enjo-game-flight svg{width:100%;height:100%;overflow:visible}.enjo-game-flight{position:absolute;top:0;z-index:160;pointer-events:none}.enjo-game-flight.is-dropping{animation:enjo-game-drop .35s cubic-bezier(.7,0,1,.7) both}.enjo-game-blast{position:absolute;z-index:170;pointer-events:none}@keyframes enjo-game-drop{to{transform:translateY(var(--enjo-floor))}}
@@ -68,3 +68,6 @@
 .enjo-live-tools{display:flex;align-items:center;gap:8px;max-width:460px;font-size:11px;color:#ffddab}.enjo-live-tools button{font-size:11px;min-height:32px;padding:4px 8px;flex:none}.enjo-live-tools span{line-height:1.4}
 
 .enjo-blast[data-enjo-paused=true] *{animation-play-state:paused!important}
+
+/* Steady staggered embers from the middle, flickering as they float upward. */
+@keyframes enjo-spark{0%{transform:translate(0,0) scale(.4);opacity:0}8%{opacity:.9}18%{opacity:.2}28%{opacity:1}40%{opacity:.15}53%{opacity:.9}65%{opacity:.2}76%{opacity:.8}88%{opacity:.1}100%{transform:translate(var(--enjo-drift,0px),-125px) scale(.2);opacity:0}}
