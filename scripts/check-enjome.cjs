@@ -9,7 +9,7 @@ const starts=[],ends=[],nodes=[];const param=()=>({value:0,setValueAtTime(){},ex
 const node=()=>{const n={connect(){},disconnect(){},start(t){starts.push(t)},stop(t){ends.push(t)},gain:param(),frequency:param(),Q:param()};nodes.push(n);return n;};
 const ctx={currentTime:10,sampleRate:8000,createGain:node,createOscillator:node,createBiquadFilter:node,createBufferSource:node,createBuffer:(_,n)=>({getChannelData:()=>new Float32Array(n)})};
 audio.exports.playEnjoWallBreak(ctx,{});assert.equal(starts.length,7);assert(Math.max(...ends)<10.66);
-starts.length=0;ends.length=0;audio.exports.playEnjoImpact(ctx,{});assert.equal(starts.length,11);assert(Math.max(...ends)>11.4);nodes.forEach(n=>n.onended?.());
+starts.length=0;ends.length=0;audio.exports.playEnjoImpact(ctx,{});assert.equal(starts.length,17);assert(Math.max(...ends)>11.4);nodes.forEach(n=>n.onended?.());
 console.log('PASS Enjome audio: short wall fracture, impact + sustained fire, source cleanup');
 
 for(const phase of m.exports.ENJO_STEPS){assert.equal(m.exports.enjoDemoOccupied(4,5,phase),false);assert.equal(m.exports.enjoDemoOccupied(4,6,phase),false);}assert.equal(m.exports.enjoDemoOccupied(4,7,'drop'),false);assert.equal(m.exports.enjoDemoOccupied(3,6,'wall'),true);console.log('PASS Enjome occupies two empty cells; landing cells never overlap dice');
@@ -18,5 +18,5 @@ assert.deepEqual(Array.from(m.exports.enjoSteps(2)),Array.from(m.exports.ENJO_ST
 
 starts.length=0;ends.length=0;audio.exports.playEnjoRise(ctx,{});assert.equal(starts.length,3);assert(Math.max(...ends)<=10.61);
 starts.length=0;ends.length=0;audio.exports.playEnjoDive(ctx,{});assert.equal(starts.length,2);assert(Math.max(...ends)<=10.35);
-starts.length=0;ends.length=0;audio.exports.playEnjoImpact(ctx,{});assert.equal(starts.filter(t=>t>=11).length,4);assert(Math.max(...ends)<11.7);nodes.forEach(n=>n.onended?.());
+starts.length=0;ends.length=0;audio.exports.playEnjoImpact(ctx,{});assert.equal(starts.filter(t=>t>=11).length,10);assert(Math.max(...ends)<11.7);nodes.forEach(n=>n.onended?.());
 console.log('PASS Enjo ascent/descent envelopes and four timed extinguish swishes fit the blast lifetime');
