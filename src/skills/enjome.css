@@ -48,9 +48,9 @@
 
 /* Three-cell shell keeps an unscaled two-cell flame centered inside. */
 .enjo-bomb.enjo-tall-capsule{top:44.444%;height:33.333%}.enjo-phase-hover .enjo-bomb.enjo-tall-capsule{top:0}.enjo-phase-drop .enjo-bomb.enjo-tall-capsule{top:72.222%}
-.enjo-capsule .enjo-ghost{filter:drop-shadow(0 0 4px #ff1606) drop-shadow(0 0 8px #ff3c1480);animation:enjo-body-breathe 2.6s ease-in-out infinite;transform-origin:50px 180px}
+.enjo-capsule .enjo-ghost{filter:drop-shadow(0 0 2px #ff1606) drop-shadow(0 0 4px #ff3c1480);animation:enjo-body-breathe 2.6s ease-in-out infinite;transform-origin:50px 180px}
 @keyframes enjo-body-breathe{0%,100%{transform:scaleX(1)}40%{transform:scaleX(.98)}70%{transform:scaleX(1.025)}}
-.enjo-capsule .enjo-ghost-core{opacity:.95;filter:drop-shadow(0 0 3px #ff800d)}
+.enjo-capsule .enjo-ghost-core{opacity:.95;filter:drop-shadow(0 0 2px #ff800d)}
 .enjo-connected-fire{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 7px #ff260b) drop-shadow(0 0 13px #ff481a)}
 .enjo-fire-sheet{transform-box:view-box;transform-origin:50% 100%;animation:enjo-sheet-rise 1.7s cubic-bezier(.16,.8,.24,1) both}
 .enjo-free-ember{width:1.1%;height:1.5%;min-width:2px}
@@ -70,7 +70,7 @@
 .enjo-blast[data-enjo-paused=true] *{animation-play-state:paused!important}
 
 /* Steady staggered embers from the middle, flickering as they float upward. */
-@keyframes enjo-spark{0%{transform:translate(0,0) scale(.4);opacity:0}8%{opacity:1}15%{opacity:0}24%{opacity:1}32%{opacity:.05}43%{opacity:1}51%{opacity:0}61%{opacity:.95}69%{opacity:.05}78%{opacity:1}88%{opacity:0}94%{opacity:.65}100%{transform:translate(var(--enjo-drift,0px),-125px) scale(.2);opacity:0}}
+@keyframes enjo-spark{0%{transform:translate(0,0) scale(.4);opacity:0}8%{opacity:1}15%{opacity:0}24%{opacity:1}32%{opacity:.05}43%{opacity:1}51%{opacity:0}61%{opacity:.95}69%{opacity:.05}78%{opacity:1}88%{opacity:0}94%{opacity:.65}100%{transform:translate(var(--enjo-drift,0px),-225px) scale(.2);opacity:0}}
 
 /* Fixed face is a sibling of this vibrating flame, never a child. */
 .enjo-capsule .enjo-ghost{animation:enjo-body-shiver .145s steps(2,end) infinite}
@@ -78,3 +78,6 @@
 .enjo-capsule .enjo-core-motion{transform-box:view-box;transform-origin:50px 177px;animation:enjo-core-lift 4.7s ease-in-out infinite}
 @keyframes enjo-body-shiver{0%,100%{transform:translate(0,0)}17%{transform:translate(-1.1px,-1.5px)}39%{transform:translate(.8px,.7px)}61%{transform:translate(-.5px,-.8px)}83%{transform:translate(1.2px,.4px)}}
 @keyframes enjo-core-lift{0%,100%{transform:scaleY(.9)}13%{transform:scaleY(1.1)}36%{transform:scaleY(.7)}57%{transform:scaleY(1.02)}78%{transform:scaleY(.78)}}
+
+/* Let the longer ember trails extend past their SVG/cell instead of cutting off. */
+.enjo-capsule,.enjo-board{overflow:visible}

@@ -26,7 +26,7 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
   <clipPath id={id+'cage-clip'}><rect x="0" y="0" width="100" height={rows*100} rx="12"/></clipPath>
   {Array.from({length:rows},(_,row)=><clipPath key={row} id={id+'cage-row-'+row}><rect x="-20" y={row*100-(row===0?20:0)} width="140" height={100+(row===0?20:0)+(row===rows-1?20:0)}/></clipPath>)}
   <linearGradient id={id+'glass'} x1="0" x2="1"><stop stopColor="#d9f6ff" stopOpacity=".34"/><stop offset=".22" stopColor="#bfe9ff" stopOpacity=".08"/><stop offset=".78" stopColor="#bfe9ff" stopOpacity=".06"/><stop offset="1" stopColor="#d9f6ff" stopOpacity=".3"/></linearGradient>
-  <radialGradient id={id+'glow'} cx=".5" cy=".62" r=".55"><stop stopColor="#ff9a2e" stopOpacity=".55"/><stop offset="1" stopColor="#ff5a1f" stopOpacity="0"/></radialGradient>
+  <radialGradient id={id+'glow'} gradientUnits="userSpaceOnUse" cx="50" cy="108" r="44" gradientTransform="translate(50 108) scale(.8 1.6) translate(-50 -108)"><stop stopColor="#ff9a2e" stopOpacity=".55"/><stop offset="1" stopColor="#ff5a1f" stopOpacity="0"/></radialGradient>
   <radialGradient id={id+'body'} cx=".45" cy=".65" r=".72"><stop stopColor="#ff6516"/><stop offset=".58" stopColor="#ff6518"/><stop offset=".82" stopColor="#ff2507"/><stop offset="1" stopColor="#ff1205"/></radialGradient>
   <radialGradient id={id+'core'} cx=".5" cy=".68" r=".67"><stop stopColor="#ffe77a"/><stop offset=".42" stopColor="#ffc327"/><stop offset=".72" stopColor="#ffbf0e"/><stop offset="1" stopColor="#ff7810"/></radialGradient>
   <linearGradient id={id+'mouth'} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#220407"/><stop offset="1" stopColor="#8f0b16"/></linearGradient>
@@ -52,7 +52,7 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
   </g>
   </g>
   {/* 幽霊からのぼる火の粉 */}
-  {Array.from({length:32},(_,i)=><circle key={i} className="enjo-spark" cx={24+(i*17%53)*4} cy={96+(i*13%25)*4} r={(i%9===0?2.2:.6+i%3*.3)*2} fill={i%2?'#ffc74a':'#fff0bd'} style={{animationDelay:-((i*13%32)/32)*(.9+i%7*.065)+'s','--enjo-spark-duration':(.9+i%7*.065)+'s','--enjo-drift':(i%2?1:-1)*(5+i%9)+'px'} as CSSProperties}/>)}
+  {Array.from({length:32},(_,i)=><circle key={i} className="enjo-spark" cx={24+(i*17%53)*4} cy={96+(i*13%25)*4} r={(i%9===0?2.2:.6+i%3*.3)*3} fill={i%2?'#ffc74a':'#fff0bd'} style={{animationDelay:-((i*13%32)/32)*(.9+i%7*.065)+'s','--enjo-spark-duration':(.9+i%7*.065)+'s','--enjo-drift':(i%2?1:-1)*(5+i%9)+'px'} as CSSProperties}/>)}
  </g>
  <g className="enjo-cage" aria-hidden="true">
  {Array.from({length:rows},(_,row)=>{if(wallMask?wallMask[row]:row<rows-walls)return null;return <g key={row} className="enjo-cage-row" clipPath={g('cage-row-'+row)} data-cage-row={row}>
