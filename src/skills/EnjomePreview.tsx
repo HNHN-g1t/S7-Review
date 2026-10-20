@@ -64,15 +64,23 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
  </g>
  {breaking&&<g key={breaking}>{Array.from({length:10},(_,i)=>{const row=breaking==='top'?0:breaking==='middle'?1:rows-1;const x=23+i*19%55,y=row*100+12+Math.floor(i/2)*17;return <path key={i} className="enjo-shell-fragment" d={'M'+(x-6)+' '+y+'l12 14m-12 0 12 -14'} fill="none" stroke="#07090e" strokeWidth="4" strokeLinecap="round" style={{'--enjo-shard-x':(i%2?1:-1)*(35+i*4)+'px','--enjo-shard-y':(-20-i*3)+'px','--enjo-shard-spin':(i%2?1:-1)*70+'deg'} as CSSProperties}/>;})}</g>}
  </svg>;}
-// 着弾後：落ちた地面の列から、範囲の高さぶんだけ炎の柱が下から吹き上がる（中央から外へ少しずつ遅れて）
+// Abstract heat burst: pooled oval light, dense rising rays and a single hot sweep.
 export function EnjoBlast({range,paused=false}:{range:{x:number;y:number}[];paused?:boolean}){
- const svg=useRef<SVGSVGElement|null>(null);useEffect(()=>{if(paused)svg.current?.pauseAnimations();else svg.current?.unpauseAnimations();},[paused]);
- const id=useId().replace(/:/g,'');const columns=new Map<number,number>();range.forEach(p=>columns.set(p.x,(columns.get(p.x)??0)+1));const xs=[...columns.keys()].sort((a,b)=>a-b),left=xs[0];
- const contour=(wave:number)=>{let d='M'+left+' 9V8.7';for(const x of xs){const y=9-columns.get(x)!;d+=' Q'+(x+.08)+' '+(y+.6)+' '+(x+.3)+' '+(y+.9)+' C'+(x+.65+wave)+' '+(y+1.2)+' '+(x+.55-wave)+' '+(y+.4)+' '+(x+.6)+' '+y+' Q'+(x+.86)+' '+(y+.2)+' '+(x+1)+' '+(y+.8);}return d+'V9Z';};
- const d=contour(0);
- return <div className="enjo-blast" data-enjo-paused={paused} aria-hidden="true"><svg ref={svg} className="enjo-connected-fire" viewBox="0 0 9 9"><defs><linearGradient id={id+'fire'} x1="0" y1="1" x2="0" y2="0"><stop stopColor="#ff1305"/><stop offset=".48" stopColor="#ff4b0d"/><stop offset="1" stopColor="#ffaf35"/></linearGradient><linearGradient id={id+'heart'} x1="0" y1="1" x2="0" y2="0"><stop stopColor="#ff4d0e"/><stop offset=".5" stopColor="#ffb323"/><stop offset="1" stopColor="#fff0ac"/></linearGradient></defs>
- <g className="enjo-fire-sheet"><path d={d} fill={'url(#'+id+'fire)'}><animate attributeName="d" values={d+';'+contour(.15)+';'+contour(-.12)+';'+d} dur=".85s" repeatCount="indefinite"/></path><g transform="translate(4.5 9) scale(.88 .8) translate(-4.5 -9)"><path d={d} fill={'url(#'+id+'heart)'}/></g></g>
- </svg>{xs.flatMap(x=>[0,1,2,3].map(k=><b key={x+'-'+k} className="enjo-ember enjo-free-ember" style={{left:(x+.2+k*.17)/9*100+'%',bottom:'8%','--enjo-lag':Math.abs(x-4)*.05+'s','--enjo-ember':k,'--enjo-drift':((k%2?1:-1)*(15+k*12))+'px'} as CSSProperties}/>))}</div>;
+ const id=useId().replace(/:/g,'');const columns=new Map<number,number>();range.forEach(p=>columns.set(p.x,(columns.get(p.x)??0)+1));const xs=[...columns.keys()].sort((a,b)=>a-b);
+ return <div className="enjo-blast enjo-abstract-burst" data-enjo-paused={paused} aria-hidden="true"><svg className="enjo-abstract-field" viewBox="0 0 9 9"><defs>
+ <radialGradient id={id+'oval'}><stop stopColor="#fff8cf"/><stop offset=".25" stopColor="#ffe479" stopOpacity=".95"/><stop offset=".6" stopColor="#ff711e" stopOpacity=".6"/><stop offset="1" stopColor="#ff2709" stopOpacity="0"/></radialGradient>
+ <linearGradient id={id+'ray'} x1="0" y1="1" x2="0" y2="0"><stop stopColor="#ff350a" stopOpacity="0"/><stop offset=".28" stopColor="#ff902e" stopOpacity=".7"/><stop offset=".72" stopColor="#fff4ac"/><stop offset="1" stopColor="#fffbe8" stopOpacity="0"/></linearGradient>
+ </defs>
+ <ellipse className="enjo-impact-pool" cx="4.5" cy="8.94" rx={(xs.length+.4)/2} ry=".22" fill={'url(#'+id+'oval)'}/>
+ {xs.map(x=>{const h=columns.get(x)!,lag=Math.abs(x-4)*.035;return <g key={x} transform={'translate('+(x+.5)+' 9)'}>
+  <g className="enjo-energy-column" style={{'--burst-lag':lag+'s'} as CSSProperties}>
+   <ellipse className="enjo-heat-cloud" cx="0" cy={-h*.42} rx=".76" ry={h*.6} fill={'url(#'+id+'oval)'}/>
+   {Array.from({length:7},(_,i)=><rect key={'r'+i} className="enjo-energy-ray" x={-.44+i*.145} y={-h*(.55+(i*3%5)*.1)} width={i%3===0?.045:.018} height={h*(.55+(i*3%5)*.1)} rx=".02" fill={'url(#'+id+'ray)'} style={{'--ray-delay':(lag+i*.018)+'s'} as CSSProperties}/>)}
+   {Array.from({length:10},(_,i)=><ellipse key={'p'+i} className="enjo-energy-oval" cx={-.48+(i*7%11)*.096} cy={-.08-i%3*.07} rx={.09+i%4*.045} ry={.16+i%3*.09} fill={'url(#'+id+'oval)'} style={{'--particle-delay':(lag+.07+(i*7%10)*.047)+'s','--particle-rise':(-h*(.38+(i*3%7)*.09))+'px','--particle-drift':((i%2?1:-1)*(.06+i%3*.04))+'px'} as CSSProperties}/>)}
+   <ellipse className="enjo-hot-sweep" cx="0" cy="0" rx=".63" ry=".15" fill={'url(#'+id+'oval)'} style={{'--sweep-rise':-h+'px','--sweep-delay':(.17+lag)+'s'} as CSSProperties}/>
+  </g>
+ </g>;})}
+ </svg></div>;
 }
 
 export function EnjomePreview({paused=false}:{paused?:boolean}){
