@@ -281,3 +281,5 @@
 .wall-ura .wall-detail > small, .wall-ura .wall-detail > h2 { background: #2a2533; border-color: #3b3447; color: #e9e3f2; }
 .wall-ura .wall-detail > button:not(.wall-retry):not(.wall-challenge) { background: #4a3d5c; }
 .wall-ura .wall-node.gate small { bottom: auto; top: 44px; }
+
+.wall-review-worlds{display:flex;gap:6px;flex:none;padding:6px 0;align-items:center}.wall-review-worlds button,.wall-review-worlds select{font:inherit;min-height:44px;min-width:0;border:1px solid #788174;border-radius:8px;padding:5px 8px;background:#eff3eb;color:#26392f}.wall-review-worlds button[aria-pressed=true]{background:#35473d;color:white}.wall-review-worlds select{flex:1}.wall-ura .wall-review-worlds button,.wall-ura .wall-review-worlds select{background:#2a2533;color:#e9e3f2;border-color:#665a77}.wall-ura .wall-review-worlds button[aria-pressed=true]{background:#72528b}.wall-illustrated .wall-review-worlds{padding:6px 12px;background:#e9f3e9}

@@ -1,3 +1,8 @@
+## 2026-10-20 マップ確認に裏ステージ
+- ユーザー指定でレビューのマップに表/裏切替とウォール選択を追加。元々メモリーに裏を含む全クリアを用意していたが、入口が王座経由だけで見つけにくかった。
+- review=mapの確認時だけreviewMapを渡す。通常ゲームに切替/無条件解放は出さない。裏9〜裏1の全メン起動と表へ戻る動作をcomponent harnessで検証。
+- build:gallery/check-campaign-map/check-review-isolation成功。レビューのみ。本体PR #5のmainマージ保留は継続。
+
 ## 2026-10-20 2技の本編移植PR（公開マージ待ち）
 - シゴロッキュー/エンジョー確定版を本体fda99ecへ部分移植し、review-sync/shigorokkyu-enjo の3ca3eccへpush。PR https://github.com/HNHN-g1t/SAINOME-SEVEN/pull/5。登場メン新規割当なし、既存ウラ5-4を維持。ユーザーは追加確認で十字消去への変更を明示承認。
 - 本体build/build:gallery/test:story/test:anchi/test:new-skills成功。ウラ8-3修正/軽量化は保持。

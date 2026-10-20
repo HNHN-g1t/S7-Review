@@ -11,7 +11,7 @@ const terrain = {exports:{}};
 vm.runInNewContext(compile(root + '/src/story/wallTerrain.ts'), {exports:terrain.exports, module:terrain, require, console});
 const layout={exports:{}};
 vm.runInNewContext(compile(root + '/src/story/wallOneLayout.ts'), {exports:layout.exports,module:layout});
-function createHarness(progress, initialStage) {
+function createHarness(progress, initialStage, reviewMap=false) {
   let cells = [], index = 0, queue = [], tree, started = [], gates = [];
   const hooks = {
     useState(initial) { const at = index++; if (!(at in cells)) cells[at] = typeof initial === 'function' ? initial() : initial; return [cells[at], value => { cells[at] = typeof value === 'function' ? value(cells[at]) : value; }]; },
@@ -21,7 +21,7 @@ function createHarness(progress, initialStage) {
   const jsx = (type, props) => ({type, props});
   const module = {exports:{}};
   vm.runInNewContext(compile(root + '/src/story/WallMap.tsx'), {exports:module.exports,module,require:name=>name==='react'?hooks:name==='react/jsx-runtime'?{jsx,jsxs:jsx}:name==='./wall1'?data.exports:name==='./wallTerrain'?terrain.exports:name==='./wallOneLayout'?layout.exports:{},console,window:{matchMedia:()=>({matches:true})},setTimeout:fn=>{queue.push(fn);return queue.length;},clearTimeout:()=>{}});
-  const render = () => { index=0; tree=module.exports.WallMap({progress,initialStage,onStart:stage=>started.push(stage),onGate:wall=>{gates.push(wall); progress={...progress,gateReached:progress.gateReached||wall===1,reachedWalls:[...new Set([...(progress.reachedWalls||[]),wall])]};},onLegacy:()=>{},onClose:()=>{}}); return tree; };
+  const render = () => { index=0; tree=module.exports.WallMap({progress,initialStage,reviewMap,onStart:stage=>started.push(stage),onGate:wall=>{gates.push(wall); progress={...progress,gateReached:progress.gateReached||wall===1,reachedWalls:[...new Set([...(progress.reachedWalls||[]),wall])]};},onLegacy:()=>{},onClose:()=>{}}); return tree; };
   const descend = (node, found=[]) => { if (Array.isArray(node)) node.forEach(child=>descend(child,found)); else if(node && typeof node==='object') {found.push(node); descend(node.props?.children,found);} return found; };
   const nodes = () => descend(tree);
   const text = node => Array.isArray(node) ? node.map(text).join('') : node && typeof node==='object' ? text(node.props?.children) : node == null ? '' : String(node);
@@ -136,3 +136,15 @@ const oldMap=createHarness({cleared:all,gateReached:true},28);
 assert(!oldMap.nodes().some(n=>n.type==='img'&&n.props.src==='/maps/wall1.png'));
 assert(oldMap.nodes().some(n=>n.type==='svg'&&n.props.className==='wall-roads'));
 console.log('PASS illustrated Wall 1 only: confirmed positions, 9 missions plus gate, original Wall 2 terrain retained');
+
+const reviewAll=d.ALL_MISSIONS.map(m=>m.stage);
+const review=createHarness({cleared:[0,...reviewAll],gateReached:true},20,true);
+review.click(review.buttonText('裏ステージ'));assert.equal(review.text(review.heading()),'ウラ9');
+for(const m of d.ALL_MISSIONS.filter(m=>m.ura)){
+ const picker=review.byLabel('確認するウォール');picker.props.onChange({target:{value:String(m.wall)}});review.render();
+ review.click(review.byLabel(d.wallTitle(m.stage)));review.flush();
+ review.click(review.buttonText('再トライ'));assert.equal(review.started.at(-1),m.stage);
+}
+review.click(review.buttonText('表ステージ'));assert.equal(review.text(review.heading()),'ウォール1');
+assert(!fresh.buttonText('裏ステージ'),'normal map has no review-only world switch');
+console.log('PASS review map: direct front/back switch and all Ura stage launches, normal map unchanged');

@@ -33,7 +33,8 @@ const startingMission = (wall: number, progress: WallProgress) => {
 };
 type MapPoint = { stage: number; x: number; y: number };
 
-export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onClose, onEnding, endingSeen, onUra, onUraEnding }: {
+export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onClose, onEnding, endingSeen, onUra, onUraEnding, reviewMap = false }: {
+  reviewMap?: boolean;
   progress: WallProgress; initialStage?: number | null; onStart: (stage: number) => void;
   onGate: (wall: number) => void; onLegacy: () => void; onClose: () => void;
   // 最後のウォールの門（王座）からエンディングを見る
@@ -186,6 +187,7 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
         </div>
         <span>{!area.implemented ? '準備中' : !open ? '🔒 未解放' : <><span aria-hidden>⚑ </span>{completed}/{missionsIn(wall).length}</>}</span>
       </div>
+      {reviewMap&&<nav className="wall-review-worlds" aria-label="確認するマップ"><button aria-pressed={!isUra} disabled={moving} onClick={()=>changeWall(1)}>表ステージ</button><button aria-pressed={isUra} disabled={moving} onClick={()=>changeWall(11)}>裏ステージ</button><select aria-label="確認するウォール" value={wall} disabled={moving} onChange={e=>changeWall(Number(e.target.value))}>{ALL_WALLS.map(a=><option key={a.wall} value={a.wall}>{a.ura?a.title:'ウォール'+a.wall}</option>)}</select></nav>}
       {/* ウォールの移動は前後だけ。表は上の ▲ で次・下の ▼ で前。ウラは逆向き（上の ▲ で前・下の ▼ で次） */}
       {isUra ? (prevArea ? (
         <button className="wall-step is-up" disabled={moving} onClick={() => changeWall(wall - 1)} aria-label={`${prevArea.title}へ`}>
