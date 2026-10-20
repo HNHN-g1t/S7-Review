@@ -20,9 +20,9 @@ export function ZoromeSage({ mood = 'idle', text = '' }: { mood?: string; text?:
 
 const abilityNames: Record<string, string> = {
   spa1: 'スーパー1', sla3: 'スラッシュ3', squ4: 'スクウェア4', str6: 'ストレイト6',
-  nico: 'ニコニコボム', fever: 'フィーバー', rainbow: '虹ボム', thunder: 'イチニノサンダー',
+  nico: 'ニコニコボム', fever: 'フィーバー', rainbow: '虹ボム', thunder: 'イチニノサンダー', you456:'シゴロッキュー', hyoketsu:'ヒョーケツボム', enjo:'エンジョーボム',
 };
-const abilityMarks: Record<string, string> = { spa1: '1', sla3: '3', squ4: '4', str6: '6', nico: '☺', fever: 'F', rainbow: '虹', thunder: '⚡' };
+const abilityMarks: Record<string, string> = { spa1: '1', sla3: '3', squ4: '4', str6: '6', nico: '☺', fever: 'F', rainbow: '虹', thunder: '⚡', you456:'456', hyoketsu:'氷', enjo:'炎' };
 const missionsIn = (wall: number) => ALL_MISSIONS.filter(mission => mission.wall === wall);
 const latestOpenWall = (progress: WallProgress) => Math.max(1, ...CAMPAIGN_MISSIONS.filter(mission => wallUnlocked(mission.stage, progress.cleared)).map(mission => mission.wall));
 const startingMission = (wall: number, progress: WallProgress) => {

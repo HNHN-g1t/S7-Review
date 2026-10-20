@@ -29,7 +29,7 @@ import { getEnemyPractice } from './enemyPracticeConfig';
 import { SAI_NAMES } from './enemy/characterNames';
 import { WallMap, ZoromeSage } from './story/WallMap';
 import { Ending, UraFall } from './story/Ending';
-import { ALL_MISSIONS, CAMPAIGN_MISSIONS, FINAL_STAGE, URA_FIRST_STAGE, URA_FINAL_STAGE, wallNumberLabel, loadEndingSeen, saveEndingSeen, WALL_LESSON, WALL_SAVE_KEY, LEGACY_STAGE_COUNT, wallMission, wallUnlocked, wallTitle, wallAbilities, wallGate, loadWallProgress, saveWallProgress } from './story/wall1';
+import { URA_LESSONS, ALL_MISSIONS, CAMPAIGN_MISSIONS, FINAL_STAGE, URA_FIRST_STAGE, URA_FINAL_STAGE, wallNumberLabel, loadEndingSeen, saveEndingSeen, WALL_LESSON, WALL_SAVE_KEY, LEGACY_STAGE_COUNT, wallMission, wallUnlocked, wallTitle, wallAbilities, wallGate, loadWallProgress, saveWallProgress } from './story/wall1';
 import { emptyWallCounts, wallObjectiveMet, wallObjectiveProgress, STORY_GOALS, STORY_BERABOU_HP, STORY_SWARM_COUNT, missionGoalFor, storyObjectiveText, type StoryGoal } from './story/objectives';
 import { MissionBanner } from './story/MissionBanner';
 import {
@@ -6595,6 +6595,7 @@ const SAGE_IDLE_LINES: Record<Lang, string[]> = {
   en: ['Do not rush.', 'Look carefully before you drop.', 'Stay calm.', 'Gather matching dice.'],
 };
 const storyIdleLinesFor = (stageNo: number): Record<Lang, string[]> => {
+  if (URA_LESSONS[stageNo as keyof typeof URA_LESSONS]) return SAGE_IDLE_LINES;
   if(wallMission(stageNo)?.sanzapparaname) return {
     ja:['サンザッパラナメだ！\n噴火する前に目を狙おう！','となりで7を消すと\n外側の岩を削れるよ！','中央の3マスは無敵！\nひっさつメで目を撃って！'],
     en:['Aim for its eye before it erupts!','Make 7 next to it to chip away its outer rock!','Its middle column is immune! Pierce the eye with Slash 3, Straight 6 or Thunder!'],
@@ -7218,7 +7219,7 @@ export function storyDialogueForReview(stage: number): Array<{ timing: string; s
   const script = stage === WALL_LESSON ? WALL_LESSON : mission.sourceStage ?? stage;
   const result: Array<{ timing: string; speaker: string; text: string }> = [];
   const pair = TUTOR_PAIRS[script];
-  const defaultSpeaker = BOMB_LESSONS[script] || script === RAINBOW_STAGE || script === THUNDER_LESSON ? 'ゾロメ仙人' : pair ? pair.map(value => SAI_NAMES[value - 1]).join('＋') + '（交互）' : 'サイカ';
+  const defaultSpeaker = mission.skillTarget || BOMB_LESSONS[script] || script === RAINBOW_STAGE || script === THUNDER_LESSON ? 'ゾロメ仙人' : pair ? pair.map(value => SAI_NAMES[value - 1]).join('＋') + '（交互）' : 'サイカ';
   const add = (timing: string, value: unknown, speaker = defaultSpeaker) => {
     const visit = (v: unknown): void => {
       if (typeof v === 'string') result.push({ timing, speaker, text: v });
@@ -7229,6 +7230,7 @@ export function storyDialogueForReview(stage: number): Array<{ timing: string; s
       }
     }; visit(value);
   };
+  if (mission.skillTarget) add('ウラ習得：練習', URA_LESSONS[mission.stage as keyof typeof URA_LESSONS].hint);
   if (script === THUNDER_LESSON) add('イチニノサンダー講習', [THUNDER_LESSON_LINES, THUNDER_DEMO_AFTER]);
   if (pair && mission.anchikushoume) add('アンチクショウメの倒し方', ANCHI_HOWTO_LINES);
   if (pair) {
@@ -7355,6 +7357,9 @@ export default function App() {
   const [wallCountsView, setWallCountsView] = useState(emptyWallCounts);
   const mapPowers = () => enemyPractice ? ['spa1', 'sla3', 'squ4', 'str6', 'nico', 'fever', 'thunder'] : mapRun.current ? wallAbilities(wallProgressRef.current.cleared, mapStageRef.current ?? undefined) : undefined;
   const activeMission = wallMission(mapStage);
+  const uraLesson = (stage: number | null | undefined) => URA_LESSONS[stage as keyof typeof URA_LESSONS];
+  const enjoEnabled = () => enjoPractice || uraLesson(mapStageRef.current)?.kind === 'enjo';
+  const hyoketsuEnabled = () => hyoketsuPractice || uraLesson(mapStageRef.current)?.kind === 'hyoketsu';
   const mapRainbowOpen = () => mapPowers()?.includes('rainbow') ?? false;
   const [stageIntro, setStageIntro] = useState<number | null>(null);
   const showStageIntro = (stage: number) => {
@@ -7794,7 +7799,7 @@ export default function App() {
 
   // メンのクリア。進み具合を保存し、ファンファーレと花火を出す
   const completeStage = (stageNo: number, finished: number) => {
-    setClearLine(stageNo === WALL_LESSON ? 'スーパー1 皆伝じゃ！' : pickFrom(CLEAR_LINES));
+    setClearLine(uraLesson(mapStageRef.current)?.name ? `${uraLesson(mapStageRef.current)!.name} 皆伝じゃ！` : stageNo === WALL_LESSON ? 'スーパー1 皆伝じゃ！' : pickFrom(CLEAR_LINES));
     if (mapRun.current && mapStageRef.current !== null) {
       const completed = mapStageRef.current;
       if (!enemyPractice && !isStoryReview() && !wallUnlocked(completed, wallProgressRef.current.cleared)) return;
@@ -7956,7 +7961,7 @@ export default function App() {
   }, []);
   const [lang, setLang] = useState<Lang>(() => loadLang());
 
-  const sageSpeaking = story !== null && Boolean(BOMB_LESSONS[story] || story === RAINBOW_STAGE || story === THUNDER_LESSON) && saika.who !== 'saika';
+  const sageSpeaking = story !== null && Boolean(uraLesson(mapStage) || BOMB_LESSONS[story] || story === RAINBOW_STAGE || story === THUNDER_LESSON) && saika.who !== 'saika';
   const speakingDie = !sageSpeaking && saika.who !== 'saika' ? tutorPair?.[tutorTurn] : undefined;
   const spokenLine = (line: string) => diceSpokenLine(sageSpokenLine(line, lang, sageSpeaking), lang, speakingDie);
   const dialoguePages = spokenLine(saika.text).split('\f');
@@ -8817,6 +8822,7 @@ export default function App() {
           for (const hit of bombs) wallCounts.current.bombs[hit.kind] += 1;
           if (kind === 'nico') wallCounts.current.nico += 1;
           if (kind === 'thunder') wallCounts.current.thunder += 1;
+          if (kind === 'you456') wallCounts.current.you456 += 1;
           wallCounts.current.superOnes = wallCounts.current.bombs.spa1;
           setWallCountsView({ ...wallCounts.current, bombs: { ...wallCounts.current.bombs } });
         }
@@ -9153,13 +9159,13 @@ export default function App() {
           setClearingCells(new Set());
         }
 
-        if (hyoketsuPractice && !isBomb) {
+        if (hyoketsuEnabled() && !isBomb) {
           const thawKeys = new Set<string>();
           cells.forEach(({x,y})=>[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{if(workingBoard[y+dy]?.[x+dx]?.hyoketsu==='frozen')thawKeys.add((x+dx)+','+(y+dy));}));
           workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>c&&thawKeys.has(x+','+y)?{...c,value:-7,hyoketsu:'active' as const,fuse:6}:c));
           if(thawKeys.size){setBoard(workingBoard);setSaika({text:'ヒョーケツメが解凍！ あと6手！',mood:'praise'});}
         }
-        if(enjoPractice&&!isBomb){const hits=enjoWallHits(workingBoard,cells);if(hits.size){const key=[...hits][0].split(',').map(Number),part=workingBoard[key[1]][key[0]]!.enjo!;setEnjoBreaking(part.part===0?'top':part.part===part.rows-1?'bottom':'middle');runTimeout(()=>setEnjoBreaking(undefined),660);workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>c?.enjo&&hits.has(x+','+y)?{...c,enjo:{...c.enjo,open:true}}:c));setBoard(workingBoard);if(soundModeRef.current!=='none'){const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playEnjoWallBreak(ctx,bus);}setSaika({text:'壁を解除！ 全段開いたら炎をタップ！',mood:'praise'});}}
+        if(enjoEnabled()&&!isBomb){const hits=enjoWallHits(workingBoard,cells);if(hits.size){const key=[...hits][0].split(',').map(Number),part=workingBoard[key[1]][key[0]]!.enjo!;setEnjoBreaking(part.part===0?'top':part.part===part.rows-1?'bottom':'middle');runTimeout(()=>setEnjoBreaking(undefined),660);workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>c?.enjo&&hits.has(x+','+y)?{...c,enjo:{...c.enjo,open:true}}:c));setBoard(workingBoard);if(soundModeRef.current!=='none'){const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playEnjoWallBreak(ctx,bus);}setSaika({text:'壁を解除！ 全段開いたら炎をタップ！',mood:'praise'});}}
         // 消去に巻き込まれたブロックを控えておく。
         // 残ったメはこのあとバラバラになり、1マスずつ独立して落ちる。
         const affected = new Set<number>();
@@ -9401,14 +9407,15 @@ export default function App() {
         workingBoard = await settle(workingBoard, true);
       }
 
-      if(enjoPractice&&enjoLaunch!==null){
+      if(enjoEnabled()&&enjoLaunch!==null){
         setEnjoFlight({x:enjoLaunch,phase:'drop'});if(soundModeRef.current!=='none'){const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playEnjoDive(ctx,bus);}await wait(350);if(storyRunRef.current!==activeScriptRun)return;
         const hot=enjoPracticeFever||feverActiveRef.current,area=enjoPyramid(COLS,ROWS,enjoLaunch,hot),keys=new Set(area.map(p=>p.x+','+p.y));
         setEnjoFlight(null);setEnjoBlast(hot);setClearingCells(keys);if(soundModeRef.current!=='none'){const ctx=getAudioContext(),bus=getSfxBus('effect');if(ctx&&bus)playEnjoImpact(ctx,bus);}shakeBoard('lg');
         await wait(1700);if(storyRunRef.current!==activeScriptRun)return;
+        wallCounts.current.enjo += 1;setWallCountsView({...wallCounts.current});
         const before=workingBoard;workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>keys.has(x+','+y)?null:c));setEnjoBlast(null);setClearingCells(new Set());setBoard(workingBoard);workingBoard=await settle(dissolveShrunkGroups(before,workingBoard),true);
       }
-      if (hyoketsuPractice && !traceStrike) {
+      if (hyoketsuEnabled() && !traceStrike) {
         const blast = new Set<string>();
         const expiredHyoketsu = new Set<string>();
         workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>{
@@ -9428,6 +9435,7 @@ export default function App() {
           if(soundModeRef.current!=='none')playHyoketsuCrashSound();
           shakeBoard('sm');await wait(HYOKETSU_BURST_MS-1800);
           if(storyRunRef.current!==activeScriptRun)return;
+          wallCounts.current.hyoketsu += expiredHyoketsu.size;setWallCountsView({...wallCounts.current});
           const before=workingBoard;
           workingBoard=workingBoard.map((row,y)=>row.map((c,x)=>blast.has(x+','+y)&&(!c?.hyoketsu||expiredHyoketsu.has(c.id))?null:c));
           setHyoketsuBlasts([]);setClearingCells(new Set());setBoard(workingBoard);
@@ -9842,9 +9850,9 @@ export default function App() {
     () => new Set((thunderSet ?? []).map((point) => `${point.x},${point.y}`)),
     [thunderSet],
   );
-  // No campaign lesson/unlock has been assigned yet. Available in score mode
+  // Unlocked by the Ura 9 lesson; also available in score mode
   // and all isolated enemy practices, including its own catalogue practice.
-  const you456Open = story === null || !!enemyPractice;
+  const you456Open = story === null || !!enemyPractice || mapPowers()?.includes('you456') || activeMission?.learns === 'you456';
   const you456Set = useMemo(() => you456Open && status === 'playing' ? findYou456Set(board) : null, [board, status, you456Open]);
   const you456SetRef = useRef(you456Set); you456SetRef.current = you456Set;
   const you456Keys = useMemo(() => new Set((you456Set ?? []).map(p => `${p.x},${p.y}`)), [you456Set]);
@@ -10851,22 +10859,28 @@ export default function App() {
           initialBoard[y][enemy.x] = { id: `campaign-enemy-${index}`, value: enemy.kind === 'dame' ? DAME : KOITSUME, group: -1800 - index };
         });
       }
-      if(enjoPractice){
+      if(enjoPractice || mission?.learns === 'enjo'){
         initialBoard.forEach((row,y)=>row.forEach((_,x)=>{row[x]=y>=ROWS-2?{id:'enjo-floor-'+x+'-'+y,value:2,group:-6200-y*7-x}:null;}));
         for(let part=0;part<enjoRows;part++)initialBoard[ROWS-2-enjoRows+part][3]={id:'enjo-part-'+part,value:-8,group:-6400,enjo:{part,rows:enjoRows,open:false}};
         for(let part=0;part<enjoRows;part++)initialBoard[ROWS-2-enjoRows+part][2]={id:'enjo-unlock-one-'+part,value:1,group:-6450};
         initialBoard[ROWS-3][1]={id:'enjo-koi',value:KOITSUME,group:-6401};initialBoard[ROWS-3][5]={id:'enjo-dame',value:DAME,group:-6402};initialBoard[ROWS-1][0]={id:'enjo-test-bomb',value:-7,hyoketsu:'frozen',group:-6403};if(enjoPracticeFever)setFever(100);
       }
-      if (hyoketsuPractice) {
+      if (hyoketsuPractice || mission?.learns === 'hyoketsu') {
         initialBoard.forEach((row,y)=>row.forEach((_,x)=>{row[x]=y>=ROWS-2?{id:'hyoketsu-floor-'+x+'-'+y,value:2,group:-4200-y*7-x}:null;}));
         initialBoard[ROWS-3][1]={id:'hyoketsu-koi',value:KOITSUME,group:-4401};
         initialBoard[ROWS-3][5]={id:'hyoketsu-dame',value:DAME,group:-4402};
         initialBoard[ROWS-3][3]={id:'hyoketsu-ice',value:-7,hyoketsu:'frozen',group:-4403};
       }
-      if (you456Practice) {
+      if (you456Practice || mission?.learns === 'you456') {
         initialBoard.forEach(row => row.fill(null));
         you456PracticeCells().forEach(([x, y, value], i) => { initialBoard[y][x] = { id: `you456-practice-${i}`, value, group: -4600-i }; });
         if (new URLSearchParams(location.search).get('fever') === '1') setFever(100);
+      }
+      if (mission?.skillTarget) {
+        // Tutorial targets are props, not enemy-defeat requirements.
+        for (const row of initialBoard) for (let x=0;x<COLS;x++) if(row[x] && [KOITSUME,DAME].includes(row[x]!.value)) row[x]=null;
+        if(mission.learns==='hyoketsu')initialBoard[ROWS-3][2]={id:'ura-thaw-one',value:1,group:-4500};
+        if(mission.learns==='enjo')initialBoard[ROWS-1][0]={id:'ura-floor',value:2,group:-4501};
       }
       // Practice after the lesson: four 1s form a visible starting point, not an automatic bomb.
       if (stageNo === 24 || stageNo === 25) {
@@ -10937,6 +10951,12 @@ export default function App() {
           setStatus('playing');
         })();
         return;
+      }
+      if (mission?.skillTarget) {
+        setBoard(initialBoard);demoLock.current=false;
+        if(mission.learns!=='you456')setCurrent(makeSinglePiece(++pieceId.current,6,2));
+        setSaika({text:uraLesson(requestedStage)!.hint,mood:'hello'});
+        showStageIntro(stageNo);setStatus('playing');return;
       }
       setBoard(initialBoard);
       setSaika({ text: you456Practice ? '光る4→5→6をなぞろう！' : requestedStage === 20
@@ -13142,6 +13162,7 @@ export default function App() {
         </button>
       </aside>
 
+      {activeMission?.skillTarget && activeMission.learns!=='you456' && <div className="enjo-live-tools"><button disabled={status!=='playing'} onClick={()=>setCurrent(makeSinglePiece(++pieceId.current,6,2))}>練習用の6</button></div>}
       {enjoPractice&&<div className="enjo-live-tools"><button disabled={status!=='playing'} onClick={()=>setCurrent(makeSinglePiece(Date.now(),6,2))}>解除練習：6を用意</button><span>左の1の上に6を落とす → 各段を解除 → 炎をタップ。{enjoPracticeFever?'FEVER：盤外を除く23セル':'通常：16セル'}</span></div>}
       <section
         className={`board-panel ${feverActive ? 'is-fever' : ''}`}
@@ -13300,7 +13321,7 @@ export default function App() {
               </div>
             );
           })}
-          {enjoPractice&&(()=>{const parts=board.flatMap((row,y)=>row.flatMap((c,x)=>c?.enjo?[{c,x,y}]:[])).sort((a,b)=>a.c.enjo!.part-b.c.enjo!.part);const first=parts[0];return first?<button className="enjo-game-capsule" style={{left:first.x*cellPx,top:first.y*cellPx,width:cellPx,height:enjoRows*cellPx}} disabled={status!=='playing'||parts.some(p=>!p.c.enjo!.open)} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();armEnjo();}} aria-label="全段の壁を解除したエンジョーボムをタップ"><EnjomeBomb rows={enjoRows} breaking={enjoBreaking} wallMask={parts.map(p=>p.c.enjo!.open)} paused={status==='paused'}/></button>:null;})()}
+          {enjoEnabled()&&(()=>{const parts=board.flatMap((row,y)=>row.flatMap((c,x)=>c?.enjo?[{c,x,y}]:[])).sort((a,b)=>a.c.enjo!.part-b.c.enjo!.part);const first=parts[0];return first?<button className="enjo-game-capsule" style={{left:first.x*cellPx,top:first.y*cellPx,width:cellPx,height:enjoRows*cellPx}} disabled={status!=='playing'||parts.some(p=>!p.c.enjo!.open)} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();armEnjo();}} aria-label="全段の壁を解除したエンジョーボムをタップ"><EnjomeBomb rows={enjoRows} breaking={enjoBreaking} wallMask={parts.map(p=>p.c.enjo!.open)} paused={status==='paused'}/></button>:null;})()}
           {enjoFlight&&<div className={'enjo-game-flight '+(enjoFlight.phase==='drop'?'is-dropping':'')} style={{left:enjoFlight.x*cellPx,width:cellPx,height:cellPx*2,'--enjo-floor':(ROWS-2)*cellPx+'px',animationPlayState:status==='paused'?'paused':'running'} as React.CSSProperties}><EnjomeBomb walls={0} paused={status==='paused'}/></div>}
           {enjoBlast!==null&&<div className="enjo-game-blast" style={{left:-cellPx,bottom:0,width:9*cellPx,height:9*cellPx}}><EnjoBlast range={enjoRange(enjoBlast)} paused={status==='paused'}/></div>}
           {hyoketsuBlasts.map((burst,i)=><div key={i} aria-hidden style={{position:'absolute',left:cellPx*burst.x,top:cellPx*burst.y,width:cellPx*3,height:cellPx*3,zIndex:160,pointerEvents:'none'}}><HyoketsuBurst cell={cellPx} flashCells={burst.flashCells} paused={status==='paused'}/></div>)}

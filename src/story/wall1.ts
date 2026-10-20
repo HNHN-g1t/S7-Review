@@ -5,7 +5,7 @@ export const WALL_LESSON = 23;
 export const WALL_BOSS = 26;
 export const LEGACY_STAGE_COUNT = 20;
 
-export type WallAbility = 'spa1' | 'sla3' | 'squ4' | 'str6' | 'nico' | 'fever' | 'rainbow' | 'thunder';
+export type WallAbility = 'spa1' | 'sla3' | 'squ4' | 'str6' | 'nico' | 'fever' | 'rainbow' | 'thunder' | 'you456' | 'hyoketsu' | 'enjo';
 export type WallBomb = Extract<WallAbility, 'spa1' | 'sla3' | 'squ4' | 'str6'>;
 export type WallMission = {
   stage: number; wall: number; number: string; title: string; theme: string; context: string;
@@ -24,6 +24,7 @@ export type WallMission = {
   enemyWaveSize?: number;
   // イチニノサンダーを出す回数（ウォール6）
   thunderTarget?: number;
+  skillTarget?: { kind: 'you456' | 'hyoketsu' | 'enjo'; count: number };
   // アンチクショウメが1体出る（倒すのは目にひっさつメを当てたときだけ）
   anchikushoume?: boolean;
   sanzapparaname?: boolean; sanzTurns?: number; sanzVolley?: number;
@@ -329,8 +330,10 @@ const URA_NAMES: Array<[string, string, string]> = [
   ['裏の街道', '暗い火の山', '街道の影'],
   ['ウラの草原', 'ウラの火口', 'ウラの底のサイリアン'],
 ];
+// Temporary playtest balance: round odd populations up and retain single bosses.
+const uraHalf = (count: number) => Math.ceil(count / 2);
 const uraSmalls = (count: number): WallMission['enemies'] =>
-  [0, 6, 1, 5, 2, 4, 3].slice(0, count).map((x, k) => ({ x, kind: k % 2 ? 'dame' as const : 'koitsume' as const }));
+  [0, 6, 1, 5, 2, 4, 3].slice(0, uraHalf(count)).map((x, k) => ({ x, kind: k % 2 ? 'dame' as const : 'koitsume' as const }));
 export const URA_MISSIONS: WallMission[] = URA_NAMES.flatMap(([a, b, c], i) => {
   const wall = 11 + i, base = 100 + i * 3, label = `ウラ${9 - i}`;
   const smalls = Math.min(7, 4 + Math.floor(i / 2));
@@ -341,20 +344,33 @@ export const URA_MISSIONS: WallMission[] = URA_NAMES.flatMap(([a, b, c], i) => {
     { ...common, stage: base, number: `${label}-1`, title: a, theme: 'サイリアンをぜんぶ倒せ！', kind: 'mission' as const,
       context: `${label}の入口。黒い世界のサイリアンが待ちかまえる。`,
       requires: [i === 0 ? FINAL_STAGE : base - 1], x: 50, y: 14, boardRows: [2, 3] as [number, number],
-      detarameTotal: i >= 1 ? 1 + Math.floor(i / 2) : undefined, detarameAtOnce: i >= 6 ? 3 : 2,
-      reinforceKoitsume: reinforce, enemies: uraSmalls(smalls) },
+      detarameTotal: i >= 1 ? uraHalf(1 + Math.floor(i / 2)) : undefined, detarameAtOnce: uraHalf(i >= 6 ? 3 : 2),
+      reinforceKoitsume: uraHalf(reinforce), enemies: uraSmalls(smalls) },
     { ...common, stage: base + 1, number: `${label}-2`, title: b, theme: 'サンザッパラナメの目を撃ち抜け！', kind: 'mission' as const,
       context: `${label}の火口。噴き出すサイリアンに気をつけて目を撃て。`,
       requires: [base], x: left ? 24 : 76, y: 46, boardRows: [2, 3] as [number, number],
-      sanzapparaname: true, sanzTurns: Math.max(2, 5 - Math.floor(i / 3)), sanzVolley: Math.min(5, 2 + Math.floor(i / 2)),
-      reinforceKoitsume: reinforce, enemies: uraSmalls(Math.max(2, smalls - 2)) },
+      sanzapparaname: true, sanzTurns: Math.max(2, 5 - Math.floor(i / 3)), sanzVolley: uraHalf(Math.min(5, 2 + Math.floor(i / 2))),
+      reinforceKoitsume: uraHalf(reinforce), enemies: uraSmalls(Math.max(2, smalls - 2)) },
     { ...common, stage: base + 2, number: `${label}-3`, title: c, theme: 'アンチクショウメの目を撃ち抜け！', kind: 'boss' as const,
       context: i === 8 ? 'ウラの底。黒い世界のサイリアンが総出で待つ、ほんとうの最後。' : `${label}の出口を守る影。倒して、さらに下へ。`,
       requires: [base + 1], x: 50, y: 72, boardRows: [3, 4] as [number, number],
-      anchikushoume: true, detarameTotal: 2 + Math.floor(i / 2), detarameAtOnce: i >= 6 ? 3 : 2,
-      reinforceKoitsume: Math.min(7, 5 + i), enemies: uraSmalls(Math.min(7, smalls + 1)) },
+      anchikushoume: true, detarameTotal: uraHalf(2 + Math.floor(i / 2)), detarameAtOnce: uraHalf(i >= 6 ? 3 : 2),
+      reinforceKoitsume: uraHalf(Math.min(7, 5 + i)), enemies: uraSmalls(Math.min(7, smalls + 1)) },
   ];
 });
+// Preserve existing stage/save IDs; the entrance in each chosen wall becomes a lesson.
+export const URA_LESSONS = {
+  100: { kind: 'you456', name: 'シゴロッキュー', hint: '光る4から5そして6へなぞるのじゃ！ 十字に撃てば習得じゃ。' },
+  109: { kind: 'hyoketsu', name: 'ヒョーケツボム', hint: '氷の隣で1と6を消すのじゃ。解凍したら6手進めて爆発を見届けよ！' },
+  121: { kind: 'enjo', name: 'エンジョーボム', hint: '左の1へ6を落として壁を開くのじゃ。全段開いたら炎をタップして次のサイを落とせ！' },
+} as const;
+for (const mission of URA_MISSIONS) {
+ const lesson = URA_LESSONS[mission.stage as keyof typeof URA_LESSONS];
+ if (!lesson) continue;
+ Object.assign(mission, {kind:'lesson', title:lesson.name+'を習得', theme:lesson.name+'を1回発動', context:lesson.hint,
+  learns:lesson.kind, skillTarget:{kind:lesson.kind,count:1}, enemies:[], reinforceKoitsume:0,
+  detarameTotal:undefined, detarameAtOnce:undefined, boardRows:undefined, boostValues:lesson.kind==='you456'?[4,5,6]:[6]});
+}
 // ウラの最後の面（ウラ1-3）。クリアでウラエンディング
 export const URA_FINAL_STAGE = 126;
 export const ALL_MISSIONS: WallMission[] = [...CAMPAIGN_MISSIONS, ...URA_MISSIONS];
@@ -384,10 +400,10 @@ export const wallGate = (wall: number) => ALL_MISSIONS.find(mission => mission.w
 
 const POWER_NAMES: Record<WallAbility, string> = {
   spa1: 'スーパー1', sla3: 'スラッシュ3', squ4: 'スクウェア4', str6: 'ストレイト6',
-  nico: 'ニコニコボム', fever: 'FEVER', rainbow: '虹ボム', thunder: 'イチニノサンダー',
+  nico: 'ニコニコボム', fever: 'FEVER', rainbow: '虹ボム', thunder: 'イチニノサンダー', you456: 'シゴロッキュー', hyoketsu: 'ヒョーケツボム', enjo: 'エンジョーボム',
 };
 export function wallAbilities(cleared: number[], activeStage?: number | null): WallAbility[] {
-  const learned = CAMPAIGN_MISSIONS.filter(mission => mission.learns && cleared.includes(mission.stage))
+  const learned = ALL_MISSIONS.filter(mission => mission.learns && cleared.includes(mission.stage))
     .map(mission => mission.learns!);
   const active = wallMission(activeStage);
   // A lesson temporarily enables its own power while teaching it. Starting an
@@ -419,7 +435,7 @@ export function wallUnlockHint(stage: number, cleared: number[]): string {
   // requirement unless it is the only missing condition (e.g. malformed input).
   if (!missing.length) for (const ability of mission.requiresAbilities ?? []) {
     if (!wallAbilities(cleared).includes(ability)) {
-      const lesson = CAMPAIGN_MISSIONS.find(candidate => candidate.learns === ability);
+      const lesson = ALL_MISSIONS.find(candidate => candidate.learns === ability);
       missing.push(lesson?.number ?? POWER_NAMES[ability]);
     }
   }
