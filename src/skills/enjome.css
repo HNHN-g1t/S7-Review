@@ -71,3 +71,10 @@
 
 /* Steady staggered embers from the middle, flickering as they float upward. */
 @keyframes enjo-spark{0%{transform:translate(0,0) scale(.4);opacity:0}8%{opacity:.9}18%{opacity:.2}28%{opacity:1}40%{opacity:.15}53%{opacity:.9}65%{opacity:.2}76%{opacity:.8}88%{opacity:.1}100%{transform:translate(var(--enjo-drift,0px),-125px) scale(.2);opacity:0}}
+
+/* Fixed face is a sibling of this vibrating flame, never a child. */
+.enjo-capsule .enjo-ghost{animation:enjo-body-shiver .37s linear infinite}
+.enjo-capsule .enjo-ghost-core{animation:none;transform:none;opacity:.95}
+.enjo-capsule .enjo-core-motion{transform-box:view-box;transform-origin:50px 177px;animation:enjo-core-lift 4.7s ease-in-out infinite}
+@keyframes enjo-body-shiver{0%,100%{transform:translateY(0)}19%{transform:translateY(-1.5px)}47%{transform:translateY(.8px)}72%{transform:translateY(-.7px)}}
+@keyframes enjo-core-lift{0%,100%{transform:scaleY(.9)}13%{transform:scaleY(1.1)}36%{transform:scaleY(.7)}57%{transform:scaleY(1.02)}78%{transform:scaleY(.78)}}
