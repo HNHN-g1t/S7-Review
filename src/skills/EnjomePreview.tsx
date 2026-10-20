@@ -23,8 +23,8 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
  <defs>
   <radialGradient id={id+'heat'}><stop stopColor="#ffda65" stopOpacity=".9"/><stop offset=".42" stopColor="#ffad35" stopOpacity=".6"/><stop offset="1" stopColor="#ff771c" stopOpacity="0"/></radialGradient>
   <clipPath id={id+'flame-clip'}><use href={'#'+id+'flame-shape'}/></clipPath>
-  <clipPath id={id+'cage-clip'}><rect x="12" y="10" width="76" height={rows*100-20} rx="28"/></clipPath>
-  {Array.from({length:rows},(_,row)=><clipPath key={row} id={id+'cage-row-'+row}><rect x="0" y={row*100} width="100" height="100"/></clipPath>)}
+  <clipPath id={id+'cage-clip'}><rect x="0" y="0" width="100" height={rows*100} rx="12"/></clipPath>
+  {Array.from({length:rows},(_,row)=><clipPath key={row} id={id+'cage-row-'+row}><rect x="-20" y={row*100-(row===0?20:0)} width="140" height={100+(row===0?20:0)+(row===rows-1?20:0)}/></clipPath>)}
   <linearGradient id={id+'glass'} x1="0" x2="1"><stop stopColor="#d9f6ff" stopOpacity=".34"/><stop offset=".22" stopColor="#bfe9ff" stopOpacity=".08"/><stop offset=".78" stopColor="#bfe9ff" stopOpacity=".06"/><stop offset="1" stopColor="#d9f6ff" stopOpacity=".3"/></linearGradient>
   <radialGradient id={id+'glow'} cx=".5" cy=".62" r=".55"><stop stopColor="#ff9a2e" stopOpacity=".55"/><stop offset="1" stopColor="#ff5a1f" stopOpacity="0"/></radialGradient>
   <radialGradient id={id+'body'} cx=".45" cy=".65" r=".72"><stop stopColor="#ff6516"/><stop offset=".58" stopColor="#ff6518"/><stop offset=".82" stopColor="#ff2507"/><stop offset="1" stopColor="#ff1205"/></radialGradient>
@@ -35,6 +35,7 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
  </defs>
  {/* 中の光と幽霊（壁が取れた後も炎の本体として描く） */}
  <g className="enjo-inner" transform={'translate(0 '+(rows===3?50:0)+')'}>
+  <g className="enjo-body-scale" transform="translate(-10 -20) scale(1.2)">
   <rect x="0" y="0" width="100" height="200" fill={g('glow')}/>
   <g className="enjo-ghost">
    <path id={id+'flame-shape'} className="enjo-ghost-body" d={ENJO_FLAME_SHAPES[0]} fill={g('body')}><animate attributeName="d" values={ENJO_FLAME_SHAPES.join(';')} calcMode="discrete" dur="1.2s" repeatCount="indefinite"/></path>
@@ -49,13 +50,16 @@ export function EnjomeBomb({walls=2,rows=2,wallMask,breaking,paused=false}:{wall
    <g className="enjo-eye" clipPath={g('blink')}><circle cx="50" cy="134" r="12.5" fill="#050505"/><circle cx="50" cy="134" r="5.7" fill="#fff"/></g>
    <path className="enjo-mouth" d="M42 152C44 150 45 155 50 155C55 155 56 150 58 152C60 155 56 164 50 164C44 164 40 155 42 152Z" fill={g('mouth')}/>
   </g>
+  </g>
   {/* 幽霊からのぼる火の粉 */}
-  {Array.from({length:48},(_,i)=><circle key={i} className="enjo-spark" cx={24+(i*17%53)*4} cy={96+(i*13%25)*4} r={i%9===0?2.2:.6+i%3*.3} fill={i%2?'#ffc74a':'#fff0bd'} style={{animationDelay:-((i*37%48)/48)*(1.8+i%7*.13)+'s','--enjo-spark-duration':(1.8+i%7*.13)+'s','--enjo-drift':(i%2?1:-1)*(5+i%9)+'px'} as CSSProperties}/>)}
+  {Array.from({length:32},(_,i)=><circle key={i} className="enjo-spark" cx={24+(i*17%53)*4} cy={96+(i*13%25)*4} r={(i%9===0?2.2:.6+i%3*.3)*2} fill={i%2?'#ffc74a':'#fff0bd'} style={{animationDelay:-((i*13%32)/32)*(.9+i%7*.065)+'s','--enjo-spark-duration':(.9+i%7*.065)+'s','--enjo-drift':(i%2?1:-1)*(5+i%9)+'px'} as CSSProperties}/>)}
  </g>
- <g className="enjo-cage" clipPath={g('cage-clip')} aria-hidden="true">
+ <g className="enjo-cage" aria-hidden="true">
  {Array.from({length:rows},(_,row)=>{if(wallMask?wallMask[row]:row<rows-walls)return null;return <g key={row} className="enjo-cage-row" clipPath={g('cage-row-'+row)} data-cage-row={row}>
-   <rect x="12" y="10" width="76" height={rows*100-20} rx="28" fill="none" stroke="#05070c" strokeWidth="9"/>
+   <rect className="enjo-cage-outline" x="0" y="0" width="100" height={rows*100} rx="12" fill="none" stroke="#05070c" strokeWidth="2" vectorEffect="non-scaling-stroke"/>
+   <g clipPath={g('cage-clip')}>
    {Array.from({length:19},(_,i)=>{const x=-300+i*24;return <g key={i}><path d={'M'+x+' 0l'+rows*100+' '+rows*100} fill="none" stroke="#05070c" strokeWidth="4"/><path d={'M'+(100-x)+' 0l-'+rows*100+' '+rows*100} fill="none" stroke="#05070c" strokeWidth="4"/></g>;})}
+   </g>
  </g>;})}
  </g>
  {breaking&&<g key={breaking}>{Array.from({length:10},(_,i)=>{const row=breaking==='top'?0:breaking==='middle'?1:rows-1;const x=23+i*19%55,y=row*100+12+Math.floor(i/2)*17;return <path key={i} className="enjo-shell-fragment" d={'M'+(x-6)+' '+y+'l12 14m-12 0 12 -14'} fill="none" stroke="#07090e" strokeWidth="4" strokeLinecap="round" style={{'--enjo-shard-x':(i%2?1:-1)*(35+i*4)+'px','--enjo-shard-y':(-20-i*3)+'px','--enjo-shard-spin':(i%2?1:-1)*70+'deg'} as CSSProperties}/>;})}</g>}

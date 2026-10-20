@@ -70,7 +70,7 @@
 .enjo-blast[data-enjo-paused=true] *{animation-play-state:paused!important}
 
 /* Steady staggered embers from the middle, flickering as they float upward. */
-@keyframes enjo-spark{0%{transform:translate(0,0) scale(.4);opacity:0}8%{opacity:.9}18%{opacity:.2}28%{opacity:1}40%{opacity:.15}53%{opacity:.9}65%{opacity:.2}76%{opacity:.8}88%{opacity:.1}100%{transform:translate(var(--enjo-drift,0px),-125px) scale(.2);opacity:0}}
+@keyframes enjo-spark{0%{transform:translate(0,0) scale(.4);opacity:0}8%{opacity:1}15%{opacity:0}24%{opacity:1}32%{opacity:.05}43%{opacity:1}51%{opacity:0}61%{opacity:.95}69%{opacity:.05}78%{opacity:1}88%{opacity:0}94%{opacity:.65}100%{transform:translate(var(--enjo-drift,0px),-125px) scale(.2);opacity:0}}
 
 /* Fixed face is a sibling of this vibrating flame, never a child. */
 .enjo-capsule .enjo-ghost{animation:enjo-body-shiver .145s steps(2,end) infinite}
