@@ -16,7 +16,10 @@ const audioModule={exports:{}};vm.runInNewContext('(function(exports){'+ts.trans
 const tones=[];const context={currentTime:10,createGain:()=>({gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}}),createOscillator:()=>{const tone={frequency:{setValueAtTime(v){tone.from=v;},exponentialRampToValueAtTime(v,t){tone.to=v;tone.rise=t;}},connect(){},disconnect(){},start(t){tone.startAt=t;},stop(t){tone.stopAt=t;}};tones.push(tone);return tone;}};
 audioModule.exports.playIcePing(context,{});assert.equal(tones.length,4);for(const tone of tones){assert(tone.to>tone.from);assert(tone.stopAt>10.3&&tone.stopAt<10.5);}
 const noises=[];const fullAudio={...context,sampleRate:24000,createBuffer:(_channels,n)=>({getChannelData:()=>new Float32Array(n)}),createBufferSource:()=>{const n={connect(){},disconnect(){},start(t){n.at=t;},stop(t){n.end=t;}};noises.push(n);return n;},createConvolver:()=>({buffer:null,connect(){},disconnect(){}}),createBiquadFilter:()=>({frequency:{setValueAtTime(){},exponentialRampToValueAtTime(){}},Q:{value:0},connect(){},disconnect(){}})};
-audioModule.exports.playIceFreeze(fullAudio,{});assert.equal(noises.length,8);noises.forEach((n,i)=>{assert(Math.abs(n.at-(10+i*.125))<1e-6);assert(Math.abs(n.end-n.at-.045)<1e-6);});
+let sparkSeed=19;const random=()=>{sparkSeed=sparkSeed*16807%2147483647;return sparkSeed/2147483647;};
+audioModule.exports.playIceFreeze(fullAudio,{},random);assert.equal(noises.length,8);noises.forEach(n=>{assert(n.at>=10&&n.end<11);assert(n.end-n.at>=.01&&n.end-n.at<.028);});
+const intervals=noises.slice(1).map((n,i)=>n.at-noises[i].at);assert(Math.max(...intervals)-Math.min(...intervals)>.015,'spark timing varies rather than tapping evenly');
+noises.forEach(n=>n.onended?.());
 const toneCount=tones.length;audioModule.exports.playIceCrash(fullAudio,{});assert.equal(tones.length-toneCount,3);assert.equal(noises.length,11);assert(noises.at(-1).end>11.2,'sustained airy slash tail');assert(tones.at(-1).stopAt>15,'reverb cleanup uses audio clock');
 (async()=>{
  const h=harness('hyoketsume');await h.boot();await h.until(()=>h.tree.read().status==='playing','startup');

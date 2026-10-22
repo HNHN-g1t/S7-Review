@@ -14,12 +14,24 @@ function frost(ctx:AudioContext,out:AudioNode,at:number,life:number,volume:numbe
 export function playIcePing(ctx:AudioContext,out:AudioNode){
  [1175,1760,2350,3520].forEach((f,i)=>tone(ctx,out,f*.8,f,ctx.currentTime+i*.018,.32,.045/(i+1)));
 }
-export function playIceFreeze(ctx:AudioContext,out:AudioNode){
+const sparkBuffers=new WeakMap<AudioContext,AudioBuffer>();
+function iceSpark(ctx:AudioContext,out:AudioNode,at:number,life:number,volume:number,cutoff:number){
+ let buffer=sparkBuffers.get(ctx);
+ if(!buffer){buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*.04),ctx.sampleRate);const data=buffer.getChannelData(0);let seed=197;for(let i=0;i<data.length;i++){seed=seed*16807%2147483647;data[i]=seed/2147483647*2-1;}sparkBuffers.set(ctx,buffer);}
+ const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();source.buffer=buffer;filter.type='highpass';filter.Q.value=.65;filter.frequency.setValueAtTime(cutoff,at);filter.frequency.exponentialRampToValueAtTime(10500,at+life*.8);
+ gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(volume,at+.0015);gain.gain.exponentialRampToValueAtTime(.0001,at+life);
+ source.connect(filter);filter.connect(gain);gain.connect(out);source.start(at);source.stop(at+life);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
+}
+export function playIceFreeze(ctx:AudioContext,out:AudioNode,random:()=>number=Math.random){
  // A tense high crystalline snap, no low descending pulses.
  tone(ctx,out,2350,5600,ctx.currentTime,.44,.055,'triangle');
  tone(ctx,out,4700,6250,ctx.currentTime+.012,.85,.026);
  tone(ctx,out,7100,7480,ctx.currentTime+.018,.68,.012);
- for(let i=0;i<8;i++){const at=ctx.currentTime+i*.125;frost(ctx,out,at,.045,.024,7600,10400);}
+ for(let i=0;i<8;i++){
+  const at=ctx.currentTime+.025+(i+random()*.8)*.106,life=.01+random()*.017;
+  iceSpark(ctx,out,at,life,.009+random()*.009,4200+random()*3000);
+  if(i%3===1){const hz=5400+random()*2600;tone(ctx,out,hz,hz*1.08,at+.006,.055,.005);}
+ }
 
 }
 const hallImpulses=new WeakMap<AudioContext,AudioBuffer>();
