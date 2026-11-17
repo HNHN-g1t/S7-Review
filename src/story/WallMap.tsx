@@ -7,6 +7,9 @@ import {
 import './wall-map.css';
 import './wall-one-map.css';
 import {WALL_ONE_LAYOUT} from './wallOneLayout';
+// 2026-11-17：レビューサイトの「マップ」タブ（review=map）は、コードで描いた地形のマップで見る。
+// 絵のマップ（ウォール1）は「本マップ」タブで確認する。ゲーム本編は絵のマップのまま
+const CODE_MAP_REVIEW = typeof location !== 'undefined' && new URLSearchParams(location.search).get('review') === 'map';
 import { zoromeFaceFor } from './zoromeFace';
 import { gateLinks, roadBends, smoothPath, terrainFor, type Pt, type TerrainFeature } from './wallTerrain';
 
@@ -60,7 +63,7 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
   useEffect(() => { alive.current = true; return () => { alive.current = false; clearTimeout(timer.current); }; }, []);
 
   const screen = useRef<HTMLElement>(null);
-  useEffect(()=>{if(wall === 1)screen.current?.querySelector('.wall-node.selected')?.scrollIntoView({block:'center'});},[wall]);
+  useEffect(()=>{if(wall === 1 && !CODE_MAP_REVIEW)screen.current?.querySelector('.wall-node.selected')?.scrollIntoView({block:'center'});},[wall]);
 
   const area = ALL_WALLS.find(area => area.wall === wall)!;
   // ウラメン（黒い世界）は表とつながらない。ウラ9 → ウラ1 と下へ進む
@@ -74,10 +77,11 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
   const boss = wallGate(wall);
   // Gates have UI-only negative IDs; positive IDs are exclusively game missions.
   const gateId = -wall;
+  const art = wall === 1 && !CODE_MAP_REVIEW; // ウォール1を絵のマップで出すか
   const terrain = area.implemented ? terrainFor(wall) : undefined;
-  const gatePoint = wall === 1 ? [17, 5.5] : terrain?.gate ?? (isUra ? [50, 97] : [50, 1]);
+  const gatePoint = art ? [17, 5.5] : terrain?.gate ?? (isUra ? [50, 97] : [50, 1]);
   const targets: MapPoint[] = area.implemented
-    ? [...(wall === 1 ? [{ stage: 0, ...WALL_ONE_LAYOUT[0] }] : []), ...missions.map(m => wall === 1 ? {...m,...WALL_ONE_LAYOUT[m.stage]} : m), { stage: gateId, x: gatePoint[0], y: gatePoint[1] }]
+    ? [...(wall === 1 ? [{ stage: 0, ...(art ? WALL_ONE_LAYOUT[0] : { x: 12, y: 90 }) }] : []), ...missions.map(m => art ? {...m,...WALL_ONE_LAYOUT[m.stage]} : m), { stage: gateId, x: gatePoint[0], y: gatePoint[1] }]
     : future;
   // 道は面と面を、地形の曲がり角を通ってつなぐ
   const roadPoints = (a: number, b: number): Pt[] | null => {
@@ -109,7 +113,7 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
     if (walking.current || !area.implemented) return;
     setNotice('');
     if (!canGo(stage)) { setSelected(stage); return; }
-    if (wall === 1) {
+    if (art) {
       const destination = targets.find(target => target.stage === stage);
       if (!destination) return;
       setSelected(stage); setPoint({x:destination.x,y:destination.y}); location.current=stage;
@@ -178,9 +182,9 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
     : '';
 
   const wallName = isUra ? area.title : `ウォール${wall}`;
-  return <section ref={screen} className={`wall-map-screen wall-area-${wall} ${isUra ? 'wall-ura' : ''} ${wall === 1 ? 'wall-illustrated' : ''}`} aria-label={`${wallName} ステージマップ`}>
+  return <section ref={screen} className={`wall-map-screen wall-area-${wall} ${isUra ? 'wall-ura' : ''} ${art ? 'wall-illustrated' : ''}`} aria-label={`${wallName} ステージマップ`}>
     <div className="wall-map-shell">
-      <header><div><small>{wall === 1 ? 'ハジメマ草原' : isUra ? area.subtitle : area.title}</small><h1>{wallName}</h1></div><button onClick={onClose} aria-label="タイトルへ戻る">✕</button></header>
+      <header><div><small>{art ? 'ハジメマ草原' : isUra ? area.subtitle : area.title}</small><h1>{wallName}</h1></div><button onClick={onClose} aria-label="タイトルへ戻る">✕</button></header>
       <div className="wall-powers">
         <div className="wall-abilities" aria-label={abilities.length ? `習得済み：${abilities.map(ability => abilityNames[ability]).join('、')}` : 'ひっさつメ未習得'}>
           {abilities.length ? abilities.map(ability => <span key={ability} title={abilityNames[ability]} aria-hidden>{abilityMarks[ability]}</span>) : <span aria-hidden>—</span>}
@@ -204,9 +208,10 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
         </button>
       ) : <button className="wall-step is-up" disabled aria-label="この先のウォールはまだない">▲</button>}
       <div className={`wall-land ${!area.implemented ? 'future' : ''}`}>
-        {wall === 1 ? <img className="wall-one-art" src="/maps/wall1.png" width="1024" height="1536" alt="ハジメマ草原。草原の広場と門をつなぐ道" draggable={false}/> : terrain ? <TerrainLayer land={terrain.land} features={terrain.features}/> : <div className="wall-meadow"/>}
+        {art ? <img className="wall-one-art" src="/maps/wall1.png" width="1024" height="1536" alt="ハジメマ草原。草原の広場と門をつなぐ道" draggable={false}/> : terrain ? <TerrainLayer land={terrain.land} features={terrain.features}/> : <div className="wall-meadow"/>}
 
-        {wall !== 1 && <svg className="wall-roads" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+        {wall === 1 && !art && <div className="wall-tutorial-island"/>}
+        {!art && <svg className="wall-roads" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
           {wall === 1 && missions[0] && <line className="tutorial-link" x1={12} y1={90} x2={missions[0].x} y2={missions[0].y} vectorEffect="non-scaling-stroke" />}
           {links.map(([a, b]) => {
             const points = roadPoints(a, b);
@@ -228,11 +233,11 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
             aria-label={`${name}${nodeMission?.optional ? '・任意' : ''}${done ? '・クリア済み' : !unlocked ? '・未解放。条件を見る' : ''}`} aria-pressed={selected === target.stage}>
             <span>{!unlocked ? <i className="wall-lock-icon" aria-hidden/> : gate ? <i className="wall-gate-icon" aria-hidden/>
               : isTutorial ? '0' : nodeMission?.kind === 'lesson' ? <ZoromeSage/> : nodeMission?.number.split('-')[1]}</span>
-            {wall !== 1 && nodeMission?.optional && <i className="wall-optional-mark" aria-hidden>＋</i>}
-            <small>{isTutorial ? (wall === 1 ? '0' : 'チュートリアル草原') : gate ? (lastWall ? (isUra ? 'ウラの底' : '王座') : '門') : nodeMission?.number}{done ? ' ✓' : ''}</small>
+            {!art && nodeMission?.optional && <i className="wall-optional-mark" aria-hidden>＋</i>}
+            <small>{isTutorial ? (art ? '0' : 'チュートリアル草原') : gate ? (lastWall ? (isUra ? 'ウラの底' : '王座') : '門') : nodeMission?.number}{done ? ' ✓' : ''}</small>
           </button>;
         })}
-        {area.implemented && open && <div className={`wall-traveler ${moving ? 'walking' : ''}`} style={{ left: `${wall === 1 ? targets.find(t=>t.stage===location.current)?.x ?? point.x : point.x}%`, top: `${wall === 1 ? targets.find(t=>t.stage===location.current)?.y ?? point.y : point.y}%` }} aria-hidden><img src={TRAVELER_FACE} alt=""/></div>}
+        {area.implemented && open && <div className={`wall-traveler ${moving ? 'walking' : ''}`} style={{ left: `${art ? targets.find(t=>t.stage===location.current)?.x ?? point.x : point.x}%`, top: `${art ? targets.find(t=>t.stage===location.current)?.y ?? point.y : point.y}%` }} aria-hidden><img src={TRAVELER_FACE} alt=""/></div>}
       </div>
       {isUra ? (nextArea && nextOpen ? (
         <button className="wall-step is-down" disabled={moving} onClick={() => changeWall(wall + 1)} aria-label={`${nextArea.title}へ`}>
@@ -249,7 +254,7 @@ export function WallMap({ progress, initialStage, onStart, onGate, onLegacy, onC
         </button>
       ) : <button className="wall-step is-down" disabled aria-label="これより前のウォールはない">▼</button>}
       <div className="wall-detail" aria-live="polite" aria-busy={moving}>
-        <small>{notice || (moving ? '移動中…' : !area.implemented ? `ウォール${wall}` : atGate ? '⚑ 門' : tutorial ? '0メン' : `${mission?.number}${wall !== 1 && mission?.optional ? ' · 任意' : mission?.kind === 'shortcut' ? ' · 近道' : mission?.kind === 'lesson' ? ' · 仙人' : ''}`)}</small>
+        <small>{notice || (moving ? '移動中…' : !area.implemented ? `ウォール${wall}` : atGate ? '⚑ 門' : tutorial ? '0メン' : `${mission?.number}${!art && mission?.optional ? ' · 任意' : mission?.kind === 'shortcut' ? ' · 近道' : mission?.kind === 'lesson' ? ' · 仙人' : ''}`)}</small>
         <h2>{detailTitle}</h2>{detailText && <p className="wall-objective">{detailText}</p>}
         {lockedHint && <p className="wall-unlock-hint">🔒 {lockedHint}</p>}
         {!area.implemented ? <button onClick={() => changeWall(latestOpenWall(progress))}>冒険にもどる</button>
